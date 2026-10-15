@@ -58,13 +58,13 @@ export const SORTS = ["recent", "yours", "top", "title"] as const;
 export type Sort = (typeof SORTS)[number];
 export const PAGE_SIZE = 48;
 
-export async function listEntries(userId: string, tab: Tab, sort: Sort, page: number) {
+export async function listEntries(userId: string, tab: Tab, sort: Sort, page: number, kind: MediaKind = "movie") {
   const supabase = await createClient();
   let query = supabase
     .from("entries")
     .select(ENTRY_WITH_ITEM, { count: "exact" })
     .eq("user_id", userId)
-    .eq("items.kind", "movie");
+    .eq("items.kind", kind);
 
   if (tab === "watchlist") query = query.eq("status", "watchlist");
   else if (tab === "liked") query = query.eq("liked", true);
