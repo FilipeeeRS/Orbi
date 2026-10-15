@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Geist, Geist_Mono, Syne } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Syne } from "next/font/google";
 import { Header } from "@/components/header";
 import { I18nProvider } from "@/components/i18n";
 import { LocaleSwitch } from "@/components/locale-switch";
@@ -11,7 +11,8 @@ import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const syne = Syne({ variable: "--font-syne", subsets: ["latin"], weight: ["700", "800"] });
+const syne = Syne({ variable: "--font-syne", subsets: ["latin"], weight: ["800"] });
+const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], weight: ["600", "700", "800"] });
 
 export const metadata: Metadata = {
   title: { default: "Orbi", template: "%s · Orbi" },
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} ${bricolage.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

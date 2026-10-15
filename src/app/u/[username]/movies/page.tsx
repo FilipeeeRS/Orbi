@@ -56,7 +56,7 @@ async function MoviesPageContent({ params, searchParams }: PageProps<"/u/[userna
             </svg>
             {viewer?.id !== profile.id && <span className="pe-1">@{profile.username}</span>}
           </Link>
-          <h1 className="text-2xl font-bold">{t.folders.movie}</h1>
+          <h1 className="font-display text-2xl font-extrabold">{t.folders.movie}</h1>
         </div>
         <span className="text-sm text-muted">{t.profile.items(total)}</span>
       </div>

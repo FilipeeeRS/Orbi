@@ -61,7 +61,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       <div className={`relative grid items-start gap-6 sm:grid-cols-[1fr_220px] sm:gap-10 ${item.backdrop_url ? "-mt-16 sm:-mt-20" : ""}`}>
         <div className="space-y-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-balance">
+            <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
               {title} {item.year && <span className="font-normal text-muted">{item.year}</span>}
             </h1>
             {item.original_title && item.original_title !== title && (

@@ -4,33 +4,39 @@
 
 :root,
 [data-theme="dark"] {
-  --bg: #0f1216;
-  --surface: #181d23;
-  --surface-2: #222932;
-  --border: #2c343e;
-  --fg: #e8edf2;
-  --muted: #8b98a6;
-  --accent: #8b7bff;
-  --accent-fg: #0f1216;
+  --bg: #0c0809;
+  --surface: #161012;
+  --surface-2: #21171a;
+  --border: #33242a;
+  --fg: #f4eaeb;
+  --muted: #a08a8f;
+  --accent: #ff3b52;
+  --accent-fg: #ffffff;
+  --nebula-1: rgba(214, 32, 62, 0.22);
+  --nebula-2: rgba(140, 30, 110, 0.16);
+  --star-dust: rgba(255, 235, 238, 0.35);
   --star: #f5b62a;
   --like: #ff9419;
-  --danger: #ff5c7a;
+  --danger: #ff6b7d;
   --ok: #3ccf8e;
   color-scheme: dark;
 }
 
 [data-theme="light"] {
-  --bg: #f6f7f9;
+  --bg: #fbf6f6;
   --surface: #ffffff;
-  --surface-2: #eef1f4;
-  --border: #dde2e8;
-  --fg: #151a20;
-  --muted: #5f6b78;
-  --accent: #5b47e0;
+  --surface-2: #f4eaeb;
+  --border: #ead9dc;
+  --fg: #1d1114;
+  --muted: #7a6266;
+  --accent: #d11f3a;
   --accent-fg: #ffffff;
+  --nebula-1: rgba(214, 32, 62, 0.08);
+  --nebula-2: rgba(140, 30, 110, 0.05);
+  --star-dust: transparent;
   --star: #d99a00;
   --like: #e07800;
-  --danger: #e23e5e;
+  --danger: #c4183a;
   --ok: #1f9e66;
   color-scheme: light;
 }
@@ -50,12 +56,26 @@
   --color-ok: var(--ok);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-syne);
+  --font-display: var(--font-bricolage);
+  --font-logo: var(--font-syne);
 }
 
+/* Fundo de nebulosa vermelha com poeira de estrelas, fixo atrás de tudo */
 body {
-  background: var(--bg);
   color: var(--fg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, var(--star-dust), transparent),
+    radial-gradient(1px 1px at 68% 9%, var(--star-dust), transparent),
+    radial-gradient(1.5px 1.5px at 84% 42%, var(--star-dust), transparent),
+    radial-gradient(1px 1px at 35% 62%, var(--star-dust), transparent),
+    radial-gradient(1px 1px at 91% 78%, var(--star-dust), transparent),
+    radial-gradient(1.5px 1.5px at 22% 88%, var(--star-dust), transparent),
+    radial-gradient(1px 1px at 52% 34%, var(--star-dust), transparent),
+    radial-gradient(ellipse 70% 50% at 10% -10%, var(--nebula-1), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 95% 0%, var(--nebula-2), transparent 70%),
+    radial-gradient(ellipse 80% 40% at 50% 110%, var(--nebula-1), transparent 70%);
+  background-attachment: fixed;
 }
 
 ::selection {

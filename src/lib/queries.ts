@@ -18,24 +18,31 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
     supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", kind);
   const list = () => supabase.from("entries").select(ENTRY_WITH_ITEM).eq("user_id", userId).eq("items.kind", kind);
 
-  const [watched, thisYear, watchlist, recent, favorites] = await Promise.all([
+  const [watched, thisYear, watchlist, reviews, recent, favorites, watchlistPreview, ...ratingCounts] = await Promise.all([
     count().eq("status", "watched"),
     count().eq("status", "watched").gte("watched_on", yearStart),
     count().eq("status", "watchlist"),
+    count().not("review", "is", null),
     list()
       .eq("status", "watched")
       .order("watched_on", { ascending: false, nullsFirst: false })
       .order("updated_at", { ascending: false })
       .limit(12),
-    list().eq("liked", true).order("updated_at", { ascending: false }).limit(6),
+    list().eq("liked", true).order("updated_at", { ascending: false }).limit(4),
+    list().eq("status", "watchlist").order("created_at", { ascending: false }).limit(5),
+    // Distribuição das notas: quantos filmes com ½★, ★, ... ★★★★★
+    ...Array.from({ length: 10 }, (_, i) => count().eq("rating", i + 1)),
   ]);
 
   return {
     watched: watched.count ?? 0,
     thisYear: thisYear.count ?? 0,
     watchlist: watchlist.count ?? 0,
+    reviews: reviews.count ?? 0,
     recent: (recent.data ?? []) as EntryWithItem[],
     favorites: (favorites.data ?? []) as EntryWithItem[],
+    watchlistPreview: (watchlistPreview.data ?? []) as EntryWithItem[],
+    ratingCounts: ratingCounts.map((r) => r.count ?? 0),
   };
 }
 
