@@ -158,30 +158,25 @@ function RatingHistogram({ counts, averageLabel }: { counts: number[]; averageLa
   const max = Math.max(1, ...counts);
   const average = total ? counts.reduce((sum, c, i) => sum + c * (i + 1), 0) / total / 2 : null;
   return (
-    <div className="space-y-2">
-      <div className="flex items-end gap-2">
-        <span className="text-xs text-star">★</span>
-        <div className="flex h-16 flex-1 items-end gap-[3px]">
-          {counts.map((c, i) => (
-            <div
-              key={i}
-              title={`${(i + 1) / 2}★ · ${c}`}
-              className="flex-1 rounded-t-sm bg-muted/40 transition hover:bg-accent"
-              style={{ height: c ? `${Math.max(6, (c / max) * 100)}%` : "2px" }}
-            />
-          ))}
-        </div>
+    <div className="flex items-end gap-2" title={average !== null ? `${averageLabel}: ${average.toFixed(1)}` : undefined}>
+      <span className="text-xs text-star">★</span>
+      <div className="flex h-16 flex-1 items-end gap-[3px]">
+        {counts.map((c, i) => (
+          <div
+            key={i}
+            title={`${(i + 1) / 2}★ · ${c}`}
+            className="flex-1 rounded-t-sm bg-muted/40 transition hover:bg-accent"
+            style={{ height: c ? `${Math.max(6, (c / max) * 100)}%` : "2px" }}
+          />
+        ))}
+      </div>
+      {/* Média em destaque logo acima das cinco estrelas */}
+      <div className="flex flex-col items-end">
+        {average !== null && (
+          <span className="font-display text-2xl leading-none font-extrabold tabular-nums">{average.toFixed(1)}</span>
+        )}
         <span className="text-xs tracking-tighter whitespace-nowrap text-star">★★★★★</span>
       </div>
-      {average !== null && (
-        <p className="flex items-baseline justify-between text-xs text-muted">
-          <span className="tracking-widest uppercase">{averageLabel}</span>
-          <span>
-            <span className="font-display text-lg font-extrabold text-fg">{average.toFixed(1)}</span>
-            <span className="text-star"> ★</span>
-          </span>
-        </p>
-      )}
     </div>
   );
 }
