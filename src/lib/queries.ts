@@ -141,3 +141,25 @@ export async function isFollowing(followerId: string, followeeId: string) {
     .eq("followee_id", followeeId);
   return (count ?? 0) > 0;
 }
+
+const DEFAULT_FOLDER_ORDER: MediaKind[] = ["movie", "series", "music", "game", "book"];
+
+// Pastas do usuário ordenadas pela que recebeu um item por último; sem itens, vale a ordem padrão.
+export const getFolderOrder = cache(async (userId: string): Promise<MediaKind[]> => {
+  const supabase = await createClient();
+  const latest = await Promise.all(
+    DEFAULT_FOLDER_ORDER.map((kind) =>
+      supabase
+        .from("entries")
+        .select("created_at, items!inner(kind)")
+        .eq("user_id", userId)
+        .eq("items.kind", kind)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .then((r) => (r.data?.[0]?.created_at as string | undefined) ?? ""),
+    ),
+  );
+  return DEFAULT_FOLDER_ORDER.map((kind, i) => ({ kind, at: latest[i], i }))
+    .sort((a, b) => b.at.localeCompare(a.at) || a.i - b.i)
+    .map((f) => f.kind);
+});

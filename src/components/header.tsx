@@ -3,10 +3,13 @@ import Image from "next/image";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
-import type { Profile } from "@/lib/types";
+import type { MediaKind, Profile } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary }) {
+const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
+
+// folderOrder: pastas na ordem da que recebeu item por último (ver getFolderOrder).
+export function Header({ viewer, folderOrder, t }: { viewer: Profile | null; folderOrder: MediaKind[]; t: Dictionary }) {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
@@ -27,10 +30,13 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
             sections={[
               [
                 { href: `/u/${viewer.username}`, label: t.nav.profile },
-                { href: `/u/${viewer.username}/movies`, label: t.folders.movie },
-                { href: `/u/${viewer.username}/all?tab=reviews`, label: t.movies.tabs.reviews },
-                { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.movies.tabs.watchlist },
+                { href: `/u/${viewer.username}/all`, label: t.folders.all },
+                ...folderOrder.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
+              ],
+              [
                 { href: `/u/${viewer.username}/all?tab=liked`, label: t.movies.tabs.liked },
+                { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.movies.tabs.watchlist },
+                { href: `/u/${viewer.username}/all?tab=reviews`, label: t.movies.tabs.reviews },
               ],
               [
                 { href: "/import", label: t.nav.import },

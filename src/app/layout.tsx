@@ -7,6 +7,7 @@ import { I18nProvider } from "@/components/i18n";
 import { LocaleSwitch } from "@/components/locale-switch";
 import { themeScript } from "@/components/theme-toggle";
 import { getDict, getViewer } from "@/lib/session";
+import { getFolderOrder } from "@/lib/queries";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -43,10 +44,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 async function AppShell({ children }: { children: React.ReactNode }) {
   await connection(); // o cliente do Supabase lê a hora atual (validade da sessão)
   const [viewer, { locale, t }] = await Promise.all([getViewer(), getDict()]);
+  const folderOrder = viewer ? await getFolderOrder(viewer.id) : [];
 
   return (
     <I18nProvider locale={locale}>
-      <Header viewer={viewer} t={t} />
+      <Header viewer={viewer} folderOrder={folderOrder} t={t} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 text-xs text-muted">
