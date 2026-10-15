@@ -65,9 +65,11 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
         className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${item.backdrop_url ? "-mt-20 sm:-mt-28" : ""}`}
       >
         <div className="space-y-5">
-          <div>
+          <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
             <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
-              {title} {item.year && <span className="font-normal text-muted">{item.year}</span>}
+              {title}{" "}
+              {item.year && <span className="font-sans text-xl font-normal tracking-normal text-muted">{item.year}</span>}
             </h1>
             {item.original_title && item.original_title !== title && (
               <p className="text-sm text-muted italic">{item.original_title}</p>
@@ -78,6 +80,8 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
                 <span className="text-xs"> / 10 · TMDB</span>
               </p>
             )}
+          </div>
+          <OrbiRating average={stats.average} count={stats.ratings} t={t} />
           </div>
           {overview && <p className="leading-relaxed text-muted">{overview}</p>}
 
@@ -133,6 +137,26 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   );
 }
 
+// Média das notas dadas pelos usuários do Orbi, em destaque ao lado do título.
+function OrbiRating({ average, count, t }: { average: number | null; count: number; t: Dictionary }) {
+  return (
+    <div className="shrink-0 text-end" title={`${t.profile.average}: ${count} ${t.profile.ratings.toLowerCase()}`}>
+      <p className="flex items-center justify-end gap-1">
+        <span className="font-display text-4xl leading-none font-extrabold tabular-nums">
+          {average === null ? "–" : average.toFixed(1)}
+        </span>
+        <svg viewBox="0 0 24 24" className="size-7 text-star" fill="currentColor" aria-hidden>
+          <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />
+        </svg>
+      </p>
+      <p className="mt-1 text-[10px] tracking-widest text-muted uppercase">
+        {t.profile.average} · {count.toLocaleString()}
+      </p>
+    </div>
+  );
+}
+
+// Linha de números abaixo do pôster, no estilo do Letterboxd: ícone + número, detalhe no tooltip.
 function ItemStats({
   stats,
   t,
@@ -142,26 +166,46 @@ function ItemStats({
   t: Dictionary;
   locale: Locale;
 }) {
-  const fmt = new Intl.NumberFormat(dictionaries[locale].htmlLang, { notation: "compact" });
+  const lang = dictionaries[locale].htmlLang;
+  const compact = new Intl.NumberFormat(lang, { notation: "compact" });
   const items = [
-    { label: t.movies.tabs.watched, value: fmt.format(stats.watched), icon: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />, color: "text-ok" },
-    { label: t.movies.tabs.liked, value: fmt.format(stats.likes), icon: <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />, color: "text-like" },
-    { label: t.movies.tabs.watchlist, value: fmt.format(stats.watchlist), icon: <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" />, color: "text-accent" },
     {
-      label: t.profile.average,
-      value: stats.average === null ? "–" : stats.average.toFixed(1),
-      icon: <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />,
-      color: "text-star",
+      label: t.movies.tabs.watched,
+      value: stats.watched,
+      color: "text-ok",
+      icon: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+    },
+    {
+      label: t.movies.tabs.liked,
+      value: stats.likes,
+      color: "text-like",
+      icon: <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />,
+    },
+    {
+      label: t.movies.tabs.watchlist,
+      value: stats.watchlist,
+      color: "text-accent",
+      stroke: true,
+      icon: <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" />,
     },
   ];
   return (
-    <ul className="grid grid-cols-4 rounded-xl border border-border bg-surface/70 py-2.5 text-center">
+    <ul className="flex items-center justify-center gap-4 text-sm">
       {items.map((s) => (
-        <li key={s.label} title={s.label} className="flex flex-col items-center gap-1">
-          <svg viewBox="0 0 24 24" className={`size-4 ${s.color}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
+        <li key={s.label} title={`${s.label}: ${s.value.toLocaleString(lang)}`} className="flex items-center gap-1.5">
+          <svg
+            viewBox="0 0 24 24"
+            className={`size-4 ${s.color}`}
+            fill={"stroke" in s ? "none" : "currentColor"}
+            fillRule="evenodd"
+            stroke={"stroke" in s ? "currentColor" : "none"}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            aria-hidden
+          >
             {s.icon}
           </svg>
-          <span className="text-xs font-semibold tabular-nums">{s.value}</span>
+          <span className="tabular-nums text-muted">{compact.format(s.value)}</span>
         </li>
       ))}
     </ul>

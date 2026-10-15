@@ -116,5 +116,6 @@ export async function getItemStats(itemId: string) {
     likes: likes.count ?? 0,
     watchlist: watchlist.count ?? 0,
     average: values.length ? values.reduce((a, b) => a + b, 0) / values.length / 2 : null,
+    ratings: values.length,
   };
 }
