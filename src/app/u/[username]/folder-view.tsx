@@ -3,7 +3,21 @@ import { notFound } from "next/navigation";
 import { Poster, PosterGrid, PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
 import { getDict, getViewer } from "@/lib/session";
-import { getProfileByUsername, getViewerStates, listEntries, PAGE_SIZE, SORTS, TABS, type Sort, type Tab } from "@/lib/queries";
+import {
+  DEFAULT_SORT,
+  getProfileByUsername,
+  getViewerStates,
+  listEntries,
+  PAGE_SIZE,
+  SORT_LABEL,
+  SORTS,
+  TABS,
+  type ListFilters,
+  type Sort,
+  type Tab,
+} from "@/lib/queries";
+import { getMovieGenres, tmdbLanguage } from "@/lib/tmdb";
+import { FilterBar } from "@/components/filter-bar";
 import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 
@@ -20,24 +34,43 @@ export async function FolderView({
   path: string;
 }) {
   const tab: Tab = TABS.includes(query.tab as Tab) ? (query.tab as Tab) : "watched";
-  const sort: Sort = SORTS.includes(query.sort as Sort) ? (query.sort as Sort) : "recent";
+  const sort: Sort = SORTS.includes(query.sort as Sort) ? (query.sort as Sort) : DEFAULT_SORT;
   const page = Math.max(1, Number(query.page) || 1);
+  const filters: ListFilters = {
+    decade: Number(query.decade) || undefined,
+    genre: Number(query.genre) || undefined,
+    rating: query.rating === "none" ? "none" : Number(query.rating) || undefined,
+    q: typeof query.q === "string" ? query.q : undefined,
+  };
 
   const [profile, viewer, { t, locale }] = await Promise.all([getProfileByUsername(username), getViewer(), getDict()]);
   if (!profile) notFound();
 
-  const { entries, total } = await listEntries(profile.id, tab, sort, page, kind);
+  const [{ entries, total }, genres] = await Promise.all([
+    listEntries(profile.id, tab, sort, page, kind, filters, locale),
+    kind === "movie" || kind === "all" ? getMovieGenres(tmdbLanguage(locale)) : Promise.resolve([]),
+  ]);
   const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const base = `/u/${profile.username}/${path}`;
-  const href = (p: Partial<{ tab: Tab; sort: Sort; page: number }>) => {
-    const next = { tab, sort, page: 1, ...p };
+  // Mantém filtros e ordenação ao trocar de aba ou de página.
+  const href = (p: Partial<{ tab: Tab; page: number }>) => {
+    const next = { tab, page: 1, ...p };
     const s = new URLSearchParams();
     if (next.tab !== "watched") s.set("tab", next.tab);
-    if (next.sort !== "recent") s.set("sort", next.sort);
+    if (sort !== DEFAULT_SORT) s.set("sort", sort);
+    for (const key of ["decade", "genre", "rating", "q"] as const) {
+      const value = query[key];
+      if (typeof value === "string" && value) s.set(key, value);
+    }
     if (next.page > 1) s.set("page", String(next.page));
     return s.size ? `${base}?${s}` : base;
   };
+  const lang = dictionaries[locale].htmlLang;
+  // Algumas ordenações não fazem sentido na watchlist (sem nota sua, sem data em que viu).
+  const sortOptions = SORTS.filter((key) => !(tab === "watchlist" && (key === "yours" || key === "recent"))).map(
+    (key) => ({ value: key, label: t.movies.sort[SORT_LABEL[key]] }),
+  );
 
   return (
     <div className="space-y-6">
@@ -73,17 +106,25 @@ export async function FolderView({
             </Link>
           ))}
         </nav>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 pb-2 text-xs">
-          {SORTS.filter((key) => !(tab === "watchlist" && key === "yours")).map((key) => (
-            <Link
-              key={key}
-              href={href({ sort: key })}
-              className={key === sort ? "font-semibold text-fg" : "text-muted hover:text-fg"}
-            >
-              {t.movies.sort[key]}
-            </Link>
-          ))}
-        </div>
+        {tab !== "lists" && (
+          <FilterBar
+            labels={t.movies.filters}
+            defaultSort={DEFAULT_SORT}
+            sorts={sortOptions}
+            decades={Array.from({ length: 13 }, (_, i) => 2020 - i * 10).map((d) => ({
+              value: String(d),
+              label: `${d}s`,
+            }))}
+            genres={genres.map((g) => ({ value: String(g.id), label: g.name }))}
+            ratings={[
+              ...Array.from({ length: 10 }, (_, i) => 10 - i).map((r) => ({
+                value: String(r),
+                label: `${"★".repeat(Math.floor(r / 2))}${r % 2 ? "½" : ""}  ${(r / 2).toLocaleString(lang)}`,
+              })),
+              { value: "none", label: t.movies.filters.noRating },
+            ]}
+          />
+        )}
       </div>
 
       {entries.length === 0 ? (

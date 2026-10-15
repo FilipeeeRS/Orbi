@@ -13,7 +13,7 @@
   --accent: #ff3b52;
   --accent-fg: #ffffff;
   --star: #f5b62a;
-  --like: #ff9419;
+  --like: #ff4757;
   --danger: #ff6b7d;
   --ok: #3ccf8e;
   color-scheme: dark;
@@ -29,7 +29,7 @@
   --accent: #d11f3a;
   --accent-fg: #ffffff;
   --star: #d99a00;
-  --like: #e07800;
+  --like: #d11f3a;
   --danger: #c4183a;
   --ok: #1f9e66;
   color-scheme: light;
@@ -136,4 +136,20 @@ body {
   opacity: 0.12;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Seta própria nas listas de seleção, com um respiro da borda (a nativa fica colada no canto). */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a08a8f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem !important;
+}
+
+[dir="rtl"] select {
+  background-position: left 0.85rem center;
+  padding-right: 0.75rem !important;
+  padding-left: 2.5rem !important;
 }

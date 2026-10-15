@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "./supabase/admin";
-import { getMovieWithTranslations, releaseYear, tmdbImage, TmdbNotFound, type TmdbTranslation } from "./tmdb";
+import { getMovieWithTranslations, hasAdultRating, releaseYear, tmdbImage, TmdbNotFound, type TmdbTranslation } from "./tmdb";
 import { LOCALES, TMDB_LANGUAGES } from "./i18n/dictionaries";
 import type { Item } from "./types";
 
@@ -19,7 +19,10 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
     .maybeSingle();
   // Filmes salvos por versões antigas (só "pt" nas traduções, ou sem nota do TMDB): busca de novo.
   const legacy =
-    existing && (Object.keys(existing.translations ?? {}).every((k) => k === "pt") || existing.tmdb_votes === null);
+    existing &&
+    (Object.keys(existing.translations ?? {}).every((k) => k === "pt") ||
+      existing.tmdb_votes === null ||
+      existing.is_adult_rated === null);
   if (existing && !legacy) return existing as Item;
 
   let movie;
@@ -46,6 +49,10 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
         translations: pickTranslations(movie.translations.translations, movie.title),
         tmdb_rating: movie.vote_count ? Math.round((movie.vote_average ?? 0) * 10) / 10 : null,
         tmdb_votes: movie.vote_count ?? 0,
+        is_adult_rated: hasAdultRating(movie.release_dates),
+        genre_ids: (movie.genres ?? []).map((g) => g.id),
+        runtime: movie.runtime || null,
+        release_date: movie.release_date || null,
       },
       { onConflict: "kind,source,external_id" },
     )

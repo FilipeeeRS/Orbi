@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { setAvatar, setCover, updateProfile, type ProfileFormState } from "@/app/actions";
+import { setAvatar, setCover, updateProfile, type FavoriteItem, type ProfileFormState } from "@/app/actions";
+import { FavoritesEditor } from "./favorites-editor";
 import { Avatar } from "@/components/header";
 import { useI18n } from "@/components/i18n";
 import { ThemeSelect } from "@/components/theme-toggle";
@@ -11,8 +12,10 @@ import type { Profile } from "@/lib/types";
 
 const input = "w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:border-accent";
 const MAX_BYTES = 5 * 1024 * 1024;
+// Mesmas opções do Letterboxd.
+const PRONOUNS = ["They / their", "He / his", "He / their", "She / her", "She / their", "Xe / xyr", "Ze / hir", "Ze / zir", "It / its"];
 
-export function SettingsForm({ profile, locale }: { profile: Profile; locale: Locale }) {
+export function SettingsForm({ profile, locale, favorites }: { profile: Profile; locale: Locale; favorites: FavoriteItem[] }) {
   const { t } = useI18n();
   const [state, action, pending] = useActionState<ProfileFormState, FormData>(updateProfile, { status: "idle" });
   const message = {
@@ -22,11 +25,9 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
     error: t.common.error,
   }[state.status];
 
+  // Duas colunas: campos de texto à esquerda, imagens (foto e capa) à direita.
   return (
-    <div className="space-y-6">
-      <AvatarPicker profile={profile} />
-      <CoverPicker profile={profile} />
-
+    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
       <form action={action} className="space-y-5 rounded-2xl border border-border bg-surface p-6 text-sm">
         <label className="block">
           <span className="mb-1 block text-muted">{t.settings.username}</span>
@@ -44,13 +45,39 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
           <input name="display_name" defaultValue={profile.display_name ?? ""} maxLength={60} className={input} />
         </label>
         <label className="block">
-          <span className="mb-1 block text-muted">{t.settings.bio}</span>
-          <textarea name="bio" defaultValue={profile.bio ?? ""} maxLength={500} rows={3} className={input} />
+          <span className="mb-1 block text-muted">{t.settings.location}</span>
+          <input name="location" defaultValue={profile.location ?? ""} maxLength={60} className={input} />
         </label>
         <label className="block">
-          <span className="mb-1 block text-muted">{t.settings.theme}</span>
-          {/* Aplica na hora e fica salvo neste navegador */}
-          <ThemeSelect labels={{ dark: t.settings.themeDark, light: t.settings.themeLight }} className={input} />
+          <span className="mb-1 block text-muted">{t.settings.website}</span>
+          <input
+            name="website"
+            type="text"
+            inputMode="url"
+            defaultValue={profile.website ?? ""}
+            maxLength={200}
+            placeholder="meusite.com"
+            className={input}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-muted">{t.settings.bio}</span>
+          <textarea name="bio" defaultValue={profile.bio ?? ""} maxLength={500} rows={4} className={input} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-muted">{t.settings.pronouns}</span>
+          <select name="pronouns" defaultValue={profile.pronouns ?? ""} className={input}>
+            <option value="">{t.settings.pronounsHint}</option>
+            {/* Valor antigo digitado à mão continua aparecendo para não se perder */}
+            {profile.pronouns && !PRONOUNS.includes(profile.pronouns) && (
+              <option value={profile.pronouns}>{profile.pronouns}</option>
+            )}
+            {PRONOUNS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="block">
           <span className="mb-1 block text-muted">{t.settings.language}</span>
@@ -62,6 +89,18 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
             ))}
           </select>
         </label>
+        <label className="block">
+          <span className="mb-1 block text-muted">{t.settings.theme}</span>
+          {/* Aplica na hora e fica salvo neste navegador */}
+          <ThemeSelect labels={{ dark: t.settings.themeDark, light: t.settings.themeLight }} className={input} />
+        </label>
+        <Checkbox name="show_adult" defaultChecked={profile.show_adult} label={t.settings.adult} hint={t.settings.adultHint} />
+        <Checkbox
+          name="is_private"
+          defaultChecked={profile.is_private}
+          label={t.settings.privateProfile}
+          hint={t.settings.privateHint}
+        />
         <div className="flex items-center justify-between gap-3">
           <span className="text-danger">{message}</span>
           <button
@@ -72,7 +111,35 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
           </button>
         </div>
       </form>
+
+      <div className="space-y-6">
+        <AvatarPicker profile={profile} />
+        <CoverPicker profile={profile} />
+        <FavoritesEditor key={favorites.map((f) => f.id).join()} initial={favorites} />
+      </div>
     </div>
+  );
+}
+
+function Checkbox({
+  name,
+  defaultChecked,
+  label,
+  hint,
+}: {
+  name: string;
+  defaultChecked: boolean;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3">
+      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="mt-0.5 size-4 accent-[var(--accent)]" />
+      <span>
+        <span className="block font-medium">{label}</span>
+        <span className="block text-xs text-muted">{hint}</span>
+      </span>
+    </label>
   );
 }
 
@@ -124,8 +191,9 @@ function CoverPicker({ profile }: { profile: Profile }) {
           <img src={profile.cover_url} alt="" className="size-full object-cover" />
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
-        <label className="cursor-pointer rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2">
+      <p className="text-xs text-muted">{t.settings.coverHint}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="cursor-pointer rounded-lg border border-border px-3 py-1.5 whitespace-nowrap hover:bg-surface-2">
           {t.settings.coverChange}
           <input
             type="file"
@@ -146,7 +214,6 @@ function CoverPicker({ profile }: { profile: Profile }) {
           </button>
         )}
       </div>
-      <p className="text-xs text-muted">{t.settings.coverHint}</p>
       {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   );
@@ -161,9 +228,9 @@ function AvatarPicker({ profile }: { profile: Profile }) {
       <div className={pending ? "animate-pulse" : ""}>
         <Avatar profile={profile} size={80} />
       </div>
-      <div className="space-y-2">
+      <div className="min-w-0 space-y-2">
         <p className="font-semibold">{t.settings.avatar}</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 whitespace-nowrap">
           <label className="cursor-pointer rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2">
             {t.settings.avatarChange}
             <input

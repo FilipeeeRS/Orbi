@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "./logo";
 import { UserMenu } from "./user-menu";
+import { SearchBox } from "./search-box";
 import type { MediaKind, Profile } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -15,21 +16,15 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
     <header className="sticky top-0 z-20 border-b border-border bg-bg">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <Logo slogan={t.slogan} />
-        <form action="/search" className="ms-auto w-full max-w-xs">
-          <input
-            name="q"
-            type="search"
-            placeholder={t.nav.search}
-            className="w-full rounded-full border border-border bg-surface px-4 py-1.5 text-sm outline-none placeholder:text-muted focus:border-accent"
-          />
-        </form>
+        <SearchBox placeholder={t.nav.search} />
         {viewer ? (
           <UserMenu
             avatar={<Avatar profile={viewer} size={30} />}
             name={viewer.display_name || viewer.username}
             sections={[
               [
-                { href: `/u/${viewer.username}`, label: t.nav.profile },
+                { href: "/", label: t.nav.home },
+                { href: `/u/${viewer.username}`, label: t.profile.tab },
                 ...MENU_FOLDERS.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
               ],
               [

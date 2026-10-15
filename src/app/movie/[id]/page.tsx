@@ -9,7 +9,8 @@ import { PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
 import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemReviews, getItemStats } from "@/lib/queries";
+import { getItemReviews, getItemStats, getReviewLikes } from "@/lib/queries";
+import { ReviewLike } from "@/components/review-like";
 import { getMovieInfo, tmdbLanguage, CREW_ROLES, type MovieInfo as MovieInfoData } from "@/lib/tmdb";
 import { MovieInfo, type MovieInfoView } from "./movie-info";
 import { createClient } from "@/lib/supabase/server";
@@ -51,40 +52,70 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       : null,
   ]);
 
+  const reviewLikes = await getReviewLikes(reviews.map((r) => r.id), viewer?.id ?? null);
   const title = itemTitle(item, locale);
   const overview = itemOverview(item, locale);
+  // Filme 18 anos para quem não ativou o conteúdo +18: imagens borradas e aviso.
+  const hideAdult = !!item.is_adult_rated && !viewer?.show_adult;
 
   return (
     <div className="mx-auto max-w-[58rem] space-y-10">
-      {item.backdrop_url && (
-        // Backdrop mais estreito, centralizado e com as bordas laterais esmaecidas
-        <div className="backdrop-fade relative left-1/2 -mt-6 h-56 w-screen max-w-[1300px] -translate-x-1/2 overflow-hidden sm:-mt-8 sm:h-96">
-          <Image src={item.backdrop_url} alt="" fill className="object-cover object-[center_30%]" loading="eager" sizes="(max-width: 1300px) 100vw, 1300px" />
-        </div>
-      )}
+      {/* O espaço do fundo existe sempre; sem imagem ele só fica vazio (igual ao perfil) */}
+      <div className="backdrop-fade relative left-1/2 -mt-6 h-56 w-screen max-w-[1300px] -translate-x-1/2 overflow-hidden sm:-mt-8 sm:h-96">
+        {item.backdrop_url && (
+          <Image
+            src={item.backdrop_url}
+            alt=""
+            fill
+            className={`object-cover object-[center_30%] ${hideAdult ? "scale-110 blur-2xl" : ""}`}
+            loading="eager"
+            sizes="(max-width: 1300px) 100vw, 1300px"
+          />
+        )}
+      </div>
 
       <div
-        className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${item.backdrop_url ? "-mt-24 sm:-mt-40" : ""}`}
+        className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] -mt-24 sm:-mt-40`}
       >
         <div className="space-y-5">
-          <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+          {/* Grade de 2 colunas: título alinhado com a nota do Orbi, e a linha do TMDB com o "no Orbi" */}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1">
+            <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl">
               {title}{" "}
               {item.year && <span className="font-sans text-xl font-normal tracking-normal text-muted">{item.year}</span>}
             </h1>
+            <p
+              className="flex items-baseline justify-end gap-1"
+              title={`${t.profile.average}: ${stats.ratings} ${t.profile.ratings.toLowerCase()}`}
+            >
+              <span className="font-display text-3xl leading-tight font-extrabold tabular-nums sm:text-4xl">
+                {stats.average === null ? "–" : stats.average.toFixed(1)}
+              </span>
+              <svg viewBox="0 0 24 24" className="size-6 self-center text-star sm:size-7" fill="currentColor" aria-hidden>
+                <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />
+              </svg>
+            </p>
+            <p className="text-sm text-muted">
+              {item.tmdb_rating != null && (
+                <>
+                  <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
+                  <span className="text-xs"> / 10 {t.movie.onSource("TMDB")}</span>
+                </>
+              )}
+            </p>
+            <p className="text-end text-xs text-muted">{t.movie.onSource("Orbi")}</p>
             {item.original_title && item.original_title !== title && (
-              <p className="text-sm text-muted italic">{item.original_title}</p>
-            )}
-            {item.tmdb_rating != null && (
-              <p className="mt-1 text-sm text-muted">
-                <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
-                <span className="text-xs"> / 10 {t.movie.onSource("TMDB")}</span>
-              </p>
+              <p className="col-span-2 text-sm text-muted italic">{item.original_title}</p>
             )}
           </div>
-          <OrbiRating average={stats.average} count={stats.ratings} t={t} />
-          </div>
+          {hideAdult && (
+            <p className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted">
+              <span className="rounded border border-danger px-1.5 text-[11px] font-bold text-danger">18</span>
+              <Link href="/settings" className="hover:text-fg hover:underline">
+                {t.movie.adultNotice}
+              </Link>
+            </p>
+          )}
           {overview && <p className="leading-relaxed text-muted">{overview}</p>}
 
           {viewer ? (
@@ -112,7 +143,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
         </div>
 
         <div className="order-first mx-auto w-40 space-y-3 sm:order-none sm:w-full">
-          <div className="shadow-2xl">
+          <div className={`shadow-2xl ${hideAdult ? "overflow-hidden rounded-md [&_img]:scale-110 [&_img]:blur-xl" : ""}`}>
             <PosterImage url={item.poster_url} title={title} eager />
           </div>
           <ItemStats stats={stats} t={t} locale={locale} />
@@ -126,20 +157,27 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
         {reviews.length ? (
           <ul className="divide-y divide-border">
             {reviews.map((r) => (
-              <li key={r.id} className="flex gap-3 py-4">
+              <li key={r.id} className="flex items-start gap-3 py-4">
                 <Link href={`/u/${r.profiles.username}`} className="shrink-0">
                   <Avatar profile={r.profiles} size={36} />
                 </Link>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-sm">
                     <Link href={`/u/${r.profiles.username}`} className="font-semibold hover:text-accent">
                       {r.profiles.display_name || r.profiles.username}
                     </Link>
-                    <StarsDisplay rating={r.rating} />
+                    <StarsDisplay rating={r.rating} valueLang={dictionaries[locale].htmlLang} />
                     {r.liked && <span className="text-like">♥</span>}
                   </div>
                   <p className="mt-1 text-sm whitespace-pre-line">{r.review}</p>
                 </div>
+                <ReviewLike
+                  entryId={r.id}
+                  viewerId={viewer?.id ?? null}
+                  initialLiked={reviewLikes.mine.has(r.id)}
+                  initialCount={reviewLikes.counts.get(r.id) ?? 0}
+                  label={t.movie.like}
+                />
               </li>
             ))}
           </ul>
@@ -147,25 +185,6 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
           <p className="text-sm text-muted">{t.movie.noReviews}</p>
         )}
       </section>
-    </div>
-  );
-}
-
-// Média das notas dadas pelos usuários do Orbi, em destaque ao lado do título.
-function OrbiRating({ average, count, t }: { average: number | null; count: number; t: Dictionary }) {
-  return (
-    <div className="shrink-0 text-end" title={`${t.profile.average}: ${count} ${t.profile.ratings.toLowerCase()}`}>
-      <p className="flex items-center justify-end gap-1">
-        <span className="font-display text-4xl leading-none font-extrabold tabular-nums">
-          {average === null ? "–" : average.toFixed(1)}
-        </span>
-        <svg viewBox="0 0 24 24" className="size-7 text-star" fill="currentColor" aria-hidden>
-          <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />
-        </svg>
-      </p>
-      <p className="mt-1 text-xs text-muted">
-        {t.movie.onSource("Orbi")}
-      </p>
     </div>
   );
 }
@@ -258,18 +277,31 @@ function toView(info: MovieInfoData, t: Dictionary, locale: Locale): MovieInfoVi
     return new Date(y, m - 1, d).toLocaleDateString(lang, { day: "2-digit", month: "short", year: "numeric" });
   };
 
+  // Cada nome leva para a busca já preenchida (pessoa, gênero, estúdio ou país).
+  const browse = (key: string, value: string | number, name: string) =>
+    `/search?${new URLSearchParams({ [key]: String(value), q: name })}`;
+  const person = (p: { id: number; name: string }) => ({ name: p.name, href: browse("person", p.id, p.name) });
+
   return {
-    cast: info.cast,
-    crew: CREW_ROLES.filter((role) => info.crew[role]?.length).map((role) => ({ role, names: info.crew[role]! })),
+    cast: info.cast.map((p) => ({ ...person(p), character: p.character })),
+    crew: CREW_ROLES.filter((role) => info.crew[role]?.length).map((role) => ({
+      role,
+      people: info.crew[role]!.map(person),
+    })),
     details: [
-      { label: t.info.studios, values: info.studios },
-      { label: t.info.countries, values: info.countries.map(country) },
+      { label: t.info.studios, values: info.studios.map((c) => ({ name: c.name, href: browse("company", c.id, c.name) })) },
+      {
+        label: t.info.countries,
+        values: info.countries.map((code) => ({ name: country(code), href: browse("country", code, country(code)) })),
+      },
       {
         label: t.info.language,
-        values: info.originalLanguage ? [safe(() => languageName.of(info.originalLanguage!), info.originalLanguage)] : [],
+        values: info.originalLanguage
+          ? [{ name: safe(() => languageName.of(info.originalLanguage!), info.originalLanguage) }]
+          : [],
       },
     ].filter((row) => row.values.length),
-    genres: info.genres,
+    genres: info.genres.map((g) => ({ name: g.name, href: browse("genre", g.id, g.name) })),
     releases: info.releases.map((r) => ({ country: country(r.country), date: date(r.date), certification: r.certification })),
   };
 }

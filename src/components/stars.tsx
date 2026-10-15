@@ -1,12 +1,22 @@
 // Nota em meias estrelas: 1 = ½★ ... 10 = 5★
 
-export function StarsDisplay({ rating, className = "" }: { rating: number | null; className?: string }) {
+export function StarsDisplay({
+  rating,
+  className = "",
+  valueLang,
+}: {
+  rating: number | null;
+  className?: string;
+  // Idioma para mostrar a nota em número ao lado (ex.: "3,5"); sem ele, só as estrelas.
+  valueLang?: string;
+}) {
   if (!rating) return null;
   const full = Math.floor(rating / 2);
   return (
     <span className={`whitespace-nowrap text-star ${className}`} aria-label={`${rating / 2}/5`}>
       {"★".repeat(full)}
       {rating % 2 ? "½" : ""}
+      {valueLang && <span className="ms-1 text-muted">{(rating / 2).toLocaleString(valueLang)}</span>}
     </span>
   );
 }

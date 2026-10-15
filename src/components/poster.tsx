@@ -23,7 +23,7 @@ export function Poster({ item, locale, rating, liked, showMeta = true, eager, vi
       {/* Os atalhos ficam presos à imagem, não ao bloco com estrelas embaixo */}
       <div className="relative">
         <Link href={itemHref(item)} className="block" title={item.year ? `${title} (${item.year})` : title}>
-          <PosterImage url={item.poster_url} title={title} eager={eager} watched={!!viewer?.state?.watched} />
+          <PosterImage url={item.poster_url} title={title} eager={eager} hoverRing={!viewer} />
         </Link>
         {viewer && <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} />}
       </div>
@@ -42,16 +42,19 @@ export function PosterImage({
   title,
   eager,
   watched,
+  hoverRing = true,
 }: {
   url: string | null;
   title: string;
   eager?: boolean;
+  // Já visto pelo usuário logado: a borda de hover fica verde.
   watched?: boolean;
+  hoverRing?: boolean;
 }) {
   return (
     <div
-      className={`relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition group-hover:ring-2 ${
-        watched ? "group-hover:ring-ok" : "group-hover:ring-fg"
+      className={`relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition ${
+        hoverRing ? `group-hover:ring-2 ${watched ? "group-hover:ring-ok" : "group-hover:ring-fg"}` : ""
       }`}
     >
       {url ? (

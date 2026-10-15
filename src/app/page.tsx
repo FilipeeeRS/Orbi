@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Loading from "./loading";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { HomeDashboard } from "./home-dashboard";
 import { getDict, getViewer } from "@/lib/session";
 
 export default function Home() {
@@ -13,9 +13,9 @@ export default function Home() {
 }
 
 async function HomeContent() {
-  const viewer = await getViewer();
-  if (viewer) redirect(`/u/${viewer.username}`);
-  const { t } = await getDict();
+  const [viewer, { t, locale }] = await Promise.all([getViewer(), getDict()]);
+  // Logado: a tela inicial vira a Home com amigos e populares da semana.
+  if (viewer) return <HomeDashboard viewer={viewer} t={t} locale={locale} />;
 
   return (
     <section className="mx-auto flex max-w-2xl flex-col items-center gap-6 py-16 text-center sm:py-24">

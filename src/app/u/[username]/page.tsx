@@ -10,6 +10,7 @@ import { getDict, getViewer } from "@/lib/session";
 import {
   getFolderOrder,
   getFriends,
+  getItemsByIds,
   getProfileByUsername,
   getProfileOverview,
   getViewerStates,
@@ -51,15 +52,23 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   if (!profile) notFound();
 
   const isOwner = viewer?.id === profile.id;
-  const [o, friends, following, folderOrder] = await Promise.all([
+  const [o, friends, following, folderOrder, chosenFavorites] = await Promise.all([
     getProfileOverview(profile.id),
     getFriends(profile.id),
     viewer && !isOwner ? isFollowing(viewer.id, profile.id) : false,
     getFolderOrder(profile.id),
+    getItemsByIds(profile.favorites ?? []),
   ]);
+  // Favoritos escolhidos em Configurações primeiro; os espaços que sobrarem (até 4)
+  // são completados pelos curtidos mais recentes.
+  const chosenIds = new Set(chosenFavorites.map((i) => i.id));
+  const favorites = [
+    ...chosenFavorites,
+    ...o.favorites.map((e) => e.items).filter((i) => !chosenIds.has(i.id)),
+  ].slice(0, 4);
   const base = `/u/${profile.username}`;
   const states = viewer
-    ? await getViewerStates(viewer.id, [...o.favorites, ...o.recent].map((e) => e.item_id))
+    ? await getViewerStates(viewer.id, [...favorites.map((i) => i.id), ...o.recent.map((e) => e.item_id)])
     : null;
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states?.get(itemId) ?? null } : null);
   // Só a capa escolhida pelo usuário; sem ela, o topo do perfil fica sem imagem.
@@ -102,20 +111,20 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
       ) : (
         <div className="grid gap-10 lg:grid-cols-[1fr_280px]">
           <div className="min-w-0 space-y-10">
-            {o.favorites.length > 0 && (
+            {favorites.length > 0 && (
               <section>
                 <SectionTitle href={`${base}/movies?tab=liked`} more={t.profile.all}>
                   {t.profile.favorites}
                 </SectionTitle>
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                  {o.favorites.map((e, i) => (
+                  {favorites.map((item, i) => (
                     <Poster
-                      key={e.id}
-                      item={e.items}
+                      key={item.id}
+                      item={item}
                       locale={locale}
                       showMeta={false}
                       eager={i < 4}
-                      viewer={viewerFor(e.item_id)}
+                      viewer={viewerFor(item.id)}
                     />
                   ))}
                 </div>
@@ -128,7 +137,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                   {t.profile.recent}
                 </SectionTitle>
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                  {o.recent.slice(0, 8).map((e) => (
+                  {o.recent.slice(0, 4).map((e) => (
                     <Poster
                       key={e.id}
                       item={e.items}
@@ -166,7 +175,11 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
               <SectionTitle more={o.watchlist.toLocaleString()}>
                 {t.profile.watchlist}
               </SectionTitle>
-              <Link href={`${base}/movies?tab=watchlist`} className="group flex">
+              {/* Uma borda só em volta da faixa inteira ao passar o mouse */}
+              <Link
+                href={`${base}/movies?tab=watchlist`}
+                className="flex overflow-hidden rounded-md ring-2 ring-transparent transition hover:ring-fg"
+              >
                 {Array.from({ length: 5 }, (_, i) => o.watchlistPreview[i]).map((e, i) => (
                   <div
                     key={e?.id ?? i}

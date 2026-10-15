@@ -5,7 +5,8 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getViewer, LOCALE_COOKIE } from "@/lib/session";
+import { getDict, getViewer, LOCALE_COOKIE } from "@/lib/session";
+import { itemTitle, type Item } from "@/lib/types";
 import { isLocale } from "@/lib/i18n/dictionaries";
 
 export async function setLocale(locale: string) {
@@ -20,6 +21,20 @@ export async function setLocale(locale: string) {
   refresh();
 }
 
+// "meusite.com" vira "https://meusite.com"; qualquer coisa que não seja http/https é recusada (false).
+function normalizeWebsite(raw: string): string | null | false {
+  const value = raw.trim();
+  if (!value) return null;
+  try {
+    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    if (!["http:", "https:"].includes(url.protocol) || !url.hostname.includes(".")) return false;
+    const href = url.toString();
+    return href.length <= 200 ? href : false;
+  } catch {
+    return false;
+  }
+}
+
 export type ProfileFormState = { status: "idle" | "taken" | "invalid" | "error" };
 
 export async function updateProfile(_prev: ProfileFormState, form: FormData): Promise<ProfileFormState> {
@@ -29,16 +44,31 @@ export async function updateProfile(_prev: ProfileFormState, form: FormData): Pr
   const username = String(form.get("username") ?? "").trim().toLowerCase();
   const displayName = String(form.get("display_name") ?? "").trim();
   const bio = String(form.get("bio") ?? "").trim();
+  const location = String(form.get("location") ?? "").trim();
+  const website = normalizeWebsite(String(form.get("website") ?? ""));
+  const pronouns = String(form.get("pronouns") ?? "").trim();
+  const isPrivate = form.get("is_private") === "on";
+  const showAdult = form.get("show_adult") === "on";
   const locale = String(form.get("locale") ?? "");
 
-  if (!/^[a-z0-9_]{3,30}$/.test(username) || displayName.length > 60 || bio.length > 500 || !isLocale(locale)) {
+  if (!/^[a-z0-9_]{3,30}$/.test(username) || displayName.length > 60 || bio.length > 500 || location.length > 60 || pronouns.length > 30 || website === false || !isLocale(locale)) {
     return { status: "invalid" };
   }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
-    .update({ username, display_name: displayName || null, bio: bio || null, locale })
+    .update({
+      username,
+      display_name: displayName || null,
+      bio: bio || null,
+      location: location || null,
+      website: website || null,
+      pronouns: pronouns || null,
+      is_private: isPrivate,
+      show_adult: showAdult,
+      locale,
+    })
     .eq("id", viewer.id);
 
   if (error) return { status: error.code === "23505" ? "taken" : "error" };
@@ -91,5 +121,47 @@ export async function signInWithIdentifier(identifier: string, password: string)
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
+  return { ok: !error };
+}
+
+// ---- Filmes favoritos do perfil (Configurações) ----
+
+export type FavoriteItem = { id: string; title: string; poster_url: string | null };
+export type FavoriteCandidate = FavoriteItem & { year: number | null };
+
+// Busca só entre os filmes que o usuário curtiu (título em inglês, original ou traduzido).
+export async function searchFavoriteCandidates(query: string): Promise<FavoriteCandidate[]> {
+  const q = query.trim().slice(0, 100).replace(/[%,()]/g, " ");
+  const viewer = await getViewer();
+  if (q.length < 2 || !viewer) return [];
+  const { locale } = await getDict();
+  const supabase = await createClient();
+  const pattern = `%${q}%`;
+  const { data } = await supabase
+    .from("entries")
+    .select("items!inner(id, title, year, poster_url, translations)")
+    .eq("user_id", viewer.id)
+    .eq("liked", true)
+    .or(
+      `title.ilike.${pattern},original_title.ilike.${pattern},translations->${locale}->>title.ilike.${pattern}`,
+      { referencedTable: "items" },
+    )
+    .limit(8);
+  return (data ?? []).map((row) => {
+    const item = row.items as unknown as Item;
+    return { id: item.id, title: itemTitle(item, locale), year: item.year, poster_url: item.poster_url };
+  });
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function saveFavorites(itemIds: string[]): Promise<{ ok: boolean }> {
+  const viewer = await getViewer();
+  const ids = [...new Set(itemIds)].filter((id) => UUID.test(id)).slice(0, 4);
+  if (!viewer) return { ok: false };
+  const supabase = await createClient();
+  const { error } = await supabase.from("profiles").update({ favorites: ids }).eq("id", viewer.id);
+  // Limpa o cache de navegação para o perfil e as configurações mostrarem a lista nova.
+  if (!error) refresh();
   return { ok: !error };
 }

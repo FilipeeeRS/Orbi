@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { CrewRole } from "@/lib/tmdb";
 
+// Um nome da ficha; com href, vira link para a busca (ex.: todos os filmes do diretor).
+export type InfoChip = { name: string; href?: string };
+
 // Tudo já vem formatado do servidor (nomes de países/idiomas e datas no idioma do usuário).
 export type MovieInfoView = {
-  cast: { name: string; character: string }[];
-  crew: { role: CrewRole; names: string[] }[];
-  details: { label: string; values: string[] }[];
-  genres: string[];
+  cast: (InfoChip & { character: string })[];
+  crew: { role: CrewRole; people: InfoChip[] }[];
+  details: { label: string; values: InfoChip[] }[];
+  genres: InfoChip[];
   releases: { country: string; date: string; certification: string }[];
 };
 
@@ -48,7 +52,7 @@ export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dicti
       {tab === "cast" && (
         <div className="flex flex-wrap gap-1.5">
           {cast.map((p, i) => (
-            <Chip key={`${p.name}-${i}`} title={p.character || undefined}>
+            <Chip key={`${p.name}-${i}`} href={p.href} title={p.character || undefined}>
               {p.name}
             </Chip>
           ))}
@@ -65,7 +69,7 @@ export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dicti
       )}
 
       {tab === "crew" && (
-        <Rows rows={info.crew.map((c) => ({ label: labels[c.role], values: c.names }))} />
+        <Rows rows={info.crew.map((c) => ({ label: labels[c.role], values: c.people }))} />
       )}
 
       {tab === "details" && <Rows rows={info.details} />}
@@ -73,7 +77,9 @@ export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dicti
       {tab === "genres" && (
         <div className="flex flex-wrap gap-1.5">
           {info.genres.map((g) => (
-            <Chip key={g}>{g}</Chip>
+            <Chip key={g.name} href={g.href}>
+              {g.name}
+            </Chip>
           ))}
         </div>
       )}
@@ -98,7 +104,7 @@ export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dicti
 }
 
 // Linhas "RÓTULO ........ valor valor", como na ficha do Letterboxd.
-function Rows({ rows }: { rows: { label: string; values: string[] }[] }) {
+function Rows({ rows }: { rows: { label: string; values: InfoChip[] }[] }) {
   return (
     <dl className="space-y-2">
       {rows.map((row) => (
@@ -109,7 +115,9 @@ function Rows({ rows }: { rows: { label: string; values: string[] }[] }) {
           </dt>
           <dd className="flex flex-wrap gap-1.5">
             {row.values.map((v) => (
-              <Chip key={v}>{v}</Chip>
+              <Chip key={v.name} href={v.href}>
+                {v.name}
+              </Chip>
             ))}
           </dd>
         </div>
@@ -118,9 +126,14 @@ function Rows({ rows }: { rows: { label: string; values: string[] }[] }) {
   );
 }
 
-function Chip({ children, title }: { children: React.ReactNode; title?: string }) {
-  return (
-    <span title={title} className="rounded-md bg-surface-2 px-2.5 py-1 text-sm text-fg/85">
+function Chip({ children, title, href }: { children: React.ReactNode; title?: string; href?: string }) {
+  const className = "rounded-md bg-surface-2 px-2.5 py-1 text-sm text-fg/85";
+  return href ? (
+    <Link href={href} title={title} className={`${className} transition hover:bg-border hover:text-fg`}>
+      {children}
+    </Link>
+  ) : (
+    <span title={title} className={className}>
       {children}
     </span>
   );

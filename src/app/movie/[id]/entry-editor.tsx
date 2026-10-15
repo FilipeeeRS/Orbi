@@ -7,18 +7,31 @@ import { useI18n } from "@/components/i18n";
 import { StarIcon } from "@/components/stars";
 import type { Entry } from "@/lib/types";
 
-type Draft = Pick<Entry, "status" | "rating" | "liked" | "review" | "watched_on">;
+type Draft = Pick<
+  Entry,
+  "status" | "rating" | "liked" | "review" | "watched_on"
+>;
 
 const today = () => new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD no fuso local
 
 // Grava direto no Supabase (RLS garante que só o dono escreve). O mesmo fluxo serve para um app mobile.
-export function EntryEditor({ itemId, userId, initial }: { itemId: string; userId: string; initial: Entry | null }) {
+export function EntryEditor({
+  itemId,
+  userId,
+  initial,
+}: {
+  itemId: string;
+  userId: string;
+  initial: Entry | null;
+}) {
   const { t } = useI18n();
   const router = useRouter();
   const [entry, setEntry] = useState<Draft | null>(initial);
   const [review, setReview] = useState(initial?.review ?? "");
   const [watchedOn, setWatchedOn] = useState(initial?.watched_on ?? "");
   const [hover, setHover] = useState<number | null>(null);
+  // Filme já assistido abre recolhido (só ações e estrelas); a seta mostra review, data e salvar.
+  const [expanded, setExpanded] = useState(initial?.status !== "watched");
   const [error, setError] = useState(false);
   const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
@@ -34,8 +47,15 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
       const { error } = next
         ? await supabase
             .from("entries")
-            .upsert({ user_id: userId, item_id: itemId, ...next }, { onConflict: "user_id,item_id" })
-        : await supabase.from("entries").delete().eq("user_id", userId).eq("item_id", itemId);
+            .upsert(
+              { user_id: userId, item_id: itemId, ...next },
+              { onConflict: "user_id,item_id" },
+            )
+        : await supabase
+            .from("entries")
+            .delete()
+            .eq("user_id", userId)
+            .eq("item_id", itemId);
       if (error) {
         setEntry(previous);
         setError(true);
@@ -50,7 +70,13 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
     const base: Draft =
       entry?.status === "watched"
         ? entry
-        : { status: "watched", rating: null, liked: false, review: null, watched_on: watchedOn || today() };
+        : {
+            status: "watched",
+            rating: null,
+            liked: false,
+            review: null,
+            watched_on: watchedOn || today(),
+          };
     return { ...base, ...patch };
   }
 
@@ -60,14 +86,29 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
       setWatchedOn(next.watched_on ?? "");
       return persist(next, entry);
     }
-    if ((entry?.rating || entry?.liked || entry?.review) && !confirm(t.movie.confirmRemove)) return;
+    if (
+      (entry?.rating || entry?.liked || entry?.review) &&
+      !confirm(t.movie.confirmRemove)
+    )
+      return;
     setReview("");
     setWatchedOn("");
     persist(null, entry);
   }
 
   function toggleWatchlist() {
-    persist(onWatchlist ? null : { status: "watchlist", rating: null, liked: false, review: null, watched_on: null }, entry);
+    persist(
+      onWatchlist
+        ? null
+        : {
+            status: "watchlist",
+            rating: null,
+            liked: false,
+            review: null,
+            watched_on: null,
+          },
+      entry,
+    );
   }
 
   function rate(value: number) {
@@ -77,21 +118,53 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
   }
 
   function saveDetails() {
-    const next = asWatched({ review: review.trim() || null, watched_on: watchedOn || null });
+    const next = asWatched({
+      review: review.trim() || null,
+      watched_on: watchedOn || null,
+    });
     persist(next, entry);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 
   const shown = hover ?? entry?.rating ?? 0;
-  const dirty = (review.trim() || null) !== (entry?.review ?? null) || (watchedOn || null) !== (entry?.watched_on ?? null);
+  const dirty =
+    (review.trim() || null) !== (entry?.review ?? null) ||
+    (watchedOn || null) !== (entry?.watched_on ?? null);
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-surface/80 p-4">
       {/* Linha única: ações à esquerda, estrelas à direita (clicar na nota atual limpa) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Toggle on={watched} onClick={toggleWatched} disabled={pending} tone="ok" icon={ICONS.check} removeLabel={t.movie.removeShort}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            aria-expanded={expanded}
+            title={t.movie.review}
+            className="grid size-8 place-items-center rounded-full text-muted transition hover:bg-surface-2 hover:text-fg"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`size-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <Toggle
+            on={watched}
+            onClick={toggleWatched}
+            disabled={pending}
+            tone="ok"
+            icon={ICONS.check}
+            removeLabel={t.movie.removeShort}
+          >
             {watched ? t.movie.watched : t.movie.watch}
           </Toggle>
           {!watched && (
@@ -118,11 +191,23 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
           </Toggle>
         </div>
 
-        <div className="flex items-center gap-2" title={entry?.rating ? t.movie.clearRating : t.movie.rating}>
-          <div className="flex" onMouseLeave={() => setHover(null)} role="radiogroup" aria-label={t.movie.rating}>
+        <div
+          className="flex items-center gap-2"
+          title={entry?.rating ? t.movie.clearRating : t.movie.rating}
+        >
+          <div
+            className="flex"
+            onMouseLeave={() => setHover(null)}
+            role="radiogroup"
+            aria-label={t.movie.rating}
+          >
             {[1, 2, 3, 4, 5].map((star) => (
               <div key={star} className="relative size-7">
-                <StarIcon fill={shown >= star * 2 ? 1 : shown === star * 2 - 1 ? 0.5 : 0} />
+                <StarIcon
+                  fill={
+                    shown >= star * 2 ? 1 : shown === star * 2 - 1 ? 0.5 : 0
+                  }
+                />
                 {[star * 2 - 1, star * 2].map((value, half) => (
                   <button
                     key={value}
@@ -141,46 +226,58 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
               </div>
             ))}
           </div>
-          <span className="w-6 text-sm text-muted tabular-nums">{shown ? (shown / 2).toLocaleString() : ""}</span>
+          <span className="w-6 text-sm text-muted tabular-nums">
+            {shown ? (shown / 2).toLocaleString() : ""}
+          </span>
         </div>
       </div>
 
-      <label className="block">
-        <span className="mb-1 block text-xs text-muted">{t.movie.review}</span>
-        <textarea
-          value={review}
-          onChange={(e) => setReview(e.target.value)}
-          maxLength={20000}
-          rows={3}
-          placeholder={t.movie.reviewPlaceholder}
-          className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-accent"
-        />
-      </label>
+      {expanded && (
+        <>
+          <label className="block">
+            <span className="mb-1 block text-xs text-muted">
+              {t.movie.review}
+            </span>
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              maxLength={20000}
+              rows={3}
+              placeholder={t.movie.reviewPlaceholder}
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-accent"
+            />
+          </label>
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <label className="text-xs text-muted">
-          <span className="mb-1 block">{t.movie.watchedOn}</span>
-          <input
-            type="date"
-            value={watchedOn}
-            max={today()}
-            onChange={(e) => setWatchedOn(e.target.value)}
-            className="rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent"
-          />
-        </label>
-        <div className="flex items-center gap-3">
-          {error && <span className="text-sm text-danger">{t.common.error}</span>}
-          {saved && !error && <span className="text-sm text-ok">{t.movie.saved}</span>}
-          <button
-            type="button"
-            onClick={saveDetails}
-            disabled={pending || !dirty}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
-          >
-            {t.movie.save}
-          </button>
-        </div>
-      </div>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <label className="text-xs text-muted">
+              <span className="mb-1 block">{t.movie.watchedOn}</span>
+              <input
+                type="date"
+                value={watchedOn}
+                max={today()}
+                onChange={(e) => setWatchedOn(e.target.value)}
+                className="rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent"
+              />
+            </label>
+            <div className="flex items-center gap-3">
+              {error && (
+                <span className="text-sm text-danger">{t.common.error}</span>
+              )}
+              {saved && !error && (
+                <span className="text-sm text-ok">{t.movie.saved}</span>
+              )}
+              <button
+                type="button"
+                onClick={saveDetails}
+                disabled={pending || !dirty}
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
+              >
+                {t.movie.save}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -188,17 +285,41 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
 // Mesmos ícones usados nos números do filme e nos atalhos dos pôsteres.
 const ICONS = {
   check: (
-    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className="size-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M5 12.5l4.5 4.5L19 7.5" />
     </svg>
   ),
   clock: (
-    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className="size-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      aria-hidden
+    >
       <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" />
     </svg>
   ),
   heart: (
-    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      className="size-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      aria-hidden
+    >
       <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
     </svg>
   ),
@@ -223,7 +344,11 @@ function Toggle({
   icon: React.ReactNode;
   removeLabel: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const active = { ok: "border-ok text-ok", plain: "border-fg text-fg", like: "border-like text-like" }[tone];
+  const active = {
+    ok: "border-ok text-ok",
+    plain: "border-fg text-fg",
+    like: "border-like text-like",
+  }[tone];
   return (
     <button
       type="button"

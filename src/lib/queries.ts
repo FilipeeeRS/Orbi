@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "./supabase/server";
-import type { EntryWithItem, FolderKind, MediaKind, Profile } from "./types";
+import type { EntryWithItem, FolderKind, Item, MediaKind, Profile } from "./types";
 
 const ENTRY_WITH_ITEM = "*, items!inner(*)";
 
@@ -52,13 +52,59 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
   };
 }
 
-export const TABS = ["watched", "watchlist", "liked", "reviews"] as const;
+export const TABS = ["watched", "liked", "watchlist", "reviews", "lists"] as const;
 export type Tab = (typeof TABS)[number];
-export const SORTS = ["recent", "yours", "top", "title"] as const;
+// Ordenações das pastas (valor da URL). "release" é a padrão.
+export const SORTS = [
+  "release",
+  "release-old",
+  "recent",
+  "yours",
+  "top",
+  "popular",
+  "title",
+  "title-desc",
+  "runtime",
+  "runtime-desc",
+] as const;
 export type Sort = (typeof SORTS)[number];
+export const DEFAULT_SORT: Sort = "release";
+
+// Rótulo de cada ordenação no dicionário (movies.sort).
+export const SORT_LABEL = {
+  week: "week",
+  release: "release",
+  "release-old": "releaseOld",
+  recent: "recent",
+  yours: "yours",
+  top: "top",
+  popular: "popular",
+  title: "titleAz",
+  "title-desc": "titleZa",
+  runtime: "runtimeShort",
+  "runtime-desc": "runtimeLong",
+} as const satisfies Record<Sort | "week", string>;
+
+export type ListFilters = {
+  decade?: number; // 1990 = anos 90
+  genre?: number; // id de gênero do TMDB
+  rating?: number | "none"; // 1..10 (meias estrelas) ou sem nota
+  q?: string; // parte do título
+};
+
 export const PAGE_SIZE = 48;
 
-export async function listEntries(userId: string, tab: Tab, sort: Sort, page: number, kind: FolderKind = "movie") {
+export async function listEntries(
+  userId: string,
+  tab: Tab,
+  sort: Sort,
+  page: number,
+  kind: FolderKind = "movie",
+  filters: ListFilters = {},
+  locale = "pt",
+) {
+  // Listas personalizadas ainda não existem: a aba aparece, mas vazia.
+  if (tab === "lists") return { entries: [] as EntryWithItem[], total: 0 };
   const supabase = await createClient();
   let query = supabase.from("entries").select(ENTRY_WITH_ITEM, { count: "exact" }).eq("user_id", userId);
   if (kind !== "all") query = query.eq("items.kind", kind);
@@ -68,12 +114,54 @@ export async function listEntries(userId: string, tab: Tab, sort: Sort, page: nu
   else if (tab === "reviews") query = query.not("review", "is", null);
   else query = query.eq("status", "watched");
 
-  // "yours" = nota do dono do perfil; "top" = nota média do TMDB
-  if (sort === "yours") query = query.order("rating", { ascending: false, nullsFirst: false });
-  else if (sort === "top") query = query.order("items(tmdb_rating)", { ascending: false, nullsFirst: false });
-  else if (sort === "title") query = query.order("items(title)", { ascending: true });
+  // Filtros
+  if (filters.decade) query = query.gte("items.year", filters.decade).lt("items.year", filters.decade + 10);
+  if (filters.genre) query = query.contains("items.genre_ids", [filters.genre]);
+  if (filters.rating === "none") query = query.is("rating", null);
+  else if (filters.rating) query = query.eq("rating", filters.rating);
+  const q = filters.q?.trim().slice(0, 100).replace(/[%,()]/g, " ");
+  if (q) {
+    const pattern = `%${q}%`;
+    query = query.or(
+      `title.ilike.${pattern},original_title.ilike.${pattern},translations->${locale}->>title.ilike.${pattern}`,
+      { referencedTable: "items" },
+    );
+  }
+
+  // Ordenação (sempre com desempate pelo mais recente)
+  const desc = { ascending: false, nullsFirst: false } as const;
+  const asc = { ascending: true, nullsFirst: false } as const;
+  switch (sort) {
+    case "release":
+      query = query.order("items(release_date)", desc).order("items(year)", desc);
+      break;
+    case "release-old":
+      query = query.order("items(release_date)", asc).order("items(year)", asc);
+      break;
+    case "yours":
+      query = query.order("rating", desc);
+      break;
+    case "top":
+      query = query.order("items(tmdb_rating)", desc);
+      break;
+    case "popular":
+      query = query.order("items(tmdb_votes)", desc);
+      break;
+    case "title":
+      query = query.order("items(title)", asc);
+      break;
+    case "title-desc":
+      query = query.order("items(title)", desc);
+      break;
+    case "runtime":
+      query = query.order("items(runtime)", asc);
+      break;
+    case "runtime-desc":
+      query = query.order("items(runtime)", desc);
+      break;
+  }
   if (tab === "watchlist") query = query.order("created_at", { ascending: false });
-  else query = query.order("watched_on", { ascending: false, nullsFirst: false });
+  else query = query.order("watched_on", desc);
   query = query.order("updated_at", { ascending: false });
 
   const from = (page - 1) * PAGE_SIZE;
@@ -89,7 +177,7 @@ export async function getItemReviews(itemId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("entries")
-    .select("*, items!inner(*), profiles!inner(username, display_name, avatar_url)")
+    .select("*, items!inner(*), profiles!entries_user_id_fkey!inner(username, display_name, avatar_url)")
     .eq("item_id", itemId)
     .not("review", "is", null)
     .order("updated_at", { ascending: false })
@@ -166,7 +254,7 @@ export const getFolderOrder = cache(async (userId: string): Promise<MediaKind[]>
 
 // Estado do usuário logado para uma lista de itens (atalhos ✓/♥ nos pôsteres).
 export async function getViewerStates(viewerId: string, itemIds: string[]) {
-  const states = new Map<string, { watched: boolean; liked: boolean; hasDetails: boolean }>();
+  const states = new Map<string, { watched: boolean; liked: boolean; watchlist: boolean; hasDetails: boolean }>();
   if (!itemIds.length) return states;
   const supabase = await createClient();
   const { data } = await supabase
@@ -178,8 +266,32 @@ export async function getViewerStates(viewerId: string, itemIds: string[]) {
     states.set(e.item_id, {
       watched: e.status === "watched",
       liked: e.liked,
+      watchlist: e.status === "watchlist",
       hasDetails: e.rating !== null || e.review !== null,
     });
   }
   return states;
+}
+
+// Itens pelos ids, mantendo a ordem dada (favoritos escolhidos pelo usuário).
+export async function getItemsByIds(ids: string[]) {
+  if (!ids.length) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("items").select("*").in("id", ids);
+  const byId = new Map((data ?? []).map((i) => [i.id as string, i as Item]));
+  return ids.map((id) => byId.get(id)).filter((i): i is Item => !!i);
+}
+
+// Quantos likes cada review tem e quais o usuário logado já curtiu.
+export async function getReviewLikes(entryIds: string[], viewerId: string | null) {
+  const counts = new Map<string, number>();
+  const mine = new Set<string>();
+  if (!entryIds.length) return { counts, mine };
+  const supabase = await createClient();
+  const { data } = await supabase.from("review_likes").select("entry_id, user_id").in("entry_id", entryIds);
+  for (const row of data ?? []) {
+    counts.set(row.entry_id, (counts.get(row.entry_id) ?? 0) + 1);
+    if (row.user_id === viewerId) mine.add(row.entry_id);
+  }
+  return { counts, mine };
 }

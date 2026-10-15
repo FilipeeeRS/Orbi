@@ -11,6 +11,12 @@ export type Profile = {
   display_name: string | null;
   avatar_url: string | null;
   cover_url: string | null;
+  location: string | null;
+  website: string | null;
+  pronouns: string | null;
+  is_private: boolean;
+  show_adult: boolean;
+  favorites: string[];
   bio: string | null;
   locale: Locale | null;
   created_at: string;
@@ -30,6 +36,10 @@ export type Item = {
   created_by: string | null;
   tmdb_rating: number | null;
   tmdb_votes: number | null;
+  is_adult_rated: boolean | null;
+  genre_ids: number[];
+  runtime: number | null;
+  release_date: string | null;
   translations: Partial<Record<Locale, { title?: string; overview?: string }>>;
 };
 
