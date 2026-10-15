@@ -10,6 +10,8 @@ import { StarsDisplay } from "@/components/stars";
 import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
 import { getItemReviews, getItemStats } from "@/lib/queries";
+import { getMovieInfo, tmdbLanguage, CREW_ROLES, type MovieInfo as MovieInfoData } from "@/lib/tmdb";
+import { MovieInfo, type MovieInfoView } from "./movie-info";
 import { createClient } from "@/lib/supabase/server";
 import { itemOverview, itemTitle, type Entry } from "@/lib/types";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
@@ -34,9 +36,10 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   if (!item) notFound();
 
   const supabase = await createClient();
-  const [reviews, stats, entry] = await Promise.all([
+  const [reviews, stats, info, entry] = await Promise.all([
     getItemReviews(item.id),
     getItemStats(item.id),
+    item.source === "tmdb" && item.external_id ? getMovieInfo(item.external_id, tmdbLanguage(locale)) : null,
     viewer
       ? supabase
           .from("entries")
@@ -95,6 +98,18 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
               {t.movie.signInToLog}
             </Link>
           )}
+
+          {info && (
+            <div className="space-y-4 pt-4">
+              <MovieInfo info={toView(info, t, locale)} labels={t.info} />
+              <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                {info.runtime && <span>{info.runtime} min</span>}
+                <span>{t.info.moreAt}</span>
+                {info.imdbId && <ExternalLink href={`https://www.imdb.com/title/${info.imdbId}/`}>IMDb</ExternalLink>}
+                <ExternalLink href={`https://www.themoviedb.org/movie/${item.external_id}`}>TMDB</ExternalLink>
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="order-first mx-auto w-40 space-y-3 sm:order-none sm:w-full">
@@ -149,7 +164,7 @@ function OrbiRating({ average, count, t }: { average: number | null; count: numb
           <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />
         </svg>
       </p>
-      <p className="mt-1 text-[10px] tracking-widest text-muted uppercase">
+      <p className="mt-1 text-xs text-muted">
         {t.movie.onSource("Orbi")}
       </p>
     </div>
@@ -210,4 +225,51 @@ function ItemStats({
       ))}
     </ul>
   );
+}
+
+function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="rounded border border-border px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase hover:border-accent hover:text-fg"
+    >
+      {children}
+    </a>
+  );
+}
+
+// Formata a ficha do TMDB no idioma do usuário (nomes de países/idiomas e datas).
+function toView(info: MovieInfoData, t: Dictionary, locale: Locale): MovieInfoView {
+  const lang = dictionaries[locale].htmlLang;
+  const regionName = new Intl.DisplayNames([lang], { type: "region" });
+  const languageName = new Intl.DisplayNames([lang], { type: "language" });
+  const safe = (fn: () => string | undefined, fallback: string) => {
+    try {
+      return fn() ?? fallback;
+    } catch {
+      return fallback;
+    }
+  };
+  const country = (code: string) => safe(() => regionName.of(code), code);
+  const date = (iso: string) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(lang, { day: "2-digit", month: "short", year: "numeric" });
+  };
+
+  return {
+    cast: info.cast,
+    crew: CREW_ROLES.filter((role) => info.crew[role]?.length).map((role) => ({ role, names: info.crew[role]! })),
+    details: [
+      { label: t.info.studios, values: info.studios },
+      { label: t.info.countries, values: info.countries.map(country) },
+      {
+        label: t.info.language,
+        values: info.originalLanguage ? [safe(() => languageName.of(info.originalLanguage!), info.originalLanguage)] : [],
+      },
+    ].filter((row) => row.values.length),
+    genres: info.genres,
+    releases: info.releases.map((r) => ({ country: country(r.country), date: date(r.date), certification: r.certification })),
+  };
 }
