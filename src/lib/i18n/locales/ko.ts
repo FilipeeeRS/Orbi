@@ -50,6 +50,7 @@ export const ko: Dictionary = {
     tab: "프로필",
     diary: "다이어리",
     ratings: "별점",
+    average: "평균",
     all: "전체",
     editProfile: "프로필 편집",
     emptyOwner: "Letterboxd 기록을 가져오거나 영화를 검색해서 시작해 보세요.",

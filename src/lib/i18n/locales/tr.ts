@@ -50,6 +50,7 @@ export const tr: Dictionary = {
     tab: "Profil",
     diary: "Günlük",
     ratings: "Puanlar",
+    average: "Ortalama",
     all: "Tümü",
     editProfile: "Profili düzenle",
     emptyOwner: "Letterboxd geçmişini getirerek ya da bir film arayarak başla.",

@@ -91,35 +91,35 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
           </div>
 
           <aside className="space-y-10">
-            {o.watchlistPreview.length > 0 && (
-              <section>
-                <SectionTitle href={`${base}/movies?tab=watchlist`} more={o.watchlist.toLocaleString()}>
-                  {t.profile.watchlist}
-                </SectionTitle>
-                <Link href={`${base}/movies?tab=watchlist`} className="group flex">
-                  {o.watchlistPreview.map((e, i) => (
-                    <div
-                      key={e.id}
-                      className="w-1/5 shrink-0 transition-transform group-hover:-translate-y-1"
-                      style={{ zIndex: 5 - i, transitionDelay: `${i * 30}ms` }}
-                    >
-                      <div className="-me-3 shadow-[4px_0_12px_rgba(0,0,0,0.5)]">
+            <section>
+              <SectionTitle href={`${base}/movies?tab=watchlist`} more={o.watchlist.toLocaleString()}>
+                {t.profile.watchlist}
+              </SectionTitle>
+              <Link href={`${base}/movies?tab=watchlist`} className="group flex">
+                {Array.from({ length: 5 }, (_, i) => o.watchlistPreview[i]).map((e, i) => (
+                  <div
+                    key={e?.id ?? i}
+                    className="w-1/5 shrink-0 transition-transform group-hover:-translate-y-1"
+                    style={{ zIndex: 5 - i, transitionDelay: `${i * 30}ms` }}
+                  >
+                    <div className="-me-3 rounded-md shadow-[4px_0_12px_rgba(0,0,0,0.5)]">
+                      {e ? (
                         <PosterImage url={e.items.poster_url} title={itemTitle(e.items, locale)} />
-                      </div>
+                      ) : (
+                        <div className="aspect-[2/3] rounded-md border border-border bg-surface-2" />
+                      )}
                     </div>
-                  ))}
-                </Link>
-              </section>
-            )}
+                  </div>
+                ))}
+              </Link>
+            </section>
 
-            {o.ratingCounts.some(Boolean) && (
-              <section>
-                <SectionTitle more={o.ratingCounts.reduce((a, b) => a + b, 0).toLocaleString()}>
-                  {t.profile.ratings}
-                </SectionTitle>
-                <RatingHistogram counts={o.ratingCounts} />
-              </section>
-            )}
+            <section>
+              <SectionTitle more={o.ratingCounts.reduce((a, b) => a + b, 0).toLocaleString()}>
+                {t.profile.ratings}
+              </SectionTitle>
+              <RatingHistogram counts={o.ratingCounts} averageLabel={t.profile.average} />
+            </section>
 
             {diary.length > 0 && (
               <section>
@@ -152,22 +152,36 @@ function SectionTitle({ children, href, more }: { children: React.ReactNode; hre
   );
 }
 
-function RatingHistogram({ counts }: { counts: number[] }) {
-  const max = Math.max(...counts);
+// Distribuição das notas (½★ a ★★★★★) de todas as pastas, com a média.
+function RatingHistogram({ counts, averageLabel }: { counts: number[]; averageLabel: string }) {
+  const total = counts.reduce((a, b) => a + b, 0);
+  const max = Math.max(1, ...counts);
+  const average = total ? counts.reduce((sum, c, i) => sum + c * (i + 1), 0) / total / 2 : null;
   return (
-    <div className="flex items-end gap-2">
-      <span className="text-xs text-star">★</span>
-      <div className="flex h-16 flex-1 items-end gap-[3px]">
-        {counts.map((c, i) => (
-          <div
-            key={i}
-            title={`${(i + 1) / 2}★ · ${c}`}
-            className="flex-1 rounded-t-sm bg-muted/40 transition hover:bg-accent"
-            style={{ height: `${Math.max(4, (c / max) * 100)}%` }}
-          />
-        ))}
+    <div className="space-y-2">
+      <div className="flex items-end gap-2">
+        <span className="text-xs text-star">★</span>
+        <div className="flex h-16 flex-1 items-end gap-[3px]">
+          {counts.map((c, i) => (
+            <div
+              key={i}
+              title={`${(i + 1) / 2}★ · ${c}`}
+              className="flex-1 rounded-t-sm bg-muted/40 transition hover:bg-accent"
+              style={{ height: c ? `${Math.max(6, (c / max) * 100)}%` : "2px" }}
+            />
+          ))}
+        </div>
+        <span className="text-xs tracking-tighter whitespace-nowrap text-star">★★★★★</span>
       </div>
-      <span className="text-xs tracking-tighter whitespace-nowrap text-star">★★★★★</span>
+      {average !== null && (
+        <p className="flex items-baseline justify-between text-xs text-muted">
+          <span className="tracking-widest uppercase">{averageLabel}</span>
+          <span>
+            <span className="font-display text-lg font-extrabold text-fg">{average.toFixed(1)}</span>
+            <span className="text-star"> ★</span>
+          </span>
+        </p>
+      )}
     </div>
   );
 }

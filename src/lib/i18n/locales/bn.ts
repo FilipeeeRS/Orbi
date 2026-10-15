@@ -50,6 +50,7 @@ export const bn: Dictionary = {
     tab: "প্রোফাইল",
     diary: "ডায়েরি",
     ratings: "রেটিং",
+    average: "গড়",
     all: "সব",
     editProfile: "প্রোফাইল সম্পাদনা",
     emptyOwner: "আপনার Letterboxd ইতিহাস এনে বা একটি সিনেমা খুঁজে শুরু করুন।",

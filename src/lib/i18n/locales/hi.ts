@@ -50,6 +50,7 @@ export const hi: Dictionary = {
     tab: "प्रोफ़ाइल",
     diary: "डायरी",
     ratings: "रेटिंग",
+    average: "औसत",
     all: "सभी",
     editProfile: "प्रोफ़ाइल संपादित करें",
     emptyOwner: "अपना Letterboxd इतिहास लाकर या कोई फ़िल्म खोजकर शुरू करें।",

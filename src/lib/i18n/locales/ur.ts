@@ -50,6 +50,7 @@ export const ur: Dictionary = {
     tab: "پروفائل",
     diary: "ڈائری",
     ratings: "ریٹنگز",
+    average: "اوسط",
     all: "سب",
     editProfile: "پروفائل میں ترمیم",
     emptyOwner: "اپنی Letterboxd ہسٹری لا کر یا کوئی فلم تلاش کر کے شروع کریں۔",

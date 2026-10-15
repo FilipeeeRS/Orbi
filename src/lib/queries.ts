@@ -31,8 +31,10 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
       .limit(12),
     list().eq("liked", true).order("updated_at", { ascending: false }).limit(4),
     list().eq("status", "watchlist").order("created_at", { ascending: false }).limit(5),
-    // Distribuição das notas: quantos filmes com ½★, ★, ... ★★★★★
-    ...Array.from({ length: 10 }, (_, i) => count().eq("rating", i + 1)),
+    // Distribuição das notas de todas as pastas: quantos itens com ½★, ★, ... ★★★★★
+    ...Array.from({ length: 10 }, (_, i) =>
+      supabase.from("entries").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("rating", i + 1),
+    ),
     // Itens nas outras pastas (séries, músicas, jogos, livros)
     ...otherKinds.map((k) => countKind(k)),
   ]);

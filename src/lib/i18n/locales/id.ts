@@ -50,6 +50,7 @@ export const id: Dictionary = {
     tab: "Profil",
     diary: "Diari",
     ratings: "Nilai",
+    average: "Rata-rata",
     all: "Semua",
     editProfile: "Edit profil",
     emptyOwner: "Mulai dengan membawa riwayat Letterboxd-mu atau mencari film.",

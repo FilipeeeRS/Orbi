@@ -50,6 +50,7 @@ export const es: Dictionary = {
     tab: "Perfil",
     diary: "Diario",
     ratings: "Notas",
+    average: "Media",
     all: "Ver todo",
     editProfile: "Editar perfil",
     emptyOwner: "Empieza trayendo tu historial de Letterboxd o buscando una película.",

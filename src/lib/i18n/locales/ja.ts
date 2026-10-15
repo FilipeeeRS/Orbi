@@ -50,6 +50,7 @@ export const ja: Dictionary = {
     tab: "プロフィール",
     diary: "日記",
     ratings: "評価",
+    average: "平均",
     all: "すべて",
     editProfile: "プロフィールを編集",
     emptyOwner: "Letterboxd の履歴を取り込むか、映画を検索して始めましょう。",

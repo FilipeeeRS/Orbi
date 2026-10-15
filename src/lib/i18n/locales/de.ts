@@ -50,6 +50,7 @@ export const de: Dictionary = {
     tab: "Profil",
     diary: "Tagebuch",
     ratings: "Bewertungen",
+    average: "Durchschnitt",
     all: "Alle",
     editProfile: "Profil bearbeiten",
     emptyOwner: "Hol dir deinen Letterboxd-Verlauf oder such nach einem Film.",

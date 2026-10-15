@@ -49,6 +49,7 @@ export const zh: Dictionary = {
     tab: "主页",
     diary: "日记",
     ratings: "评分",
+    average: "平均",
     all: "全部",
     editProfile: "编辑资料",
     emptyOwner: "从导入 Letterboxd 记录或搜索一部电影开始吧。",

@@ -48,6 +48,7 @@ export const pt = {
     tab: "Perfil",
     diary: "Diário",
     ratings: "Notas",
+    average: "Média",
     all: "Ver tudo",
     editProfile: "Editar perfil",
     emptyOwner: "Comece trazendo seu histórico do Letterboxd ou buscando um filme.",

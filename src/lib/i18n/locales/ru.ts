@@ -58,6 +58,7 @@ export const ru: Dictionary = {
     tab: "Профиль",
     diary: "Дневник",
     ratings: "Оценки",
+    average: "Средняя",
     all: "Все",
     editProfile: "Редактировать профиль",
     emptyOwner: "Начните с импорта истории из Letterboxd или найдите фильм.",

@@ -50,6 +50,7 @@ export const ar: Dictionary = {
     tab: "الملف الشخصي",
     diary: "اليوميات",
     ratings: "التقييمات",
+    average: "المتوسط",
     all: "الكل",
     editProfile: "تعديل الملف الشخصي",
     emptyOwner: "ابدأ باستيراد سجلك من Letterboxd أو بالبحث عن فيلم.",
