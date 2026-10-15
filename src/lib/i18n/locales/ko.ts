@@ -13,6 +13,8 @@ export const ko: Dictionary = {
     signOut: "로그아웃",
   },
   folders: {
+    createList: "나만의 리스트 만들기",
+    inDevelopment: "개발 중",
     all: "전체",
     movie: "영화",
     series: "시리즈",

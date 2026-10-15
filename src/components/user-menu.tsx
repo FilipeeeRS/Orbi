@@ -59,7 +59,7 @@ export function UserMenu({ avatar, name, sections, signOutLabel }: Props) {
         >
           <p className="border-b border-border px-4 py-2 text-xs text-muted sm:hidden">{name}</p>
           {sections.map((links, i) => (
-            <div key={i} className="border-b border-border py-1">
+            <div key={i} className={`py-1 ${i < sections.length - 1 ? "border-b border-border" : ""}`}>
               {links.map((l) => (
                 <Link
                   key={l.href}
@@ -71,13 +71,16 @@ export function UserMenu({ avatar, name, sections, signOutLabel }: Props) {
                   {l.label}
                 </Link>
               ))}
+              {/* "Sair" fica no último grupo, junto de Importar e Configurações */}
+              {i === sections.length - 1 && (
+                <form action="/auth/signout" method="post">
+                  <button role="menuitem" className="w-full px-4 py-1.5 text-start text-muted hover:bg-surface-2 hover:text-fg">
+                    {signOutLabel}
+                  </button>
+                </form>
+              )}
             </div>
           ))}
-          <form action="/auth/signout" method="post" className="py-1">
-            <button role="menuitem" className="w-full px-4 py-1.5 text-start text-muted hover:bg-surface-2 hover:text-fg">
-              {signOutLabel}
-            </button>
-          </form>
         </nav>
       )}
     </div>

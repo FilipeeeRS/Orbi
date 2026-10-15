@@ -13,6 +13,8 @@ export const hi: Dictionary = {
     signOut: "साइन आउट",
   },
   folders: {
+    createList: "अपनी सूची बनाएँ",
+    inDevelopment: "विकास में",
     all: "सभी",
     movie: "फ़िल्में",
     series: "सीरीज़",

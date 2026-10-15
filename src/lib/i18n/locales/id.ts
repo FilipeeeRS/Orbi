@@ -13,6 +13,8 @@ export const id: Dictionary = {
     signOut: "Keluar",
   },
   folders: {
+    createList: "Buat daftarmu sendiri",
+    inDevelopment: "Dalam pengembangan",
     all: "Semua",
     movie: "Film",
     series: "Serial",

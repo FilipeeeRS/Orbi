@@ -13,6 +13,8 @@ export const ja: Dictionary = {
     signOut: "ログアウト",
   },
   folders: {
+    createList: "自分だけのリストを作る",
+    inDevelopment: "開発中",
     all: "すべて",
     movie: "映画",
     series: "ドラマ",

@@ -13,6 +13,8 @@ export const bn: Dictionary = {
     signOut: "সাইন আউট",
   },
   folders: {
+    createList: "নিজের তালিকা বানান",
+    inDevelopment: "নির্মাণাধীন",
     all: "সব",
     movie: "সিনেমা",
     series: "সিরিজ",

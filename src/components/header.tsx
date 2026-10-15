@@ -30,10 +30,10 @@ export function Header({ viewer, folderOrder, t }: { viewer: Profile | null; fol
             sections={[
               [
                 { href: `/u/${viewer.username}`, label: t.nav.profile },
-                { href: `/u/${viewer.username}/all`, label: t.folders.all },
                 ...folderOrder.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
               ],
               [
+                { href: `/u/${viewer.username}/all`, label: t.folders.all },
                 { href: `/u/${viewer.username}/all?tab=liked`, label: t.movies.tabs.liked },
                 { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.movies.tabs.watchlist },
                 { href: `/u/${viewer.username}/all?tab=reviews`, label: t.movies.tabs.reviews },

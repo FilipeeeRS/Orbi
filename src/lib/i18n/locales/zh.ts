@@ -13,6 +13,8 @@ export const zh: Dictionary = {
     signOut: "退出",
   },
   folders: {
+    createList: "创建你自己的清单",
+    inDevelopment: "开发中",
     all: "全部",
     movie: "电影",
     series: "剧集",

@@ -13,6 +13,8 @@ export const ar: Dictionary = {
     signOut: "تسجيل الخروج",
   },
   folders: {
+    createList: "أنشئ قائمتك الخاصة",
+    inDevelopment: "قيد التطوير",
     all: "الكل",
     movie: "أفلام",
     series: "مسلسلات",

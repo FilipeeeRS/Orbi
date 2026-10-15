@@ -11,6 +11,8 @@ export const pt = {
     signOut: "Sair",
   },
   folders: {
+    createList: "Crie sua própria lista",
+    inDevelopment: "Em desenvolvimento",
     all: "Tudo",
     movie: "Filmes",
     series: "Séries",

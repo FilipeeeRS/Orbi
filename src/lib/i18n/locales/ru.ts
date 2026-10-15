@@ -21,6 +21,8 @@ export const ru: Dictionary = {
     signOut: "Выйти",
   },
   folders: {
+    createList: "Создай свой список",
+    inDevelopment: "В разработке",
     all: "Всё",
     movie: "Фильмы",
     series: "Сериалы",

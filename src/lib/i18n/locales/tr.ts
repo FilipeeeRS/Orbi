@@ -13,6 +13,8 @@ export const tr: Dictionary = {
     signOut: "Çıkış yap",
   },
   folders: {
+    createList: "Kendi listeni oluştur",
+    inDevelopment: "Geliştiriliyor",
     all: "Tümü",
     movie: "Filmler",
     series: "Diziler",

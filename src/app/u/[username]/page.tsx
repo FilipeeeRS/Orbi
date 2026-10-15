@@ -7,7 +7,8 @@ import Loading from "../../loading";
 import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
-import { getFriends, getProfileByUsername, getProfileOverview, isFollowing } from "@/lib/queries";
+import { getFolderOrder, getFriends, getProfileByUsername, getProfileOverview, isFollowing } from "@/lib/queries";
+import { FolderCarousel } from "./folder-carousel";
 import { Avatar } from "@/components/header";
 import { FollowButton } from "./follow-button";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
@@ -43,10 +44,11 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   if (!profile) notFound();
 
   const isOwner = viewer?.id === profile.id;
-  const [o, friends, following] = await Promise.all([
+  const [o, friends, following, folderOrder] = await Promise.all([
     getProfileOverview(profile.id),
     getFriends(profile.id),
     viewer && !isOwner ? isFollowing(viewer.id, profile.id) : false,
+    getFolderOrder(profile.id),
   ]);
   const base = `/u/${profile.username}`;
   const backdrop = [...o.favorites, ...o.recent].find((e) => e.items.backdrop_url)?.items.backdrop_url ?? null;
@@ -81,7 +83,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
         }
       />
 
-      <Folders base={base} recent={o.recent} counts={folderCounts(o)} t={t} />
+      <Folders base={base} recent={o.recent} counts={folderCounts(o)} order={folderOrder} t={t} />
 
       {o.watched + o.watchlist === 0 ? (
         <EmptyProfile isOwner={isOwner} t={t} />
@@ -268,16 +270,19 @@ function Folders({
   base,
   recent,
   counts,
+  order,
   t,
 }: {
   base: string;
   recent: EntryWithItem[];
   counts: Record<FolderKind, number>;
+  order: MediaKind[];
   t: Dictionary;
 }) {
-  const kinds: FolderKind[] = ["all", ...FOLDERS];
+  // "Tudo" fica fixo em primeiro; as outras seguem a que recebeu item por último.
+  const kinds: FolderKind[] = ["all", ...order];
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <FolderCarousel>
       {kinds.map((kind) => {
         const posters = kind === "all" || kind === "movie" ? recent.filter((e) => e.items.poster_url).slice(0, 3) : [];
         return counts[kind] > 0 ? (
@@ -314,7 +319,26 @@ function Folders({
           </Link>
         );
       })}
-    </div>
+      <div
+        aria-disabled
+        title={t.folders.inDevelopment}
+        className="flex h-28 cursor-not-allowed flex-col justify-between rounded-xl border border-dashed border-border bg-surface/30 p-3 text-muted/50"
+      >
+        <div className="flex items-center justify-between">
+          <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+        </div>
+        <div>
+          <span className="block text-sm font-semibold">{t.folders.createList}</span>
+          <span className="text-[11px]">{t.folders.inDevelopment}</span>
+        </div>
+      </div>
+    </FolderCarousel>
   );
 }
 

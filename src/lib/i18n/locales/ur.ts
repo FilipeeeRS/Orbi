@@ -13,6 +13,8 @@ export const ur: Dictionary = {
     signOut: "سائن آؤٹ",
   },
   folders: {
+    createList: "اپنی فہرست بنائیں",
+    inDevelopment: "زیرِ تکمیل",
     all: "سب",
     movie: "فلمیں",
     series: "سیریز",
