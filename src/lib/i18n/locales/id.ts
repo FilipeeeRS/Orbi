@@ -28,6 +28,9 @@ export const id: Dictionary = {
     cta: "Mulai",
   },
   auth: {
+    name: "Nama",
+    confirmPassword: "Ulangi kata sandi",
+    passwordMismatch: "Kata sandi tidak cocok.",
     signInTitle: "Masuk ke Orbi",
     signUpTitle: "Buat akun",
     email: "Email",

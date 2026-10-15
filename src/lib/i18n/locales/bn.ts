@@ -28,6 +28,9 @@ export const bn: Dictionary = {
     cta: "শুরু করুন",
   },
   auth: {
+    name: "নাম",
+    confirmPassword: "পাসওয়ার্ড আবার লিখুন",
+    passwordMismatch: "পাসওয়ার্ড মিলছে না।",
     signInTitle: "Orbi-তে সাইন ইন করুন",
     signUpTitle: "অ্যাকাউন্ট তৈরি করুন",
     email: "ইমেইল",

@@ -28,6 +28,9 @@ export const ur: Dictionary = {
     cta: "شروع کریں",
   },
   auth: {
+    name: "نام",
+    confirmPassword: "پاس ورڈ دوبارہ لکھیں",
+    passwordMismatch: "پاس ورڈ مماثل نہیں ہیں۔",
     signInTitle: "Orbi میں سائن اِن کریں",
     signUpTitle: "اکاؤنٹ بنائیں",
     email: "ای میل",

@@ -36,6 +36,9 @@ export const ru: Dictionary = {
     cta: "Начать",
   },
   auth: {
+    name: "Имя",
+    confirmPassword: "Повторите пароль",
+    passwordMismatch: "Пароли не совпадают.",
     signInTitle: "Вход в Orbi",
     signUpTitle: "Создать аккаунт",
     email: "Эл. почта",

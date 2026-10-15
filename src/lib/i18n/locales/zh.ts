@@ -27,6 +27,9 @@ export const zh: Dictionary = {
     cta: "开始使用",
   },
   auth: {
+    name: "名字",
+    confirmPassword: "确认密码",
+    passwordMismatch: "两次输入的密码不一致。",
     signInTitle: "登录 Orbi",
     signUpTitle: "创建账号",
     email: "邮箱",

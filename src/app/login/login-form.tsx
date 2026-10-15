@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
+import { setLocale } from "@/app/actions";
+import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/dictionaries";
 
 export function LoginForm() {
   const { t, locale } = useI18n();
@@ -14,6 +16,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(params.get("error") ? t.common.error : null);
   const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [, startLocale] = useTransition();
 
   const supabase = createClient();
   const callbackUrl = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
@@ -23,9 +26,13 @@ export function LoginForm() {
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email"));
     const password = String(form.get("password"));
-    setPending(true);
     setError(null);
     setInfo(null);
+    if (mode === "signup" && password !== String(form.get("confirm"))) {
+      setError(t.auth.passwordMismatch);
+      return;
+    }
+    setPending(true);
 
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -40,7 +47,11 @@ export function LoginForm() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: callbackUrl(), data: { locale } },
+        // O gatilho do banco usa full_name e locale para montar o perfil.
+        options: {
+          emailRedirectTo: callbackUrl(),
+          data: { full_name: String(form.get("name")).trim(), locale: String(form.get("locale")) },
+        },
       });
       setPending(false);
       if (error) return setError(error.message);
@@ -87,7 +98,8 @@ export function LoginForm() {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form key={mode} onSubmit={onSubmit} className="space-y-3">
+        {mode === "signup" && <Field label={t.auth.name} name="name" maxLength={60} autoComplete="name" />}
         <Field label={t.auth.email} name="email" type="email" autoComplete="email" />
         <Field
           label={t.auth.password}
@@ -97,6 +109,27 @@ export function LoginForm() {
           hint={mode === "signup" ? t.auth.passwordHint : undefined}
           autoComplete={mode === "signin" ? "current-password" : "new-password"}
         />
+        {mode === "signup" && (
+          <>
+            <Field label={t.auth.confirmPassword} name="confirm" type="password" minLength={8} autoComplete="new-password" />
+            <label className="block text-sm">
+              <span className="mb-1 block text-muted">{t.settings.language}</span>
+              {/* Trocar aqui já muda o idioma da tela; depois fica salvo no perfil */}
+              <select
+                name="locale"
+                defaultValue={locale}
+                onChange={(e) => startLocale(() => setLocale(e.target.value))}
+                className="w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:border-accent"
+              >
+                {LOCALES.map((l) => (
+                  <option key={l} value={l}>
+                    {LOCALE_NAMES[l]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
         {error && <p className="text-sm text-danger">{error}</p>}
         {info && <p className="text-sm text-ok">{info}</p>}
         <button

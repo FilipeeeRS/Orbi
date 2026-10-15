@@ -28,6 +28,9 @@ export const ar: Dictionary = {
     cta: "ابدأ الآن",
   },
   auth: {
+    name: "الاسم",
+    confirmPassword: "تأكيد كلمة المرور",
+    passwordMismatch: "كلمتا المرور غير متطابقتين.",
     signInTitle: "تسجيل الدخول إلى Orbi",
     signUpTitle: "إنشاء حساب",
     email: "البريد الإلكتروني",

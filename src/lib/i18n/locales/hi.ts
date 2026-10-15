@@ -28,6 +28,9 @@ export const hi: Dictionary = {
     cta: "शुरू करें",
   },
   auth: {
+    name: "नाम",
+    confirmPassword: "पासवर्ड दोबारा लिखें",
+    passwordMismatch: "पासवर्ड मेल नहीं खाते।",
     signInTitle: "Orbi में साइन इन करें",
     signUpTitle: "खाता बनाएँ",
     email: "ईमेल",

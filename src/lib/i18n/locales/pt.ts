@@ -26,6 +26,9 @@ export const pt = {
     cta: "Começar",
   },
   auth: {
+    name: "Nome",
+    confirmPassword: "Repita a senha",
+    passwordMismatch: "As senhas não coincidem.",
     signInTitle: "Entrar no Orbi",
     signUpTitle: "Criar conta",
     email: "E-mail",

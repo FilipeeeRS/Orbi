@@ -28,6 +28,9 @@ export const ko: Dictionary = {
     cta: "시작하기",
   },
   auth: {
+    name: "이름",
+    confirmPassword: "비밀번호 확인",
+    passwordMismatch: "비밀번호가 일치하지 않습니다.",
     signInTitle: "Orbi 로그인",
     signUpTitle: "계정 만들기",
     email: "이메일",

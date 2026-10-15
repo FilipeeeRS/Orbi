@@ -28,6 +28,9 @@ export const en: Dictionary = {
     cta: "Get started",
   },
   auth: {
+    name: "Name",
+    confirmPassword: "Confirm password",
+    passwordMismatch: "Passwords don't match.",
     signInTitle: "Sign in to Orbi",
     signUpTitle: "Create account",
     email: "Email",

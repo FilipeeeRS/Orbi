@@ -28,6 +28,9 @@ export const ja: Dictionary = {
     cta: "はじめる",
   },
   auth: {
+    name: "名前",
+    confirmPassword: "パスワード（確認）",
+    passwordMismatch: "パスワードが一致しません。",
     signInTitle: "Orbi にログイン",
     signUpTitle: "アカウント作成",
     email: "メールアドレス",

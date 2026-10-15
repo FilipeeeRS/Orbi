@@ -28,6 +28,9 @@ export const tr: Dictionary = {
     cta: "Başla",
   },
   auth: {
+    name: "Ad",
+    confirmPassword: "Şifreyi tekrarla",
+    passwordMismatch: "Şifreler eşleşmiyor.",
     signInTitle: "Orbi'ye giriş yap",
     signUpTitle: "Hesap oluştur",
     email: "E-posta",
