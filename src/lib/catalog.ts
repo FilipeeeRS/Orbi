@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "./supabase/admin";
 import { getMovie, releaseYear, tmdbImage, TmdbNotFound } from "./tmdb";
 import type { Item } from "./types";
@@ -48,3 +49,15 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
   if (error) throw error;
   return data as Item;
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// /movie/603 = filme do TMDB; /movie/<uuid> = filme cadastrado manualmente.
+export const getMovieByRouteId = cache(async (id: string): Promise<Item | null> => {
+  if (UUID.test(id)) {
+    const { data } = await createAdminClient().from("items").select("*").eq("id", id).eq("kind", "movie").maybeSingle();
+    return data as Item | null;
+  }
+  const tmdbId = Number(id);
+  return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureMovie(tmdbId) : null;
+});

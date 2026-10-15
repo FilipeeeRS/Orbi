@@ -26,6 +26,7 @@ export type Item = {
   overview_pt: string | null;
   poster_url: string | null;
   backdrop_url: string | null;
+  created_by: string | null;
 };
 
 export type Entry = {
@@ -46,7 +47,7 @@ export function itemTitle(item: Pick<Item, "title" | "title_pt">, locale: Locale
   return (locale === "pt" && item.title_pt) || item.title;
 }
 
-// Por enquanto só existem filmes do TMDB.
-export function itemHref(item: Pick<Item, "external_id">) {
-  return `/movie/${item.external_id}`;
+// Por enquanto só existem filmes: do TMDB pelo id deles, manuais pelo nosso id.
+export function itemHref(item: Pick<Item, "id" | "source" | "external_id">) {
+  return `/movie/${item.source === "tmdb" ? item.external_id : item.id}`;
 }

@@ -5,26 +5,21 @@ import { notFound } from "next/navigation";
 import { Avatar } from "@/components/header";
 import { PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
-import { ensureMovie } from "@/lib/catalog";
+import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
 import { getItemReviews } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { itemTitle, type Entry } from "@/lib/types";
 import { EntryEditor } from "./entry-editor";
 
-async function loadMovie(id: string) {
-  const tmdbId = Number(id);
-  return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureMovie(tmdbId) : null;
-}
-
 export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Promise<Metadata> {
-  const item = await loadMovie((await params).id);
+  const item = await getMovieByRouteId((await params).id);
   return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
 }
 
 export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
   const { id } = await params;
-  const [item, viewer, { t, locale }] = await Promise.all([loadMovie(id), getViewer(), getDict()]);
+  const [item, viewer, { t, locale }] = await Promise.all([getMovieByRouteId(id), getViewer(), getDict()]);
   if (!item) notFound();
 
   const supabase = await createClient();

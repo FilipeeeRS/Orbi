@@ -7,11 +7,13 @@ import { parseLetterboxdExport, type LetterboxdFilm } from "@/lib/letterboxd";
 
 const BATCH = 25;
 
+type NotFound = { name: string; label: string };
+
 type State =
   | { step: "idle"; error?: string }
   | { step: "ready"; films: LetterboxdFilm[] }
   | { step: "running"; films: LetterboxdFilm[]; done: number }
-  | { step: "finished"; imported: number; notFound: string[]; error?: string };
+  | { step: "finished"; imported: number; notFound: NotFound[]; error?: string };
 
 export function LetterboxdImporter({ username }: { username: string }) {
   const { t } = useI18n();
@@ -29,7 +31,7 @@ export function LetterboxdImporter({ username }: { username: string }) {
 
   async function run(films: LetterboxdFilm[]) {
     let imported = 0;
-    const notFound: string[] = [];
+    const notFound: NotFound[] = [];
     setState({ step: "running", films, done: 0 });
 
     for (let i = 0; i < films.length; i += BATCH) {
@@ -43,7 +45,7 @@ export function LetterboxdImporter({ username }: { username: string }) {
         setState({ step: "finished", imported, notFound, error: t.import.error });
         return;
       }
-      const data: { imported: number; notFound: string[] } = await res.json();
+      const data: { imported: number; notFound: NotFound[] } = await res.json();
       imported += data.imported;
       notFound.push(...data.notFound);
       setState({ step: "running", films, done: Math.min(i + BATCH, films.length) });
@@ -100,8 +102,12 @@ export function LetterboxdImporter({ username }: { username: string }) {
             <div>
               <p className="mb-2 text-muted">{t.import.notFound}</p>
               <ul className="max-h-64 list-inside list-disc overflow-y-auto rounded-lg bg-bg p-3 text-xs text-muted">
-                {state.notFound.map((name) => (
-                  <li key={name}>{name}</li>
+                {state.notFound.map((film) => (
+                  <li key={film.label}>
+                    <Link href={`/movie/new?title=${encodeURIComponent(film.name)}`} className="hover:text-accent hover:underline">
+                      {film.label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>

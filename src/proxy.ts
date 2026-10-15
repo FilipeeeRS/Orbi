@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PRIVATE_PATHS = ["/settings", "/import"];
+const PRIVATE_PATHS = ["/settings", "/import", "/movie/new"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });

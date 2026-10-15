@@ -34,6 +34,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
       ) : (
         <p className="text-muted">{t.search.empty}</p>
       )}
+      <Link href={`/movie/new?title=${encodeURIComponent(q)}`} className="inline-block text-sm text-accent hover:underline">
+        {t.manual.link}
+      </Link>
     </div>
   );
 }

@@ -43,7 +43,9 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     imported: rows.size,
-    notFound: matched.filter((m) => !m.item).map(({ film }) => (film.year ? `${film.name} (${film.year})` : film.name)),
+    notFound: matched
+      .filter((m) => !m.item)
+      .map(({ film }) => ({ name: film.name, label: film.year ? `${film.name} (${film.year})` : film.name })),
   });
 }
 
