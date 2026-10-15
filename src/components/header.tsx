@@ -8,8 +8,10 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
 
-// folderOrder: pastas na ordem da que recebeu item por último (ver getFolderOrder).
-export function Header({ viewer, folderOrder, t }: { viewer: Profile | null; folderOrder: MediaKind[]; t: Dictionary }) {
+// No menu as pastas ficam sempre nesta ordem (no perfil elas seguem a última adição).
+const MENU_FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
+
+export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary }) {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
@@ -30,7 +32,7 @@ export function Header({ viewer, folderOrder, t }: { viewer: Profile | null; fol
             sections={[
               [
                 { href: `/u/${viewer.username}`, label: t.nav.profile },
-                ...folderOrder.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
+                ...MENU_FOLDERS.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
               ],
               [
                 { href: `/u/${viewer.username}/all`, label: t.folders.all },
