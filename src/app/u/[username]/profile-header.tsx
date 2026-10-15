@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/components/header";
+import { CopyLinkButton } from "./copy-link-button";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Profile } from "@/lib/types";
 
@@ -24,16 +25,15 @@ export function ProfileHeader({
 }) {
   return (
     <div className="relative">
-      <div className="relative -mx-4 -mt-6 h-40 overflow-hidden sm:-mt-8 sm:h-64 md:rounded-b-3xl">
+      <div className="backdrop-fade relative left-1/2 -mt-6 h-56 w-screen max-w-[1400px] -translate-x-1/2 overflow-hidden sm:-mt-8 sm:h-96">
         {backdrop ? (
-          <Image src={backdrop} alt="" fill sizes="100vw" className="object-cover opacity-70" loading="eager" />
+          <Image src={backdrop} alt="" fill sizes="100vw" className="object-cover object-[center_30%]" loading="eager" />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,color-mix(in_srgb,var(--accent)_35%,transparent),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,color-mix(in_srgb,var(--accent)_35%,transparent),transparent_70%)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/50 to-bg/10" />
       </div>
 
-      <div className="relative -mt-16 flex flex-col gap-5 sm:-mt-20 md:flex-row md:items-end md:justify-between">
+      <div className="relative -mt-24 flex flex-col gap-5 sm:-mt-36 md:flex-row md:items-end md:justify-between">
         <div className="flex items-end gap-4">
           <div className="rounded-full bg-bg p-1 shadow-2xl">
             <Avatar profile={profile} size={104} />
@@ -51,6 +51,7 @@ export function ProfileHeader({
                   {t.profile.editProfile}
                 </Link>
               )}
+              <CopyLinkButton path={`/u/${profile.username}`} label={t.profile.copyLink} copiedLabel={t.profile.copied} />
               {action}
             </div>
             <p className="text-sm text-muted">@{profile.username}</p>

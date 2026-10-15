@@ -58,14 +58,13 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
     <div className="mx-auto max-w-[58rem] space-y-10">
       {item.backdrop_url && (
         // Backdrop mais estreito, centralizado e com as bordas laterais esmaecidas
-        <div className="relative -mt-6 h-48 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] sm:-mt-8 sm:h-80">
-          <Image src={item.backdrop_url} alt="" fill className="object-cover object-[center_30%]" loading="eager" sizes="(max-width: 928px) 100vw, 928px" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
+        <div className="backdrop-fade relative left-1/2 -mt-6 h-56 w-screen max-w-[1300px] -translate-x-1/2 overflow-hidden sm:-mt-8 sm:h-96">
+          <Image src={item.backdrop_url} alt="" fill className="object-cover object-[center_30%]" loading="eager" sizes="(max-width: 1300px) 100vw, 1300px" />
         </div>
       )}
 
       <div
-        className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${item.backdrop_url ? "-mt-20 sm:-mt-28" : ""}`}
+        className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${item.backdrop_url ? "-mt-24 sm:-mt-40" : ""}`}
       >
         <div className="space-y-5">
           <div className="flex items-start justify-between gap-4">

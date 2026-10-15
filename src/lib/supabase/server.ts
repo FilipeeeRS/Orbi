@@ -1,8 +1,11 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 export async function createClient() {
+  // O cliente do Supabase lê a hora atual (validade da sessão): marca a renderização como dinâmica.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient(

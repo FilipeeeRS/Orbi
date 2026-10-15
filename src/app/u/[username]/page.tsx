@@ -62,7 +62,9 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
     ? await getViewerStates(viewer.id, [...o.favorites, ...o.recent].map((e) => e.item_id))
     : null;
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states?.get(itemId) ?? null } : null);
-  const backdrop = [...o.favorites, ...o.recent].find((e) => e.items.backdrop_url)?.items.backdrop_url ?? null;
+  // Capa escolhida pelo usuário; sem ela, o fundo do favorito ou do filme mais recente.
+  const backdrop =
+    profile.cover_url ?? [...o.favorites, ...o.recent].find((e) => e.items.backdrop_url)?.items.backdrop_url ?? null;
   const diary = o.recent.filter((e) => e.watched_on).slice(0, 8);
 
   return (
@@ -162,10 +164,10 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
 
           <aside className="space-y-10">
             <section>
-              <SectionTitle href={`${base}/movies?tab=watchlist`} more={o.watchlist.toLocaleString()}>
+              <SectionTitle more={o.watchlist.toLocaleString()}>
                 {t.profile.watchlist}
               </SectionTitle>
-              <Link href={`${base}/movies?tab=watchlist`} className="flex">
+              <Link href={`${base}/movies?tab=watchlist`} className="group flex">
                 {Array.from({ length: 5 }, (_, i) => o.watchlistPreview[i]).map((e, i) => (
                   <div
                     key={e?.id ?? i}

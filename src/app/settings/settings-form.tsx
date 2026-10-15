@@ -1,9 +1,10 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { setAvatar, updateProfile, type ProfileFormState } from "@/app/actions";
+import { setAvatar, setCover, updateProfile, type ProfileFormState } from "@/app/actions";
 import { Avatar } from "@/components/header";
 import { useI18n } from "@/components/i18n";
+import { ThemeSelect } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { LOCALE_NAMES, LOCALES, type Locale } from "@/lib/i18n/dictionaries";
 import type { Profile } from "@/lib/types";
@@ -24,6 +25,7 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
   return (
     <div className="space-y-6">
       <AvatarPicker profile={profile} />
+      <CoverPicker profile={profile} />
 
       <form action={action} className="space-y-5 rounded-2xl border border-border bg-surface p-6 text-sm">
         <label className="block">
@@ -44,6 +46,11 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
         <label className="block">
           <span className="mb-1 block text-muted">{t.settings.bio}</span>
           <textarea name="bio" defaultValue={profile.bio ?? ""} maxLength={500} rows={3} className={input} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-muted">{t.settings.theme}</span>
+          {/* Aplica na hora e fica salvo neste navegador */}
+          <ThemeSelect labels={{ dark: t.settings.themeDark, light: t.settings.themeLight }} className={input} />
         </label>
         <label className="block">
           <span className="mb-1 block text-muted">{t.settings.language}</span>
@@ -69,10 +76,12 @@ export function SettingsForm({ profile, locale }: { profile: Profile; locale: Lo
   );
 }
 
-function AvatarPicker({ profile }: { profile: Profile }) {
+// Envia a imagem para a pasta do usuário no Storage e grava a URL no perfil (foto ou capa).
+function useProfileImage(profileId: string, kind: "avatar" | "cover") {
   const { t } = useI18n();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const save = kind === "avatar" ? setAvatar : setCover;
 
   function upload(file: File | undefined) {
     if (!file) return;
@@ -81,10 +90,10 @@ function AvatarPicker({ profile }: { profile: Profile }) {
 
     start(async () => {
       const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-      const path = `${profile.id}/avatar-${crypto.randomUUID()}.${ext}`;
+      const path = `${profileId}/${kind}-${crypto.randomUUID()}.${ext}`;
       const { error } = await createClient().storage.from("posters").upload(path, file, { contentType: file.type });
       if (error) return setError(error.message);
-      const result = await setAvatar(path);
+      const result = await save(path);
       if (!result.ok) setError(t.common.error);
     });
   }
@@ -92,10 +101,60 @@ function AvatarPicker({ profile }: { profile: Profile }) {
   function remove() {
     setError(null);
     start(async () => {
-      const result = await setAvatar(null);
+      const result = await save(null);
       if (!result.ok) setError(t.common.error);
     });
   }
+
+  return { pending, error, upload, remove };
+}
+
+function CoverPicker({ profile }: { profile: Profile }) {
+  const { t } = useI18n();
+  const { pending, error, upload, remove } = useProfileImage(profile.id, "cover");
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-border bg-surface p-6 text-sm">
+      <p className="font-semibold">{t.settings.cover}</p>
+      <div
+        className={`relative h-28 overflow-hidden rounded-xl border border-border bg-surface-2 ${pending ? "animate-pulse" : ""}`}
+      >
+        {profile.cover_url && (
+          // eslint-disable-next-line @next/next/no-img-element -- prévia simples de imagem do Storage
+          <img src={profile.cover_url} alt="" className="size-full object-cover" />
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <label className="cursor-pointer rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2">
+          {t.settings.coverChange}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            disabled={pending}
+            onChange={(e) => upload(e.target.files?.[0])}
+          />
+        </label>
+        {profile.cover_url && (
+          <button
+            type="button"
+            onClick={remove}
+            disabled={pending}
+            className="rounded-lg px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-fg"
+          >
+            {t.settings.coverRemove}
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-muted">{t.settings.coverHint}</p>
+      {error && <p className="text-xs text-danger">{error}</p>}
+    </div>
+  );
+}
+
+function AvatarPicker({ profile }: { profile: Profile }) {
+  const { t } = useI18n();
+  const { pending, error, upload, remove } = useProfileImage(profile.id, "avatar");
 
   return (
     <div className="flex items-center gap-5 rounded-2xl border border-border bg-surface p-6 text-sm">

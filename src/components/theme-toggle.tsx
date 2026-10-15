@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 export const THEME_KEY = "orbi-theme";
 
 // Roda antes da hidratação para não piscar o tema errado.
@@ -26,5 +28,30 @@ export function ThemeToggle() {
         <path className="dark:hidden" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
       </svg>
     </button>
+  );
+}
+
+// Mesma escolha do botão do rodapé, só que em forma de lista (usada em Configurações).
+export function ThemeSelect({ labels, className }: { labels: { dark: string; light: string }; className?: string }) {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- lê o tema aplicado pelo script inicial
+    setTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+  }, []);
+
+  function change(next: "dark" | "light") {
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {}
+  }
+
+  return (
+    <select value={theme} onChange={(e) => change(e.target.value as "dark" | "light")} className={className}>
+      <option value="dark">{labels.dark}</option>
+      <option value="light">{labels.light}</option>
+    </select>
   );
 }

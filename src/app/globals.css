@@ -57,8 +57,41 @@
 body {
   color: var(--fg);
   background: var(--bg);
+  overflow-x: clip; /* os fundos de capa são mais largos que o conteúdo */
 }
 
 ::selection {
   background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Fundo de capa no estilo Letterboxd: laterais e base se dissolvem no fundo do site.
+   Duas máscaras lineares (horizontal e vertical) combinadas, com várias paradas para uma
+   transição suave, sem linha de corte nem curva visível. */
+.backdrop-fade {
+  --fade-x: linear-gradient(
+    to right,
+    transparent 0%,
+    rgb(0 0 0 / 0.08) 4%,
+    rgb(0 0 0 / 0.3) 10%,
+    rgb(0 0 0 / 0.65) 17%,
+    #000 26%,
+    #000 74%,
+    rgb(0 0 0 / 0.65) 83%,
+    rgb(0 0 0 / 0.3) 90%,
+    rgb(0 0 0 / 0.08) 96%,
+    transparent 100%
+  );
+  --fade-y: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 40%,
+    rgb(0 0 0 / 0.75) 58%,
+    rgb(0 0 0 / 0.4) 74%,
+    rgb(0 0 0 / 0.12) 88%,
+    transparent 100%
+  );
+  -webkit-mask-image: var(--fade-x), var(--fade-y);
+  -webkit-mask-composite: source-in;
+  mask-image: var(--fade-x), var(--fade-y);
+  mask-composite: intersect;
 }

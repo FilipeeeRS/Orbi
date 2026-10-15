@@ -47,18 +47,27 @@ export async function updateProfile(_prev: ProfileFormState, form: FormData): Pr
   redirect(`/u/${username}`);
 }
 
-// A foto vai para o Storage pelo navegador (pasta do próprio usuário); aqui só gravamos a URL.
-export async function setAvatar(path: string | null): Promise<{ ok: boolean }> {
+// Foto e capa vão para o Storage pelo navegador (pasta do próprio usuário); aqui só gravamos a URL.
+async function setProfileImage(kind: "avatar" | "cover", path: string | null): Promise<{ ok: boolean }> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false };
-  if (path !== null && !path.startsWith(`${viewer.id}/avatar-`)) return { ok: false };
+  if (path !== null && !path.startsWith(`${viewer.id}/${kind}-`)) return { ok: false };
 
   const supabase = await createClient();
-  const avatarUrl = path ? supabase.storage.from("posters").getPublicUrl(path).data.publicUrl : null;
-  const { error } = await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", viewer.id);
+  const url = path ? supabase.storage.from("posters").getPublicUrl(path).data.publicUrl : null;
+  const column = kind === "avatar" ? "avatar_url" : "cover_url";
+  const { error } = await supabase.from("profiles").update({ [column]: url }).eq("id", viewer.id);
   if (error) return { ok: false };
   refresh();
   return { ok: true };
+}
+
+export async function setAvatar(path: string | null) {
+  return setProfileImage("avatar", path);
+}
+
+export async function setCover(path: string | null) {
+  return setProfileImage("cover", path);
 }
 
 // Login por e-mail ou nome de usuário. O e-mail de quem usa o @ é resolvido aqui no servidor
