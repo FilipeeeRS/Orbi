@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { StarsDisplay } from "./stars";
+import { PosterActions, type ViewerItemState } from "./poster-actions";
 import { itemHref, itemTitle, type Item } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/dictionaries";
 
@@ -11,26 +12,45 @@ type Props = {
   liked?: boolean;
   showMeta?: boolean;
   eager?: boolean;
+  // Quem está logado: habilita os atalhos de "visto" e "curtir" ao passar o mouse.
+  viewer?: { id: string; state: ViewerItemState | null } | null;
 };
 
-export function Poster({ item, locale, rating, liked, showMeta = true, eager }: Props) {
+export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer }: Props) {
   const title = itemTitle(item, locale);
   return (
-    <Link href={itemHref(item)} className="group block" title={item.year ? `${title} (${item.year})` : title}>
-      <PosterImage url={item.poster_url} title={title} eager={eager} />
+    <div className="group relative">
+      <Link href={itemHref(item)} className="block" title={item.year ? `${title} (${item.year})` : title}>
+        <PosterImage url={item.poster_url} title={title} eager={eager} watched={!!viewer?.state?.watched} />
+      </Link>
+      {viewer && <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} />}
       {showMeta && (rating || liked) ? (
         <div className="mt-1 flex items-center gap-1 text-xs">
           <StarsDisplay rating={rating ?? null} />
           {liked && <span className="text-like">♥</span>}
         </div>
       ) : null}
-    </Link>
+    </div>
   );
 }
 
-export function PosterImage({ url, title, eager }: { url: string | null; title: string; eager?: boolean }) {
+export function PosterImage({
+  url,
+  title,
+  eager,
+  watched,
+}: {
+  url: string | null;
+  title: string;
+  eager?: boolean;
+  watched?: boolean;
+}) {
   return (
-    <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition group-hover:ring-2 group-hover:ring-accent">
+    <div
+      className={`relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition group-hover:ring-2 ${
+        watched ? "group-hover:ring-ok" : "group-hover:ring-accent"
+      }`}
+    >
       {url ? (
         <Image
           src={url}

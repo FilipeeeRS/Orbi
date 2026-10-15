@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Poster, PosterGrid, PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
 import { getDict, getViewer } from "@/lib/session";
-import { getProfileByUsername, listEntries, PAGE_SIZE, SORTS, TABS, type Sort, type Tab } from "@/lib/queries";
+import { getProfileByUsername, getViewerStates, listEntries, PAGE_SIZE, SORTS, TABS, type Sort, type Tab } from "@/lib/queries";
 import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 
@@ -27,6 +27,7 @@ export async function FolderView({
   if (!profile) notFound();
 
   const { entries, total } = await listEntries(profile.id, tab, sort, page, kind);
+  const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const base = `/u/${profile.username}/${path}`;
   const href = (p: Partial<{ tab: Tab; sort: Sort; page: number }>) => {
@@ -113,7 +114,15 @@ export async function FolderView({
       ) : (
         <PosterGrid>
           {entries.map((e, i) => (
-            <Poster key={e.id} item={e.items} locale={locale} rating={e.rating} liked={e.liked} eager={i < 8} />
+            <Poster
+              key={e.id}
+              item={e.items}
+              locale={locale}
+              rating={e.rating}
+              liked={e.liked}
+              eager={i < 8}
+              viewer={viewer ? { id: viewer.id, state: states?.get(e.item_id) ?? null } : null}
+            />
           ))}
         </PosterGrid>
       )}

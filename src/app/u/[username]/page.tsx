@@ -7,7 +7,14 @@ import Loading from "../../loading";
 import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
-import { getFolderOrder, getFriends, getProfileByUsername, getProfileOverview, isFollowing } from "@/lib/queries";
+import {
+  getFolderOrder,
+  getFriends,
+  getProfileByUsername,
+  getProfileOverview,
+  getViewerStates,
+  isFollowing,
+} from "@/lib/queries";
 import { FolderCarousel } from "./folder-carousel";
 import { Avatar } from "@/components/header";
 import { FollowButton } from "./follow-button";
@@ -51,6 +58,10 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
     getFolderOrder(profile.id),
   ]);
   const base = `/u/${profile.username}`;
+  const states = viewer
+    ? await getViewerStates(viewer.id, [...o.favorites, ...o.recent].map((e) => e.item_id))
+    : null;
+  const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states?.get(itemId) ?? null } : null);
   const backdrop = [...o.favorites, ...o.recent].find((e) => e.items.backdrop_url)?.items.backdrop_url ?? null;
   const diary = o.recent.filter((e) => e.watched_on).slice(0, 8);
 
@@ -97,7 +108,14 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                 </SectionTitle>
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
                   {o.favorites.map((e, i) => (
-                    <Poster key={e.id} item={e.items} locale={locale} showMeta={false} eager={i < 4} />
+                    <Poster
+                      key={e.id}
+                      item={e.items}
+                      locale={locale}
+                      showMeta={false}
+                      eager={i < 4}
+                      viewer={viewerFor(e.item_id)}
+                    />
                   ))}
                 </div>
               </section>
@@ -110,7 +128,14 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                 </SectionTitle>
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
                   {o.recent.slice(0, 8).map((e) => (
-                    <Poster key={e.id} item={e.items} locale={locale} rating={e.rating} liked={e.liked} />
+                    <Poster
+                      key={e.id}
+                      item={e.items}
+                      locale={locale}
+                      rating={e.rating}
+                      liked={e.liked}
+                      viewer={viewerFor(e.item_id)}
+                    />
                   ))}
                 </div>
               </section>

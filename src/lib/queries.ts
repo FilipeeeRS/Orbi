@@ -163,3 +163,23 @@ export const getFolderOrder = cache(async (userId: string): Promise<MediaKind[]>
     .sort((a, b) => b.at.localeCompare(a.at) || a.i - b.i)
     .map((f) => f.kind);
 });
+
+// Estado do usuário logado para uma lista de itens (atalhos ✓/♥ nos pôsteres).
+export async function getViewerStates(viewerId: string, itemIds: string[]) {
+  const states = new Map<string, { watched: boolean; liked: boolean; hasDetails: boolean }>();
+  if (!itemIds.length) return states;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("entries")
+    .select("item_id, status, liked, rating, review")
+    .eq("user_id", viewerId)
+    .in("item_id", [...new Set(itemIds)]);
+  for (const e of data ?? []) {
+    states.set(e.item_id, {
+      watched: e.status === "watched",
+      liked: e.liked,
+      hasDetails: e.rating !== null || e.review !== null,
+    });
+  }
+  return states;
+}

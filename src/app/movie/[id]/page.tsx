@@ -77,7 +77,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
             {item.original_title && item.original_title !== title && (
               <p className="text-sm text-muted italic">{item.original_title}</p>
             )}
-            {item.tmdb_rating !== null && (
+            {item.tmdb_rating != null && (
               <p className="mt-1 text-sm text-muted">
                 <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
                 <span className="text-xs"> / 10 {t.movie.onSource("TMDB")}</span>
@@ -188,7 +188,8 @@ function ItemStats({
       label: t.movies.tabs.watched,
       value: stats.watched,
       color: "text-ok",
-      icon: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+      stroke: true,
+      icon: <path d="M5 12.5l4.5 4.5L19 7.5" />,
     },
     {
       label: t.movies.tabs.liked,
