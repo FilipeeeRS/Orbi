@@ -71,29 +71,3 @@ export function ProfileHeader({
     </div>
   );
 }
-
-export function ProfileTabs({ username, t }: { username: string; t: Dictionary }) {
-  const base = `/u/${username}`;
-  const tabs = [
-    { href: base, label: t.profile.tab, active: true },
-    { href: `${base}/movies`, label: t.folders.movie },
-    { href: `${base}/movies?tab=reviews`, label: t.movies.tabs.reviews },
-    { href: `${base}/movies?tab=watchlist`, label: t.movies.tabs.watchlist },
-    { href: `${base}/movies?tab=liked`, label: t.movies.tabs.liked },
-  ];
-  return (
-    <nav className="flex justify-center gap-1 overflow-x-auto rounded-xl border border-border bg-surface/60 px-2 text-sm">
-      {tabs.map((tab) => (
-        <Link
-          key={tab.href}
-          href={tab.href}
-          className={`border-b-2 px-3 py-3 whitespace-nowrap transition ${
-            tab.active ? "border-accent font-semibold text-fg" : "border-transparent text-muted hover:text-fg"
-          }`}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </nav>
-  );
-}

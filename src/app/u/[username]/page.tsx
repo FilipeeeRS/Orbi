@@ -10,7 +10,7 @@ import { getDict, getViewer } from "@/lib/session";
 import { getProfileByUsername, getProfileOverview } from "@/lib/queries";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, type EntryWithItem, type MediaKind } from "@/lib/types";
-import { ProfileHeader, ProfileTabs } from "./profile-header";
+import { ProfileHeader } from "./profile-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]">): Promise<Metadata> {
   const profile = await getProfileByUsername((await params).username);
@@ -47,12 +47,16 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
         t={t}
         stats={[
           { label: t.folders.movie, value: o.watched, href: `${base}/movies` },
-          { label: t.profile.thisYear, value: o.thisYear, href: `${base}/movies` },
-          { label: t.movies.tabs.reviews, value: o.reviews, href: `${base}/movies?tab=reviews` },
+          // As outras pastas só aparecem nos números quando tiverem algo
+          ...FOLDERS.filter((k) => k !== "movie" && o.kindCounts[k]).map((k) => ({
+            label: t.folders[k],
+            value: o.kindCounts[k]!,
+            href: base,
+          })),
         ]}
       />
 
-      <ProfileTabs username={profile.username} t={t} />
+      <Folders base={base} recent={o.recent} count={o.watched + o.watchlist} t={t} />
 
       {o.watched + o.watchlist === 0 ? (
         <EmptyProfile isOwner={isOwner} t={t} />
@@ -84,11 +88,6 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                 </div>
               </section>
             )}
-
-            <section>
-              <SectionTitle>{t.profile.folders}</SectionTitle>
-              <Folders base={base} recent={o.recent} count={o.watched + o.watchlist} t={t} />
-            </section>
           </div>
 
           <aside className="space-y-10">

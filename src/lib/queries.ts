@@ -13,16 +13,17 @@ export const getProfileByUsername = cache(async (username: string) => {
 
 export async function getProfileOverview(userId: string, kind: MediaKind = "movie") {
   const supabase = await createClient();
-  const yearStart = `${new Date().getFullYear()}-01-01`;
   const count = () =>
     supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", kind);
   const list = () => supabase.from("entries").select(ENTRY_WITH_ITEM).eq("user_id", userId).eq("items.kind", kind);
 
-  const [watched, thisYear, watchlist, reviews, recent, favorites, watchlistPreview, ...ratingCounts] = await Promise.all([
+  const otherKinds = (["series", "music", "game", "book"] as const).filter((k) => k !== kind);
+  const countKind = (k: MediaKind) =>
+    supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", k);
+
+  const [watched, watchlist, recent, favorites, watchlistPreview, ...rest] = await Promise.all([
     count().eq("status", "watched"),
-    count().eq("status", "watched").gte("watched_on", yearStart),
     count().eq("status", "watchlist"),
-    count().not("review", "is", null),
     list()
       .eq("status", "watched")
       .order("watched_on", { ascending: false, nullsFirst: false })
@@ -32,17 +33,20 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
     list().eq("status", "watchlist").order("created_at", { ascending: false }).limit(5),
     // Distribuição das notas: quantos filmes com ½★, ★, ... ★★★★★
     ...Array.from({ length: 10 }, (_, i) => count().eq("rating", i + 1)),
+    // Itens nas outras pastas (séries, músicas, jogos, livros)
+    ...otherKinds.map((k) => countKind(k)),
   ]);
+  const ratingCounts = rest.slice(0, 10);
+  const kindCounts = Object.fromEntries(otherKinds.map((k, i) => [k, rest[10 + i].count ?? 0])) as Partial<Record<MediaKind, number>>;
 
   return {
     watched: watched.count ?? 0,
-    thisYear: thisYear.count ?? 0,
     watchlist: watchlist.count ?? 0,
-    reviews: reviews.count ?? 0,
     recent: (recent.data ?? []) as EntryWithItem[],
     favorites: (favorites.data ?? []) as EntryWithItem[],
     watchlistPreview: (watchlistPreview.data ?? []) as EntryWithItem[],
     ratingCounts: ratingCounts.map((r) => r.count ?? 0),
+    kindCounts,
   };
 }
 
