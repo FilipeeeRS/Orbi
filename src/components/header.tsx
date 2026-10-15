@@ -28,9 +28,9 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
               [
                 { href: `/u/${viewer.username}`, label: t.nav.profile },
                 { href: `/u/${viewer.username}/movies`, label: t.folders.movie },
-                { href: `/u/${viewer.username}/movies?tab=reviews`, label: t.movies.tabs.reviews },
-                { href: `/u/${viewer.username}/movies?tab=watchlist`, label: t.movies.tabs.watchlist },
-                { href: `/u/${viewer.username}/movies?tab=liked`, label: t.movies.tabs.liked },
+                { href: `/u/${viewer.username}/all?tab=reviews`, label: t.movies.tabs.reviews },
+                { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.movies.tabs.watchlist },
+                { href: `/u/${viewer.username}/all?tab=liked`, label: t.movies.tabs.liked },
               ],
               [
                 { href: "/import", label: t.nav.import },

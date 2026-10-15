@@ -274,7 +274,7 @@ function Folders({
             <FolderIcon kind={kind} className="size-6" />
             <div>
               <span className="block text-sm font-semibold">{t.folders[kind]}</span>
-              <span className="text-[11px]">{kind === "all" || kind === "movie" ? t.profile.items(0) : t.folders.soon}</span>
+              <span className="text-[11px]">{t.profile.items(0)}</span>
             </div>
           </Link>
         );
