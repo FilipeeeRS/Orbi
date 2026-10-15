@@ -91,12 +91,19 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
       {/* Linha única: ações à esquerda, estrelas à direita (clicar na nota atual limpa) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
-          <Toggle on={watched} onClick={toggleWatched} disabled={pending} tone="ok">
-            {watched ? `✓ ${t.movie.watched}` : t.movie.watch}
+          <Toggle on={watched} onClick={toggleWatched} disabled={pending} tone="ok" icon={ICONS.check} removeLabel={t.movie.removeShort}>
+            {watched ? t.movie.watched : t.movie.watch}
           </Toggle>
           {!watched && (
-            <Toggle on={onWatchlist} onClick={toggleWatchlist} disabled={pending} tone="accent">
-              {onWatchlist ? `✓ ${t.movie.watchlist}` : `+ ${t.movie.addWatchlist}`}
+            <Toggle
+              on={onWatchlist}
+              onClick={toggleWatchlist}
+              disabled={pending}
+              tone="plain"
+              icon={ICONS.clock}
+              removeLabel={t.movie.removeShort}
+            >
+              {t.movies.tabs.watchlist}
             </Toggle>
           )}
           <Toggle
@@ -104,8 +111,10 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
             onClick={() => persist(asWatched({ liked: !entry?.liked }), entry)}
             disabled={pending}
             tone="like"
+            icon={entry?.liked ? ICONS.heartFilled : ICONS.heart}
+            removeLabel={t.movie.removeShort}
           >
-            {entry?.liked ? `♥ ${t.movie.liked}` : `♡ ${t.movie.like}`}
+            {entry?.liked ? t.movie.liked : t.movie.like}
           </Toggle>
         </div>
 
@@ -176,22 +185,56 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
   );
 }
 
+// Mesmos ícones usados nos números do filme e nos atalhos dos pôsteres.
+const ICONS = {
+  check: (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  ),
+  clock: (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+      <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" />
+    </svg>
+  ),
+  heart: (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+      <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
+    </svg>
+  ),
+  heartFilled: (
+    <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden>
+      <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
+    </svg>
+  ),
+};
+
+// Quando está marcado, passar o mouse troca o texto por "Remover".
 function Toggle({
   on,
   tone,
+  icon,
+  removeLabel,
   children,
   ...props
-}: { on: boolean; tone: "ok" | "accent" | "like" } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const active = { ok: "border-ok text-ok", accent: "border-accent text-accent", like: "border-like text-like" }[tone];
+}: {
+  on: boolean;
+  tone: "ok" | "plain" | "like";
+  icon: React.ReactNode;
+  removeLabel: string;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const active = { ok: "border-ok text-ok", plain: "border-fg text-fg", like: "border-like text-like" }[tone];
   return (
     <button
       type="button"
       {...props}
-      className={`rounded-full border px-4 py-1.5 text-sm font-medium transition disabled:opacity-60 ${
+      className={`group flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition disabled:opacity-60 ${
         on ? `${active} bg-surface-2` : "border-border text-muted hover:text-fg"
       }`}
     >
-      {children}
+      {icon}
+      <span className={on ? "group-hover:hidden" : ""}>{children}</span>
+      {on && <span className="hidden group-hover:inline">{removeLabel}</span>}
     </button>
   );
 }

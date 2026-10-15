@@ -1,48 +1,62 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Children, useEffect, useRef, useState } from "react";
 
-// Linha de pastas com rolagem horizontal: 5 visíveis no desktop e setas para ver o resto.
+// Linha de pastas paginada: mostra um grupo por vez (5 no desktop, 3 no tablet, 2 no celular)
+// e as setas trocam de grupo inteiro, com rolagem suave.
 export function FolderCarousel({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
+  const count = Children.count(children);
+  const [perPage, setPerPage] = useState(5);
+  const [page, setPage] = useState(0);
+  const pages = Math.max(1, Math.ceil(count / perPage));
+  // Espaços vazios no fim para a última página também ter um grupo "cheio" e não repetir pastas.
+  const fillers = pages * perPage - count;
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const update = () => {
-      const x = Math.abs(el.scrollLeft); // em RTL o scrollLeft é negativo
-      setCanPrev(x > 1);
-      setCanNext(x + el.clientWidth < el.scrollWidth - 1);
+    const measure = () => {
+      const first = el.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+      setPerPage(Math.max(1, Math.round((el.clientWidth + gap) / (first.offsetWidth + gap))));
     };
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const observer = new ResizeObserver(update);
+    const onScroll = () => {
+      const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
+      setPage(Math.round(Math.abs(el.scrollLeft) / (el.clientWidth + gap)));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(el);
+    el.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      el.removeEventListener("scroll", update);
       observer.disconnect();
+      el.removeEventListener("scroll", onScroll);
     };
   }, []);
 
-  const scroll = (dir: 1 | -1) => {
+  const goTo = (next: number) => {
     const el = ref.current;
     if (!el) return;
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
     const rtl = getComputedStyle(el).direction === "rtl" ? -1 : 1;
-    el.scrollBy({ left: dir * rtl * el.clientWidth * 0.8, behavior: "smooth" });
+    el.scrollTo({ left: rtl * next * (el.clientWidth + gap), behavior: "smooth" });
   };
 
   return (
     <div className="relative">
       <div
         ref={ref}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:w-[calc((100%-0.75rem)/2.2)] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-[calc((100%-1.5rem)/3)] lg:[&>*]:w-[calc((100%-3rem)/5)]"
+        className="flex gap-3 overflow-x-hidden [&>*]:w-[calc((100%-0.75rem)/2)] [&>*]:shrink-0 sm:[&>*]:w-[calc((100%-1.5rem)/3)] lg:[&>*]:w-[calc((100%-3rem)/5)]"
       >
         {children}
+        {Array.from({ length: fillers }, (_, i) => (
+          <div key={`filler-${i}`} aria-hidden className="invisible" />
+        ))}
       </div>
-      {canPrev && <Arrow side="start" onClick={() => scroll(-1)} />}
-      {canNext && <Arrow side="end" onClick={() => scroll(1)} />}
+      {page > 0 && <Arrow side="start" onClick={() => goTo(page - 1)} />}
+      {page < pages - 1 && <Arrow side="end" onClick={() => goTo(page + 1)} />}
     </div>
   );
 }
@@ -53,8 +67,9 @@ function Arrow({ side, onClick }: { side: "start" | "end"; onClick: () => void }
       type="button"
       onClick={onClick}
       aria-label={side === "end" ? "→" : "←"}
-      className={`absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface/90 text-fg shadow-xl backdrop-blur transition hover:border-accent hover:text-accent ${
-        side === "end" ? "-end-3" : "-start-3"
+      // Fica fora da linha de pastas para não cobrir o texto dos cartões
+      className={`absolute top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full border border-border bg-surface text-fg shadow-xl transition hover:border-accent hover:text-accent ${
+        side === "end" ? "-end-4 xl:-end-12" : "-start-4 xl:-start-12"
       }`}
     >
       <svg

@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export function Logo({ slogan }: { slogan?: string }) {
   return (
-    <Link href="/" className="group flex shrink-0 items-center gap-3">
-      <OrbiMark className="size-10 transition-transform duration-500 group-hover:rotate-[-12deg]" />
+    <Link href="/" className="flex shrink-0 items-center gap-3">
+      <OrbiMark className="size-10" />
       <span className="font-logo text-2xl leading-none font-extrabold tracking-tight">orbi</span>
       {slogan && (
         <span className="hidden text-xs leading-tight text-muted md:block">{slogan}</span>

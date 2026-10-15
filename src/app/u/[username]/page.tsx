@@ -62,9 +62,8 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
     ? await getViewerStates(viewer.id, [...o.favorites, ...o.recent].map((e) => e.item_id))
     : null;
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states?.get(itemId) ?? null } : null);
-  // Capa escolhida pelo usuário; sem ela, o fundo do favorito ou do filme mais recente.
-  const backdrop =
-    profile.cover_url ?? [...o.favorites, ...o.recent].find((e) => e.items.backdrop_url)?.items.backdrop_url ?? null;
+  // Só a capa escolhida pelo usuário; sem ela, o topo do perfil fica sem imagem.
+  const backdrop = profile.cover_url ?? null;
   const diary = o.recent.filter((e) => e.watched_on).slice(0, 8);
 
   return (

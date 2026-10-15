@@ -25,11 +25,10 @@ export function ProfileHeader({
 }) {
   return (
     <div className="relative">
+      {/* O espaço da capa existe sempre; sem capa ele só fica vazio */}
       <div className="backdrop-fade relative left-1/2 -mt-6 h-56 w-screen max-w-[1400px] -translate-x-1/2 overflow-hidden sm:-mt-8 sm:h-96">
-        {backdrop ? (
+        {backdrop && (
           <Image src={backdrop} alt="" fill sizes="100vw" className="object-cover object-[center_30%]" loading="eager" />
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,color-mix(in_srgb,var(--accent)_35%,transparent),transparent_70%)]" />
         )}
       </div>
 

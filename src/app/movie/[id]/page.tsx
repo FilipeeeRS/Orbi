@@ -199,7 +199,7 @@ function ItemStats({
     {
       label: t.movies.tabs.watchlist,
       value: stats.watchlist,
-      color: "text-accent",
+      color: "text-fg",
       stroke: true,
       icon: <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" />,
     },
