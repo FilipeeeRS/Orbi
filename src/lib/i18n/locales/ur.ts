@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const ur: Dictionary = {
   htmlLang: "ur",
   dir: "rtl",
+  slogan: "ہر چیز کے لیے فہرستیں",
   nav: {
     search: "فلمیں تلاش کریں…",
     signIn: "سائن اِن",
@@ -52,7 +53,7 @@ export const ur: Dictionary = {
   },
   movies: {
     tabs: { watched: "دیکھی گئیں", watchlist: "واچ لسٹ", liked: "پسند کی گئیں", reviews: "ریویوز" },
-    sort: { recent: "تازہ ترین", rating: "سب سے زیادہ ریٹنگ", title: "عنوان" },
+    sort: { recent: "تازہ ترین", yours: "آپ کی سب سے زیادہ ریٹنگ", top: "سب سے زیادہ ریٹنگ", title: "عنوان" },
     page: (n: number, total: number) => `صفحہ ${n} از ${total}`,
     prev: "پچھلا",
     next: "اگلا",

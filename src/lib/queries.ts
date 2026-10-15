@@ -41,7 +41,7 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
 
 export const TABS = ["watched", "watchlist", "liked", "reviews"] as const;
 export type Tab = (typeof TABS)[number];
-export const SORTS = ["recent", "rating", "title"] as const;
+export const SORTS = ["recent", "yours", "top", "title"] as const;
 export type Sort = (typeof SORTS)[number];
 export const PAGE_SIZE = 48;
 
@@ -58,7 +58,9 @@ export async function listEntries(userId: string, tab: Tab, sort: Sort, page: nu
   else if (tab === "reviews") query = query.not("review", "is", null);
   else query = query.eq("status", "watched");
 
-  if (sort === "rating") query = query.order("rating", { ascending: false, nullsFirst: false });
+  // "yours" = nota do dono do perfil; "top" = nota média do TMDB
+  if (sort === "yours") query = query.order("rating", { ascending: false, nullsFirst: false });
+  else if (sort === "top") query = query.order("items(tmdb_rating)", { ascending: false, nullsFirst: false });
   else if (sort === "title") query = query.order("items(title)", { ascending: true });
   if (tab === "watchlist") query = query.order("created_at", { ascending: false });
   else query = query.order("watched_on", { ascending: false, nullsFirst: false });

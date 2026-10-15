@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Syne } from "next/font/google";
 import { Header } from "@/components/header";
 import { I18nProvider } from "@/components/i18n";
 import { LocaleSwitch } from "@/components/locale-switch";
@@ -11,6 +11,7 @@ import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const syne = Syne({ variable: "--font-syne", subsets: ["latin"], weight: ["700", "800"] });
 
 export const metadata: Metadata = {
   title: { default: "Orbi", template: "%s · Orbi" },
@@ -23,13 +24,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       data-theme="dark"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${syne.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="flex min-h-full flex-col font-sans">
-        <Suspense fallback={<div className="h-14 border-b border-border" />}>
+        <Suspense fallback={<div className="h-16 border-b border-border" />}>
           <AppShell>{children}</AppShell>
         </Suspense>
       </body>

@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const ko: Dictionary = {
   htmlLang: "ko",
   dir: "ltr",
+  slogan: "모든 것을 위한 리스트",
   nav: {
     search: "영화 검색…",
     signIn: "로그인",
@@ -52,7 +53,7 @@ export const ko: Dictionary = {
   },
   movies: {
     tabs: { watched: "본 영화", watchlist: "보고 싶어요", liked: "좋아요", reviews: "리뷰" },
-    sort: { recent: "최신순", rating: "별점순", title: "제목" },
+    sort: { recent: "최신순", yours: "내 별점 높은 순", top: "평점 높은 순", title: "제목" },
     page: (n: number, total: number) => `${total}페이지 중 ${n}페이지`,
     prev: "이전",
     next: "다음",

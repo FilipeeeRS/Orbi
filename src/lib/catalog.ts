@@ -17,8 +17,9 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
     .eq("source", "tmdb")
     .eq("external_id", externalId)
     .maybeSingle();
-  // Filmes salvos antes do suporte a vários idiomas só têm "pt": busca as traduções de novo.
-  const legacy = existing && Object.keys(existing.translations ?? {}).every((k) => k === "pt");
+  // Filmes salvos por versões antigas (só "pt" nas traduções, ou sem nota do TMDB): busca de novo.
+  const legacy =
+    existing && (Object.keys(existing.translations ?? {}).every((k) => k === "pt") || existing.tmdb_votes === null);
   if (existing && !legacy) return existing as Item;
 
   let movie;
@@ -43,6 +44,8 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
         poster_url: tmdbImage(movie.poster_path, "w500"),
         backdrop_url: tmdbImage(movie.backdrop_path, "w1280"),
         translations: pickTranslations(movie.translations.translations, movie.title),
+        tmdb_rating: movie.vote_count ? Math.round((movie.vote_average ?? 0) * 10) / 10 : null,
+        tmdb_votes: movie.vote_count ?? 0,
       },
       { onConflict: "kind,source,external_id" },
     )

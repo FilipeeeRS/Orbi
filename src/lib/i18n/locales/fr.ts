@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const fr: Dictionary = {
   htmlLang: "fr",
   dir: "ltr",
+  slogan: "Des listes pour tout",
   nav: {
     search: "Rechercher des films…",
     signIn: "Connexion",
@@ -52,7 +53,7 @@ export const fr: Dictionary = {
   },
   movies: {
     tabs: { watched: "Vus", watchlist: "Watchlist", liked: "Aimés", reviews: "Critiques" },
-    sort: { recent: "Plus récents", rating: "Mieux notés", title: "Titre" },
+    sort: { recent: "Plus récents", yours: "Mieux notés par vous", top: "Mieux notés", title: "Titre" },
     page: (n: number, total: number) => `Page ${n} sur ${total}`,
     prev: "Précédent",
     next: "Suivant",

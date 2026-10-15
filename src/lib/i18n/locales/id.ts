@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const id: Dictionary = {
   htmlLang: "id",
   dir: "ltr",
+  slogan: "Daftar untuk segalanya",
   nav: {
     search: "Cari film…",
     signIn: "Masuk",
@@ -52,7 +53,7 @@ export const id: Dictionary = {
   },
   movies: {
     tabs: { watched: "Ditonton", watchlist: "Watchlist", liked: "Disukai", reviews: "Ulasan" },
-    sort: { recent: "Terbaru", rating: "Nilai tertinggi", title: "Judul" },
+    sort: { recent: "Terbaru", yours: "Nilai tertinggi darimu", top: "Nilai tertinggi", title: "Judul" },
     page: (n: number, total: number) => `Halaman ${n} dari ${total}`,
     prev: "Sebelumnya",
     next: "Berikutnya",

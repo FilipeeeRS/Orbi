@@ -1,6 +1,7 @@
 export const pt = {
   htmlLang: "pt-BR",
   dir: "ltr" as "ltr" | "rtl",
+  slogan: "Listas para tudo",
   nav: {
     search: "Buscar filmes…",
     signIn: "Entrar",
@@ -50,7 +51,7 @@ export const pt = {
   },
   movies: {
     tabs: { watched: "Vistos", watchlist: "Watchlist", liked: "Curtidos", reviews: "Reviews" },
-    sort: { recent: "Mais recentes", rating: "Maior nota", title: "Título" },
+    sort: { recent: "Mais recentes", yours: "Mais bem avaliados por você", top: "Mais bem avaliados", title: "Título" },
     page: (n: number, total: number) => `Página ${n} de ${total}`,
     prev: "Anterior",
     next: "Próxima",

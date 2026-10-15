@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const zh: Dictionary = {
   htmlLang: "zh-CN",
   dir: "ltr",
+  slogan: "万物皆可清单",
   nav: {
     search: "搜索电影…",
     signIn: "登录",
@@ -51,7 +52,7 @@ export const zh: Dictionary = {
   },
   movies: {
     tabs: { watched: "看过", watchlist: "想看", liked: "喜欢", reviews: "影评" },
-    sort: { recent: "最新", rating: "评分最高", title: "标题" },
+    sort: { recent: "最新", yours: "我评分最高", top: "评分最高", title: "标题" },
     page: (n: number, total: number) => `第 ${n} / ${total} 页`,
     prev: "上一页",
     next: "下一页",

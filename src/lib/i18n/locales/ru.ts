@@ -11,6 +11,7 @@ const plural = (n: number, one: string, few: string, many: string) => {
 export const ru: Dictionary = {
   htmlLang: "ru",
   dir: "ltr",
+  slogan: "Списки для всего",
   nav: {
     search: "Поиск фильмов…",
     signIn: "Войти",
@@ -60,7 +61,7 @@ export const ru: Dictionary = {
   },
   movies: {
     tabs: { watched: "Просмотрено", watchlist: "Хочу посмотреть", liked: "Понравилось", reviews: "Рецензии" },
-    sort: { recent: "Сначала новые", rating: "По оценке", title: "По названию" },
+    sort: { recent: "Сначала новые", yours: "По вашей оценке", top: "По рейтингу", title: "По названию" },
     page: (n: number, total: number) => `Страница ${n} из ${total}`,
     prev: "Назад",
     next: "Вперёд",

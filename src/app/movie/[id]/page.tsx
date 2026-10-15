@@ -67,6 +67,12 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
             {item.original_title && item.original_title !== title && (
               <p className="text-sm text-muted italic">{item.original_title}</p>
             )}
+            {item.tmdb_rating !== null && (
+              <p className="mt-1 text-sm text-muted">
+                <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
+                <span className="text-xs"> / 10 · TMDB</span>
+              </p>
+            )}
           </div>
           {overview && <p className="max-w-2xl leading-relaxed text-muted">{overview}</p>}
 

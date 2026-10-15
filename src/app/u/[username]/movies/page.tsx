@@ -9,7 +9,6 @@ import { getDict, getViewer } from "@/lib/session";
 import { getProfileByUsername, listEntries, PAGE_SIZE, SORTS, TABS, type Sort, type Tab } from "@/lib/queries";
 import { itemHref, itemTitle } from "@/lib/types";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
-import { ProfileHeader } from "../profile-header";
 
 export const metadata: Metadata = { title: "Filmes" };
 
@@ -44,7 +43,23 @@ async function MoviesPageContent({ params, searchParams }: PageProps<"/u/[userna
 
   return (
     <div className="space-y-6">
-      <ProfileHeader profile={profile} isOwner={viewer?.id === profile.id} editLabel={t.nav.settings} />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          {/* No perfil de outra pessoa, o @ mostra de quem é a pasta */}
+          <Link
+            href={`/u/${profile.username}`}
+            aria-label={t.nav.profile}
+            className="flex items-center gap-1 rounded-full p-1.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
+          >
+            <svg viewBox="0 0 24 24" className="size-5 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            {viewer?.id !== profile.id && <span className="pe-1">@{profile.username}</span>}
+          </Link>
+          <h1 className="text-2xl font-bold">{t.folders.movie}</h1>
+        </div>
+        <span className="text-sm text-muted">{t.profile.items(total)}</span>
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
@@ -60,8 +75,8 @@ async function MoviesPageContent({ params, searchParams }: PageProps<"/u/[userna
             </Link>
           ))}
         </nav>
-        <div className="flex gap-3 pb-2 text-xs">
-          {SORTS.map((key) => (
+        <div className="flex flex-wrap gap-x-3 gap-y-1 pb-2 text-xs">
+          {SORTS.filter((key) => !(tab === "watchlist" && key === "yours")).map((key) => (
             <Link
               key={key}
               href={href({ sort: key })}
@@ -72,8 +87,6 @@ async function MoviesPageContent({ params, searchParams }: PageProps<"/u/[userna
           ))}
         </div>
       </div>
-
-      <p className="text-xs text-muted">{t.profile.items(total)}</p>
 
       {entries.length === 0 ? (
         <p className="text-sm text-muted">{t.profile.empty}</p>

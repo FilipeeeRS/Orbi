@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const ja: Dictionary = {
   htmlLang: "ja",
   dir: "ltr",
+  slogan: "すべてのためのリスト",
   nav: {
     search: "映画を検索…",
     signIn: "ログイン",
@@ -52,7 +53,7 @@ export const ja: Dictionary = {
   },
   movies: {
     tabs: { watched: "観た", watchlist: "観たい", liked: "いいね", reviews: "レビュー" },
-    sort: { recent: "新しい順", rating: "評価が高い順", title: "タイトル" },
+    sort: { recent: "新しい順", yours: "自分の評価が高い順", top: "評価が高い順", title: "タイトル" },
     page: (n: number, total: number) => `${total} ページ中 ${n} ページ目`,
     prev: "前へ",
     next: "次へ",

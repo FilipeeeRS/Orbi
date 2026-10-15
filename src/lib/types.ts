@@ -25,6 +25,8 @@ export type Item = {
   poster_url: string | null;
   backdrop_url: string | null;
   created_by: string | null;
+  tmdb_rating: number | null;
+  tmdb_votes: number | null;
   translations: Partial<Record<Locale, { title?: string; overview?: string }>>;
 };
 

@@ -12,6 +12,8 @@ export type TmdbMovie = {
   overview?: string;
   poster_path: string | null;
   backdrop_path?: string | null;
+  vote_average?: number;
+  vote_count?: number;
 };
 
 export const tmdbLanguage = (locale: Locale) => TMDB_LANGUAGES[locale];

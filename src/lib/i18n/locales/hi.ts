@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const hi: Dictionary = {
   htmlLang: "hi",
   dir: "ltr",
+  slogan: "हर चीज़ की सूची",
   nav: {
     search: "फ़िल्में खोजें…",
     signIn: "साइन इन",
@@ -52,7 +53,7 @@ export const hi: Dictionary = {
   },
   movies: {
     tabs: { watched: "देखी गईं", watchlist: "वॉचलिस्ट", liked: "पसंद की गईं", reviews: "रिव्यू" },
-    sort: { recent: "सबसे नई", rating: "सबसे ज़्यादा रेटिंग", title: "शीर्षक" },
+    sort: { recent: "सबसे नई", yours: "आपकी सबसे ऊँची रेटिंग", top: "सबसे ऊँची रेटिंग", title: "शीर्षक" },
     page: (n: number, total: number) => `पेज ${n} / ${total}`,
     prev: "पिछला",
     next: "अगला",

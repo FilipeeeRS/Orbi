@@ -3,6 +3,7 @@ import type { Dictionary } from "./pt";
 export const tr: Dictionary = {
   htmlLang: "tr",
   dir: "ltr",
+  slogan: "Her şey için listeler",
   nav: {
     search: "Film ara…",
     signIn: "Giriş yap",
@@ -52,7 +53,7 @@ export const tr: Dictionary = {
   },
   movies: {
     tabs: { watched: "İzlenenler", watchlist: "İzleme listesi", liked: "Beğenilenler", reviews: "İncelemeler" },
-    sort: { recent: "En yeni", rating: "En yüksek puan", title: "Başlık" },
+    sort: { recent: "En yeni", yours: "Senin en yüksek puanların", top: "En yüksek puan", title: "Başlık" },
     page: (n: number, total: number) => `Sayfa ${n} / ${total}`,
     prev: "Önceki",
     next: "Sonraki",
