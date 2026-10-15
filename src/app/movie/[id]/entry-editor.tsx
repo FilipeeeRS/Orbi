@@ -87,7 +87,7 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
   const dirty = (review.trim() || null) !== (entry?.review ?? null) || (watchedOn || null) !== (entry?.watched_on ?? null);
 
   return (
-    <div className="max-w-xl space-y-4 rounded-xl border border-border bg-surface p-4">
+    <div className="space-y-4 rounded-xl border border-border bg-surface/80 p-4">
       <div className="flex flex-wrap gap-2">
         <Toggle on={watched} onClick={toggleWatched} disabled={pending} tone="ok">
           {watched ? `✓ ${t.movie.watched}` : t.movie.watch}

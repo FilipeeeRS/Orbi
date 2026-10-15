@@ -99,3 +99,22 @@ export async function getItemReviews(itemId: string) {
     .limit(20);
   return (data ?? []) as ReviewWithAuthor[];
 }
+
+// Números da obra no Orbi: quantos viram, curtiram, querem ver e a média das notas.
+export async function getItemStats(itemId: string) {
+  const supabase = await createClient();
+  const count = () => supabase.from("entries").select("id", { count: "exact", head: true }).eq("item_id", itemId);
+  const [watched, likes, watchlist, ratings] = await Promise.all([
+    count().eq("status", "watched"),
+    count().eq("liked", true),
+    count().eq("status", "watchlist"),
+    supabase.from("entries").select("rating").eq("item_id", itemId).not("rating", "is", null).limit(5000),
+  ]);
+  const values = (ratings.data ?? []).map((r) => r.rating as number);
+  return {
+    watched: watched.count ?? 0,
+    likes: likes.count ?? 0,
+    watchlist: watchlist.count ?? 0,
+    average: values.length ? values.reduce((a, b) => a + b, 0) / values.length / 2 : null,
+  };
+}

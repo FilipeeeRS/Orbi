@@ -9,9 +9,10 @@ import { PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
 import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemReviews } from "@/lib/queries";
+import { getItemReviews, getItemStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { itemOverview, itemTitle, type Entry } from "@/lib/types";
+import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { EntryEditor } from "./entry-editor";
 
 export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Promise<Metadata> {
@@ -33,8 +34,9 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   if (!item) notFound();
 
   const supabase = await createClient();
-  const [reviews, entry] = await Promise.all([
+  const [reviews, stats, entry] = await Promise.all([
     getItemReviews(item.id),
+    getItemStats(item.id),
     viewer
       ? supabase
           .from("entries")
@@ -50,16 +52,19 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   const overview = itemOverview(item, locale);
 
   return (
-    <div className="space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10">
       {item.backdrop_url && (
-        <div className="relative -mx-4 -mt-6 h-48 overflow-hidden sm:-mt-8 sm:h-72 md:rounded-b-2xl">
-          <Image src={item.backdrop_url} alt="" fill className="object-cover" loading="eager" sizes="100vw" />
-          <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
+        // Backdrop mais estreito, centralizado e com as bordas laterais esmaecidas
+        <div className="relative -mt-6 h-48 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] sm:-mt-8 sm:h-80">
+          <Image src={item.backdrop_url} alt="" fill className="object-cover object-[center_30%]" loading="eager" sizes="(max-width: 1024px) 100vw, 1024px" />
+          <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
         </div>
       )}
 
-      <div className={`relative grid items-start gap-6 sm:grid-cols-[1fr_220px] sm:gap-10 ${item.backdrop_url ? "-mt-16 sm:-mt-20" : ""}`}>
-        <div className="space-y-4">
+      <div
+        className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${item.backdrop_url ? "-mt-20 sm:-mt-28" : ""}`}
+      >
+        <div className="space-y-5">
           <div>
             <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
               {title} {item.year && <span className="font-normal text-muted">{item.year}</span>}
@@ -74,7 +79,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
               </p>
             )}
           </div>
-          {overview && <p className="max-w-2xl leading-relaxed text-muted">{overview}</p>}
+          {overview && <p className="leading-relaxed text-muted">{overview}</p>}
 
           {viewer ? (
             <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} />
@@ -88,8 +93,11 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
           )}
         </div>
 
-        <div className="order-first mx-auto w-40 shadow-2xl sm:order-none sm:w-full">
-          <PosterImage url={item.poster_url} title={title} eager />
+        <div className="order-first mx-auto w-40 space-y-3 sm:order-none sm:w-full">
+          <div className="shadow-2xl">
+            <PosterImage url={item.poster_url} title={title} eager />
+          </div>
+          <ItemStats stats={stats} t={t} locale={locale} />
         </div>
       </div>
 
@@ -122,5 +130,40 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
         )}
       </section>
     </div>
+  );
+}
+
+function ItemStats({
+  stats,
+  t,
+  locale,
+}: {
+  stats: Awaited<ReturnType<typeof getItemStats>>;
+  t: Dictionary;
+  locale: Locale;
+}) {
+  const fmt = new Intl.NumberFormat(dictionaries[locale].htmlLang, { notation: "compact" });
+  const items = [
+    { label: t.movies.tabs.watched, value: fmt.format(stats.watched), icon: <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />, color: "text-ok" },
+    { label: t.movies.tabs.liked, value: fmt.format(stats.likes), icon: <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />, color: "text-like" },
+    { label: t.movies.tabs.watchlist, value: fmt.format(stats.watchlist), icon: <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" />, color: "text-accent" },
+    {
+      label: t.profile.average,
+      value: stats.average === null ? "–" : stats.average.toFixed(1),
+      icon: <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />,
+      color: "text-star",
+    },
+  ];
+  return (
+    <ul className="grid grid-cols-4 rounded-xl border border-border bg-surface/70 py-2.5 text-center">
+      {items.map((s) => (
+        <li key={s.label} title={s.label} className="flex flex-col items-center gap-1">
+          <svg viewBox="0 0 24 24" className={`size-4 ${s.color}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
+            {s.icon}
+          </svg>
+          <span className="text-xs font-semibold tabular-nums">{s.value}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
