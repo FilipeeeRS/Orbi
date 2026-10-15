@@ -20,12 +20,16 @@ export const pt = {
     soon: "Em breve",
   },
   home: {
+    tagline: "De rating lovers para rating lovers",
     title: "Tudo o que você assiste, ouve, joga e lê. Em um só lugar.",
     subtitle:
       "Registre filmes, dê notas, escreva reviews e traga seu histórico do Letterboxd. Séries, músicas, jogos e livros vêm aí.",
     cta: "Começar",
   },
   auth: {
+    identifier: "E-mail ou nome de usuário",
+    rememberMe: "Lembrar de mim",
+    invalidLogin: "E-mail, usuário ou senha incorretos.",
     name: "Nome",
     confirmPassword: "Repita a senha",
     passwordMismatch: "As senhas não coincidem.",

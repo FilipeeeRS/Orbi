@@ -22,12 +22,16 @@ export const es: Dictionary = {
     soon: "Próximamente",
   },
   home: {
+    tagline: "De rating lovers para rating lovers",
     title: "Todo lo que ves, escuchas, juegas y lees. En un solo lugar.",
     subtitle:
       "Registra películas, ponles nota, escribe reseñas y trae tu historial de Letterboxd. Series, música, juegos y libros están en camino.",
     cta: "Empezar",
   },
   auth: {
+    identifier: "Correo o nombre de usuario",
+    rememberMe: "Recordarme",
+    invalidLogin: "Correo, usuario o contraseña incorrectos.",
     name: "Nombre",
     confirmPassword: "Repite la contraseña",
     passwordMismatch: "Las contraseñas no coinciden.",

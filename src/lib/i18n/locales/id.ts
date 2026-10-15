@@ -22,12 +22,16 @@ export const id: Dictionary = {
     soon: "Segera hadir",
   },
   home: {
+    tagline: "Dari pencinta rating, untuk pencinta rating",
     title: "Semua yang kamu tonton, dengar, mainkan, dan baca. Di satu tempat.",
     subtitle:
       "Catat film, beri nilai, tulis ulasan, dan bawa riwayat Letterboxd-mu. Serial, musik, gim, dan buku segera hadir.",
     cta: "Mulai",
   },
   auth: {
+    identifier: "Email atau nama pengguna",
+    rememberMe: "Ingat saya",
+    invalidLogin: "Email, nama pengguna, atau kata sandi salah.",
     name: "Nama",
     confirmPassword: "Ulangi kata sandi",
     passwordMismatch: "Kata sandi tidak cocok.",

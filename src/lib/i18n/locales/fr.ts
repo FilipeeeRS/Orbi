@@ -22,12 +22,16 @@ export const fr: Dictionary = {
     soon: "Bientôt",
   },
   home: {
+    tagline: "Par des rating lovers, pour des rating lovers",
     title: "Tout ce que vous regardez, écoutez, jouez et lisez. Au même endroit.",
     subtitle:
       "Notez des films, écrivez des critiques et importez votre historique Letterboxd. Séries, musique, jeux et livres arrivent bientôt.",
     cta: "Commencer",
   },
   auth: {
+    identifier: "E-mail ou nom d'utilisateur",
+    rememberMe: "Se souvenir de moi",
+    invalidLogin: "E-mail, nom d'utilisateur ou mot de passe incorrect.",
     name: "Nom",
     confirmPassword: "Confirmez le mot de passe",
     passwordMismatch: "Les mots de passe ne correspondent pas.",

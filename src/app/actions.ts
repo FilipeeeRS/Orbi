@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getViewer, LOCALE_COOKIE } from "@/lib/session";
 import { isLocale } from "@/lib/i18n/dictionaries";
 
@@ -58,4 +59,28 @@ export async function setAvatar(path: string | null): Promise<{ ok: boolean }> {
   if (error) return { ok: false };
   refresh();
   return { ok: true };
+}
+
+// Login por e-mail ou nome de usuário. O e-mail de quem usa o @ é resolvido aqui no servidor
+// e nunca volta para o navegador (não dá para descobrir o e-mail de ninguém pelo usuário).
+export async function signInWithIdentifier(identifier: string, password: string): Promise<{ ok: boolean }> {
+  const id = identifier.trim();
+  let email = id;
+
+  if (!id.includes("@")) {
+    const admin = createAdminClient();
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("username", id.toLowerCase().replace(/^@/, ""))
+      .maybeSingle();
+    if (!profile) return { ok: false };
+    const { data } = await admin.auth.admin.getUserById(profile.id);
+    if (!data.user?.email) return { ok: false };
+    email = data.user.email;
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  return { ok: !error };
 }

@@ -19,6 +19,9 @@ async function HomeContent() {
 
   return (
     <section className="mx-auto flex max-w-2xl flex-col items-center gap-6 py-16 text-center sm:py-24">
+      <p className="rounded-full border border-accent/40 bg-accent/10 px-4 py-1 text-xs font-semibold tracking-widest text-accent uppercase">
+        {t.home.tagline}
+      </p>
       <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-5xl">{t.home.title}</h1>
       <p className="max-w-xl text-muted text-balance">{t.home.subtitle}</p>
       <div className="flex flex-wrap justify-center gap-2 text-sm text-muted">

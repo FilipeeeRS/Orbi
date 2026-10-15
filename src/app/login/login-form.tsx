@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
-import { setLocale } from "@/app/actions";
+import { setLocale, signInWithIdentifier } from "@/app/actions";
 import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/dictionaries";
 
 export function LoginForm() {
@@ -17,6 +17,14 @@ export function LoginForm() {
   const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [, startLocale] = useTransition();
+  // "Lembrar de mim": guarda só o e-mail/usuário neste navegador para preencher da próxima vez.
+  const [remembered, setRemembered] = useState("");
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- leitura única do localStorage após montar
+      setRemembered(localStorage.getItem(REMEMBER_KEY) ?? "");
+    } catch {}
+  }, []);
 
   const supabase = createClient();
   const callbackUrl = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
@@ -24,7 +32,7 @@ export function LoginForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    const email = String(form.get("email"));
+    const email = String(form.get("email")).trim();
     const password = String(form.get("password"));
     setError(null);
     setInfo(null);
@@ -35,12 +43,16 @@ export function LoginForm() {
     setPending(true);
 
     if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message);
+      const { ok } = await signInWithIdentifier(email, password);
+      if (!ok) {
+        setError(t.auth.invalidLogin);
         setPending(false);
         return;
       }
+      try {
+        if (form.get("remember")) localStorage.setItem(REMEMBER_KEY, email);
+        else localStorage.removeItem(REMEMBER_KEY);
+      } catch {}
       router.replace(next);
       router.refresh();
     } else {
@@ -100,7 +112,19 @@ export function LoginForm() {
 
       <form key={mode} onSubmit={onSubmit} className="space-y-3">
         {mode === "signup" && <Field label={t.auth.name} name="name" maxLength={60} autoComplete="name" />}
-        <Field label={t.auth.email} name="email" type="email" autoComplete="email" />
+        {mode === "signin" ? (
+          <Field
+            key={remembered}
+            label={t.auth.identifier}
+            name="email"
+            autoComplete="username"
+            defaultValue={remembered}
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+        ) : (
+          <Field label={t.auth.email} name="email" type="email" autoComplete="email" />
+        )}
         <Field
           label={t.auth.password}
           name="password"
@@ -129,6 +153,18 @@ export function LoginForm() {
               </select>
             </label>
           </>
+        )}
+        {mode === "signin" && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted select-none">
+            <input
+              key={remembered ? "on" : "off"}
+              type="checkbox"
+              name="remember"
+              defaultChecked={!!remembered}
+              className="size-4 accent-[var(--accent)]"
+            />
+            {t.auth.rememberMe}
+          </label>
         )}
         {error && <p className="text-sm text-danger">{error}</p>}
         {info && <p className="text-sm text-ok">{info}</p>}
@@ -168,6 +204,8 @@ function Field({ label, hint, ...props }: { label: string; hint?: string } & Rea
     </label>
   );
 }
+
+const REMEMBER_KEY = "orbi-login";
 
 // Só aceita caminhos internos, para não virar redirecionamento aberto.
 function safeNext(value: string | null) {

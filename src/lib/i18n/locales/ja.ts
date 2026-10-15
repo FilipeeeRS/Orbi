@@ -22,12 +22,16 @@ export const ja: Dictionary = {
     soon: "近日公開",
   },
   home: {
+    tagline: "評価好きから、評価好きへ",
     title: "観る、聴く、遊ぶ、読む。そのすべてをひとつの場所に。",
     subtitle:
       "映画を記録して評価し、レビューを書き、Letterboxd の履歴も取り込めます。ドラマ、音楽、ゲーム、本も近日対応予定です。",
     cta: "はじめる",
   },
   auth: {
+    identifier: "メールアドレスまたはユーザー名",
+    rememberMe: "ログイン状態を保持",
+    invalidLogin: "メールアドレス、ユーザー名、またはパスワードが違います。",
     name: "名前",
     confirmPassword: "パスワード（確認）",
     passwordMismatch: "パスワードが一致しません。",

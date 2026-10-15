@@ -22,12 +22,16 @@ export const ko: Dictionary = {
     soon: "곧 제공",
   },
   home: {
+    tagline: "평점 러버가 평점 러버를 위해",
     title: "보고, 듣고, 플레이하고, 읽는 모든 것을 한곳에.",
     subtitle:
       "영화를 기록하고 별점을 매기고 리뷰를 쓰고, Letterboxd 기록도 가져오세요. 시리즈, 음악, 게임, 책도 곧 추가됩니다.",
     cta: "시작하기",
   },
   auth: {
+    identifier: "이메일 또는 사용자 이름",
+    rememberMe: "로그인 상태 유지",
+    invalidLogin: "이메일, 사용자 이름 또는 비밀번호가 올바르지 않습니다.",
     name: "이름",
     confirmPassword: "비밀번호 확인",
     passwordMismatch: "비밀번호가 일치하지 않습니다.",

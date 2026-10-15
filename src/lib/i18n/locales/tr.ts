@@ -22,12 +22,16 @@ export const tr: Dictionary = {
     soon: "Yakında",
   },
   home: {
+    tagline: "Puan tutkunlarından puan tutkunlarına",
     title: "İzlediğin, dinlediğin, oynadığın ve okuduğun her şey. Tek bir yerde.",
     subtitle:
       "Filmleri kaydet, puan ver, inceleme yaz ve Letterboxd geçmişini getir. Diziler, müzik, oyunlar ve kitaplar yolda.",
     cta: "Başla",
   },
   auth: {
+    identifier: "E-posta veya kullanıcı adı",
+    rememberMe: "Beni hatırla",
+    invalidLogin: "E-posta, kullanıcı adı veya şifre hatalı.",
     name: "Ad",
     confirmPassword: "Şifreyi tekrarla",
     passwordMismatch: "Şifreler eşleşmiyor.",

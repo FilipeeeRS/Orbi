@@ -22,11 +22,15 @@ export const zh: Dictionary = {
     soon: "即将推出",
   },
   home: {
+    tagline: "由评分爱好者，为评分爱好者",
     title: "你看的、听的、玩的、读的，尽在一处。",
     subtitle: "记录电影、打分、写影评，并导入你的 Letterboxd 历史。剧集、音乐、游戏和书籍即将推出。",
     cta: "开始使用",
   },
   auth: {
+    identifier: "邮箱或用户名",
+    rememberMe: "记住我",
+    invalidLogin: "邮箱、用户名或密码错误。",
     name: "名字",
     confirmPassword: "确认密码",
     passwordMismatch: "两次输入的密码不一致。",
