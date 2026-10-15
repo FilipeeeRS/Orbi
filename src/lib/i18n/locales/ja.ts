@@ -5,7 +5,7 @@ export const ja: Dictionary = {
   dir: "ltr",
   slogan: "すべてのためのリスト",
   nav: {
-    search: "映画を検索…",
+    search: "検索",
     signIn: "ログイン",
     profile: "マイプロフィール",
     import: "インポート",

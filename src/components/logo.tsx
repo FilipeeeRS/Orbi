@@ -6,7 +6,7 @@ export function Logo({ slogan }: { slogan?: string }) {
       <OrbiMark className="size-10 transition-transform duration-500 group-hover:rotate-[-12deg]" />
       <span className="font-logo text-2xl leading-none font-extrabold tracking-tight">orbi</span>
       {slogan && (
-        <span className="hidden border-s border-border ps-3 text-xs leading-tight text-muted md:block">{slogan}</span>
+        <span className="hidden text-xs leading-tight text-muted md:block">{slogan}</span>
       )}
     </Link>
   );

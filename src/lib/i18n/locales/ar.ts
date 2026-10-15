@@ -5,7 +5,7 @@ export const ar: Dictionary = {
   dir: "rtl",
   slogan: "قوائم لكل شيء",
   nav: {
-    search: "ابحث عن أفلام…",
+    search: "بحث",
     signIn: "تسجيل الدخول",
     profile: "ملفي الشخصي",
     import: "استيراد",

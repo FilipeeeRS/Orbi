@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "./logo";
-import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import type { MediaKind, Profile } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -13,7 +12,7 @@ const MENU_FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
 
 export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-border bg-bg">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <Logo slogan={t.slogan} />
         <form action="/search" className="ms-auto w-full max-w-xs">
@@ -24,7 +23,6 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
             className="w-full rounded-full border border-border bg-surface px-4 py-1.5 text-sm outline-none placeholder:text-muted focus:border-accent"
           />
         </form>
-        <ThemeToggle />
         {viewer ? (
           <UserMenu
             avatar={<Avatar profile={viewer} size={30} />}

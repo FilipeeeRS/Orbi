@@ -5,7 +5,7 @@ export const bn: Dictionary = {
   dir: "ltr",
   slogan: "সবকিছুর জন্য তালিকা",
   nav: {
-    search: "সিনেমা খুঁজুন…",
+    search: "খুঁজুন",
     signIn: "সাইন ইন",
     profile: "আমার প্রোফাইল",
     import: "ইমপোর্ট",

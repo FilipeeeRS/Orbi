@@ -5,7 +5,7 @@ export const id: Dictionary = {
   dir: "ltr",
   slogan: "Daftar untuk segalanya",
   nav: {
-    search: "Cari film…",
+    search: "Cari",
     signIn: "Masuk",
     profile: "Profil saya",
     import: "Impor",

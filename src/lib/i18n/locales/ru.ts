@@ -13,7 +13,7 @@ export const ru: Dictionary = {
   dir: "ltr",
   slogan: "Списки для всего",
   nav: {
-    search: "Поиск фильмов…",
+    search: "Поиск",
     signIn: "Войти",
     profile: "Мой профиль",
     import: "Импорт",

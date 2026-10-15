@@ -5,7 +5,7 @@ export const tr: Dictionary = {
   dir: "ltr",
   slogan: "Her şey için listeler",
   nav: {
-    search: "Film ara…",
+    search: "Ara",
     signIn: "Giriş yap",
     profile: "Profilim",
     import: "İçe aktar",

@@ -5,7 +5,7 @@ export const hi: Dictionary = {
   dir: "ltr",
   slogan: "हर चीज़ की सूची",
   nav: {
-    search: "फ़िल्में खोजें…",
+    search: "खोजें",
     signIn: "साइन इन",
     profile: "मेरी प्रोफ़ाइल",
     import: "इम्पोर्ट",

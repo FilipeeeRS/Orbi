@@ -5,7 +5,7 @@ import { Bricolage_Grotesque, Geist, Geist_Mono, Syne } from "next/font/google";
 import { Header } from "@/components/header";
 import { I18nProvider } from "@/components/i18n";
 import { LocaleSwitch } from "@/components/locale-switch";
-import { themeScript } from "@/components/theme-toggle";
+import { ThemeToggle, themeScript } from "@/components/theme-toggle";
 import { getDict, getViewer } from "@/lib/session";
 import "./globals.css";
 
@@ -53,7 +53,10 @@ async function AppShell({ children }: { children: React.ReactNode }) {
           <a href="https://www.themoviedb.org" className="max-w-md hover:text-fg" target="_blank" rel="noreferrer">
             {t.footer.tmdb}
           </a>
-          <LocaleSwitch />
+          <div className="flex items-center gap-2">
+            <LocaleSwitch />
+            <ThemeToggle />
+          </div>
         </div>
       </footer>
     </I18nProvider>

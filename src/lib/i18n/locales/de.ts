@@ -5,7 +5,7 @@ export const de: Dictionary = {
   dir: "ltr",
   slogan: "Listen für alles",
   nav: {
-    search: "Filme suchen…",
+    search: "Suchen",
     signIn: "Anmelden",
     profile: "Mein Profil",
     import: "Importieren",

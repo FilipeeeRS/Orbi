@@ -5,7 +5,7 @@ export const ur: Dictionary = {
   dir: "rtl",
   slogan: "ہر چیز کے لیے فہرستیں",
   nav: {
-    search: "فلمیں تلاش کریں…",
+    search: "تلاش",
     signIn: "سائن اِن",
     profile: "میری پروفائل",
     import: "امپورٹ",

@@ -3,7 +3,7 @@ export const pt = {
   dir: "ltr" as "ltr" | "rtl",
   slogan: "Listas para tudo",
   nav: {
-    search: "Buscar filmes…",
+    search: "Buscar",
     signIn: "Entrar",
     profile: "Meu perfil",
     import: "Importar",

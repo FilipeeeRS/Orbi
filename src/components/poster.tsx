@@ -51,7 +51,7 @@ export function PosterImage({
   return (
     <div
       className={`relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition group-hover:ring-2 ${
-        watched ? "group-hover:ring-ok" : "group-hover:ring-accent"
+        watched ? "group-hover:ring-ok" : "group-hover:ring-fg"
       }`}
     >
       {url ? (

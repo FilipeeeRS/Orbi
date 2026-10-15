@@ -5,7 +5,7 @@ export const ko: Dictionary = {
   dir: "ltr",
   slogan: "모든 것을 위한 리스트",
   nav: {
-    search: "영화 검색…",
+    search: "검색",
     signIn: "로그인",
     profile: "내 프로필",
     import: "가져오기",

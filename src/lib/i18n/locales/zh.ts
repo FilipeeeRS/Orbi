@@ -5,7 +5,7 @@ export const zh: Dictionary = {
   dir: "ltr",
   slogan: "万物皆可清单",
   nav: {
-    search: "搜索电影…",
+    search: "搜索",
     signIn: "登录",
     profile: "我的主页",
     import: "导入",
