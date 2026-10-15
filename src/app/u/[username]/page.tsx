@@ -153,7 +153,7 @@ function SectionTitle({ children, href, more }: { children: React.ReactNode; hre
 }
 
 // Distribuição das notas de todas as pastas em 5 degraus (1 a 5 estrelas), com a média.
-// Meias estrelas entram no degrau de baixo: ½ e 1 → 1★, 1½ e 2 → 2★ ... 4½ → 4★, 5 → 5★.
+// Meias estrelas entram no degrau de baixo: ½, 1 e 1½ → 1★; 2 e 2½ → 2★ ... 4 e 4½ → 4★; 5 → 5★.
 function RatingHistogram({ counts, averageLabel }: { counts: number[]; averageLabel: string }) {
   const total = counts.reduce((a, b) => a + b, 0);
   const average = total ? counts.reduce((sum, c, i) => sum + c * (i + 1), 0) / total / 2 : null;
