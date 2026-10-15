@@ -165,12 +165,12 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
               <SectionTitle href={`${base}/movies?tab=watchlist`} more={o.watchlist.toLocaleString()}>
                 {t.profile.watchlist}
               </SectionTitle>
-              <Link href={`${base}/movies?tab=watchlist`} className="group flex">
+              <Link href={`${base}/movies?tab=watchlist`} className="flex">
                 {Array.from({ length: 5 }, (_, i) => o.watchlistPreview[i]).map((e, i) => (
                   <div
                     key={e?.id ?? i}
-                    className="w-1/5 shrink-0 transition-transform group-hover:-translate-y-1"
-                    style={{ zIndex: 5 - i, transitionDelay: `${i * 30}ms` }}
+                    className="w-1/5 shrink-0"
+                    style={{ zIndex: 5 - i }}
                   >
                     <div className="-me-3 rounded-md shadow-[4px_0_12px_rgba(0,0,0,0.5)]">
                       {e ? (
@@ -334,13 +334,13 @@ function Folders({
           <Link
             key={kind}
             href={`${base}/${FOLDER_PATHS[kind]}`}
-            className="flex h-28 flex-col justify-between rounded-xl border border-dashed border-border p-3 text-muted/70 transition hover:border-accent hover:text-fg"
+            className="flex h-28 flex-col justify-end rounded-xl border border-dashed border-border p-3 text-muted/70 transition hover:border-accent hover:text-fg"
           >
-            <FolderIcon kind={kind} className="size-6" />
-            <div>
-              <span className="block text-sm font-semibold">{t.folders[kind]}</span>
-              <span className="text-[11px]">{t.profile.items(0)}</span>
-            </div>
+            <span className="flex items-center gap-1.5 font-semibold">
+              <FolderIcon kind={kind} className="size-4" />
+              {t.folders[kind]}
+            </span>
+            <span className="text-xs">{t.profile.items(0)}</span>
           </Link>
         );
       })}

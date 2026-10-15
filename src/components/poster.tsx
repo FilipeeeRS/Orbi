@@ -19,11 +19,14 @@ type Props = {
 export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer }: Props) {
   const title = itemTitle(item, locale);
   return (
-    <div className="group relative">
-      <Link href={itemHref(item)} className="block" title={item.year ? `${title} (${item.year})` : title}>
-        <PosterImage url={item.poster_url} title={title} eager={eager} watched={!!viewer?.state?.watched} />
-      </Link>
-      {viewer && <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} />}
+    <div className="group">
+      {/* Os atalhos ficam presos à imagem, não ao bloco com estrelas embaixo */}
+      <div className="relative">
+        <Link href={itemHref(item)} className="block" title={item.year ? `${title} (${item.year})` : title}>
+          <PosterImage url={item.poster_url} title={title} eager={eager} watched={!!viewer?.state?.watched} />
+        </Link>
+        {viewer && <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} />}
+      </div>
       {showMeta && (rating || liked) ? (
         <div className="mt-1 flex items-center gap-1 text-xs">
           <StarsDisplay rating={rating ?? null} />
