@@ -152,22 +152,19 @@ function SectionTitle({ children, href, more }: { children: React.ReactNode; hre
   );
 }
 
-// Distribuição das notas de todas as pastas em 5 degraus (1 a 5 estrelas), com a média.
-// Meias estrelas entram no degrau de baixo: ½, 1 e 1½ → 1★; 2 e 2½ → 2★ ... 4 e 4½ → 4★; 5 → 5★.
+// Distribuição das notas (½★ a ★★★★★) de todas as pastas, com a média.
 function RatingHistogram({ counts, averageLabel }: { counts: number[]; averageLabel: string }) {
   const total = counts.reduce((a, b) => a + b, 0);
+  const max = Math.max(1, ...counts);
   const average = total ? counts.reduce((sum, c, i) => sum + c * (i + 1), 0) / total / 2 : null;
-  const steps = [0, 0, 0, 0, 0];
-  counts.forEach((c, i) => (steps[Math.max(0, Math.floor((i + 1) / 2) - 1)] += c));
-  const max = Math.max(1, ...steps);
   return (
     <div className="flex items-end gap-2" title={average !== null ? `${averageLabel}: ${average.toFixed(1)}` : undefined}>
       <span className="text-xs text-star">★</span>
-      <div className="flex h-16 flex-1 items-end gap-1">
-        {steps.map((c, i) => (
+      <div className="flex h-16 flex-1 items-end gap-[3px]">
+        {counts.map((c, i) => (
           <div
             key={i}
-            title={`${"★".repeat(i + 1)} · ${c}`}
+            title={`${(i + 1) / 2}★ · ${c}`}
             className="flex-1 rounded-t-sm bg-muted/40 transition hover:bg-accent"
             style={{ height: c ? `${Math.max(6, (c / max) * 100)}%` : "2px" }}
           />
