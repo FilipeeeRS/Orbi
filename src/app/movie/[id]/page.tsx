@@ -52,11 +52,11 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   const overview = itemOverview(item, locale);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-10">
+    <div className="mx-auto max-w-[58rem] space-y-10">
       {item.backdrop_url && (
         // Backdrop mais estreito, centralizado e com as bordas laterais esmaecidas
         <div className="relative -mt-6 h-48 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] sm:-mt-8 sm:h-80">
-          <Image src={item.backdrop_url} alt="" fill className="object-cover object-[center_30%]" loading="eager" sizes="(max-width: 1024px) 100vw, 1024px" />
+          <Image src={item.backdrop_url} alt="" fill className="object-cover object-[center_30%]" loading="eager" sizes="(max-width: 928px) 100vw, 928px" />
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
         </div>
       )}
