@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import Loading from "../loading";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getDict, getViewer } from "@/lib/session";
@@ -5,7 +7,15 @@ import { LetterboxdImporter } from "./letterboxd-importer";
 
 export const metadata: Metadata = { title: "Importar" };
 
-export default async function ImportPage() {
+export default function ImportPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ImportPageContent />
+    </Suspense>
+  );
+}
+
+async function ImportPageContent() {
   const [viewer, { t }] = await Promise.all([getViewer(), getDict()]);
   if (!viewer) redirect("/login?next=/import");
 

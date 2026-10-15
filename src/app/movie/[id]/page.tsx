@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import Loading from "../../loading";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,7 +19,15 @@ export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Pr
   return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
 }
 
-export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
+export default function MoviePage(props: PageProps<"/movie/[id]">) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <MoviePageContent {...props} />
+    </Suspense>
+  );
+}
+
+async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   const { id } = await params;
   const [item, viewer, { t, locale }] = await Promise.all([getMovieByRouteId(id), getViewer(), getDict()]);
   if (!item) notFound();

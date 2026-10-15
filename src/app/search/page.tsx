@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
+import Loading from "../loading";
 import { PosterGrid, PosterImage } from "@/components/poster";
 import { getDict } from "@/lib/session";
 import { releaseYear, searchMovies, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Busca" };
 
-export default async function SearchPage({ searchParams }: PageProps<"/search">) {
+export default function SearchPage(props: PageProps<"/search">) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <SearchResults {...props} />
+    </Suspense>
+  );
+}
+
+async function SearchResults({ searchParams }: PageProps<"/search">) {
   const q = String((await searchParams).q ?? "").trim().slice(0, 200);
   const { t, locale } = await getDict();
 

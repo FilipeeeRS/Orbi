@@ -1,8 +1,18 @@
+import { Suspense } from "react";
+import Loading from "./loading";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDict, getViewer } from "@/lib/session";
 
-export default async function Home() {
+export default function Home() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+async function HomeContent() {
   const viewer = await getViewer();
   if (viewer) redirect(`/u/${viewer.username}`);
   const { t } = await getDict();

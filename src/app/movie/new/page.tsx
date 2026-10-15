@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import Loading from "../../loading";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getDict, getViewer } from "@/lib/session";
@@ -5,7 +7,15 @@ import { ManualMovieForm } from "./manual-movie-form";
 
 export const metadata: Metadata = { title: "Adicionar filme" };
 
-export default async function NewMoviePage({ searchParams }: PageProps<"/movie/new">) {
+export default function NewMoviePage(props: PageProps<"/movie/new">) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <NewMoviePageContent {...props} />
+    </Suspense>
+  );
+}
+
+async function NewMoviePageContent({ searchParams }: PageProps<"/movie/new">) {
   const [viewer, { t }, query] = await Promise.all([getViewer(), getDict(), searchParams]);
   if (!viewer) redirect("/login?next=/movie/new");
 

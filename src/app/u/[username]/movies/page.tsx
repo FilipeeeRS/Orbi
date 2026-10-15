@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import Loading from "../../../loading";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,7 +12,15 @@ import { ProfileHeader } from "../profile-header";
 
 export const metadata: Metadata = { title: "Filmes" };
 
-export default async function MoviesPage({ params, searchParams }: PageProps<"/u/[username]/movies">) {
+export default function MoviesPage(props: PageProps<"/u/[username]/movies">) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <MoviesPageContent {...props} />
+    </Suspense>
+  );
+}
+
+async function MoviesPageContent({ params, searchParams }: PageProps<"/u/[username]/movies">) {
   const [{ username }, query] = await Promise.all([params, searchParams]);
   const tab: Tab = TABS.includes(query.tab as Tab) ? (query.tab as Tab) : "watched";
   const sort: Sort = SORTS.includes(query.sort as Sort) ? (query.sort as Sort) : "recent";

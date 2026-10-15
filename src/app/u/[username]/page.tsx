@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import Loading from "../../loading";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +17,15 @@ export async function generateMetadata({ params }: PageProps<"/u/[username]">): 
 
 const FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
 
-export default async function ProfilePage({ params }: PageProps<"/u/[username]">) {
+export default function ProfilePage(props: PageProps<"/u/[username]">) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <ProfilePageContent {...props} />
+    </Suspense>
+  );
+}
+
+async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   const { username } = await params;
   const [profile, viewer, { t, locale }] = await Promise.all([getProfileByUsername(username), getViewer(), getDict()]);
   if (!profile) notFound();
