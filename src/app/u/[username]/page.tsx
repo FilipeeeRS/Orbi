@@ -7,7 +7,9 @@ import Loading from "../../loading";
 import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
-import { getProfileByUsername, getProfileOverview } from "@/lib/queries";
+import { getFriends, getProfileByUsername, getProfileOverview, isFollowing } from "@/lib/queries";
+import { Avatar } from "@/components/header";
+import { FollowButton } from "./follow-button";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, type EntryWithItem, type FolderKind, type MediaKind } from "@/lib/types";
 import { ProfileHeader } from "./profile-header";
@@ -40,9 +42,13 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   const [profile, viewer, { t, locale }] = await Promise.all([getProfileByUsername(username), getViewer(), getDict()]);
   if (!profile) notFound();
 
-  const o = await getProfileOverview(profile.id);
-  const base = `/u/${profile.username}`;
   const isOwner = viewer?.id === profile.id;
+  const [o, friends, following] = await Promise.all([
+    getProfileOverview(profile.id),
+    getFriends(profile.id),
+    viewer && !isOwner ? isFollowing(viewer.id, profile.id) : false,
+  ]);
+  const base = `/u/${profile.username}`;
   const backdrop = [...o.favorites, ...o.recent].find((e) => e.items.backdrop_url)?.items.backdrop_url ?? null;
   const diary = o.recent.filter((e) => e.watched_on).slice(0, 8);
 
@@ -61,7 +67,18 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
             value: o.kindCounts[k]!,
             href: `${base}/${FOLDER_PATHS[k]}`,
           })),
+          ...(friends.count ? [{ label: t.profile.friends, value: friends.count, href: "#friends" }] : []),
         ]}
+        action={
+          viewer && !isOwner ? (
+            <FollowButton
+              viewerId={viewer.id}
+              profileId={profile.id}
+              initial={following}
+              labels={{ add: t.profile.addFriend, is: t.profile.isFriend, remove: t.profile.removeFriend }}
+            />
+          ) : null
+        }
       />
 
       <Folders base={base} recent={o.recent} counts={folderCounts(o)} t={t} />
@@ -92,6 +109,24 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
                   {o.recent.slice(0, 8).map((e) => (
                     <Poster key={e.id} item={e.items} locale={locale} rating={e.rating} liked={e.liked} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {friends.count > 0 && (
+              <section id="friends" className="scroll-mt-24">
+                <SectionTitle more={friends.count.toLocaleString()}>{t.profile.friends}</SectionTitle>
+                <div className="flex flex-wrap gap-2">
+                  {friends.list.map((f) => (
+                    <Link
+                      key={f.id}
+                      href={`/u/${f.username}`}
+                      title={f.display_name || f.username}
+                      className="rounded-full ring-2 ring-transparent transition hover:ring-accent"
+                    >
+                      <Avatar profile={f} size={44} />
+                    </Link>
                   ))}
                 </div>
               </section>

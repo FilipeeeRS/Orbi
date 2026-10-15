@@ -12,12 +12,14 @@ export function ProfileHeader({
   isOwner,
   backdrop,
   stats,
+  action,
   t,
 }: {
   profile: Profile;
   isOwner: boolean;
   backdrop: string | null;
   stats: Stat[];
+  action?: React.ReactNode;
   t: Dictionary;
 }) {
   return (
@@ -49,6 +51,7 @@ export function ProfileHeader({
                   {t.profile.editProfile}
                 </Link>
               )}
+              {action}
             </div>
             <p className="text-sm text-muted">@{profile.username}</p>
             {profile.bio && <p className="mt-2 max-w-lg text-sm text-balance">{profile.bio}</p>}

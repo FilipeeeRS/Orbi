@@ -116,3 +116,28 @@ export async function getItemStats(itemId: string) {
     ratings: values.length,
   };
 }
+
+export type FriendProfile = Pick<Profile, "id" | "username" | "display_name" | "avatar_url">;
+
+// Amigos = pessoas que o usuário segue (modelo do Letterboxd, sem aprovação).
+export async function getFriends(userId: string, limit = 24) {
+  const supabase = await createClient();
+  const { data, count } = await supabase
+    .from("follows")
+    .select("created_at, profiles!follows_followee_id_fkey(id, username, display_name, avatar_url)", { count: "exact" })
+    .eq("follower_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  const list = (data ?? []).map((row) => row.profiles as unknown as FriendProfile).filter(Boolean);
+  return { count: count ?? 0, list };
+}
+
+export async function isFollowing(followerId: string, followeeId: string) {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("follows")
+    .select("follower_id", { count: "exact", head: true })
+    .eq("follower_id", followerId)
+    .eq("followee_id", followeeId);
+  return (count ?? 0) > 0;
+}
