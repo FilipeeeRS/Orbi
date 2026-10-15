@@ -1,6 +1,8 @@
 import type { Locale } from "./i18n/dictionaries";
 
 export type MediaKind = "movie" | "series" | "music" | "game" | "book";
+// "all" = pasta que junta todas as outras
+export type FolderKind = MediaKind | "all";
 export type EntryStatus = "watched" | "watchlist";
 
 export type Profile = {

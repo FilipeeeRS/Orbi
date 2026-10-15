@@ -13,6 +13,7 @@ export const tr: Dictionary = {
     signOut: "Çıkış yap",
   },
   folders: {
+    all: "Tümü",
     movie: "Filmler",
     series: "Diziler",
     music: "Müzik",

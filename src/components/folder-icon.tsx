@@ -1,6 +1,14 @@
-import type { MediaKind } from "@/lib/types";
+import type { FolderKind } from "@/lib/types";
 
-const PATHS: Record<MediaKind, React.ReactNode> = {
+const PATHS: Record<FolderKind, React.ReactNode> = {
+  all: (
+    <>
+      <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" />
+      <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" />
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" />
+    </>
+  ),
   movie: (
     <>
       <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -34,7 +42,7 @@ const PATHS: Record<MediaKind, React.ReactNode> = {
   ),
 };
 
-export function FolderIcon({ kind, className = "size-5" }: { kind: MediaKind; className?: string }) {
+export function FolderIcon({ kind, className = "size-5" }: { kind: FolderKind; className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"

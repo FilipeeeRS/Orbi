@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "./supabase/server";
-import type { EntryWithItem, MediaKind, Profile } from "./types";
+import type { EntryWithItem, FolderKind, MediaKind, Profile } from "./types";
 
 const ENTRY_WITH_ITEM = "*, items!inner(*)";
 
@@ -58,13 +58,10 @@ export const SORTS = ["recent", "yours", "top", "title"] as const;
 export type Sort = (typeof SORTS)[number];
 export const PAGE_SIZE = 48;
 
-export async function listEntries(userId: string, tab: Tab, sort: Sort, page: number, kind: MediaKind = "movie") {
+export async function listEntries(userId: string, tab: Tab, sort: Sort, page: number, kind: FolderKind = "movie") {
   const supabase = await createClient();
-  let query = supabase
-    .from("entries")
-    .select(ENTRY_WITH_ITEM, { count: "exact" })
-    .eq("user_id", userId)
-    .eq("items.kind", kind);
+  let query = supabase.from("entries").select(ENTRY_WITH_ITEM, { count: "exact" }).eq("user_id", userId);
+  if (kind !== "all") query = query.eq("items.kind", kind);
 
   if (tab === "watchlist") query = query.eq("status", "watchlist");
   else if (tab === "liked") query = query.eq("liked", true);

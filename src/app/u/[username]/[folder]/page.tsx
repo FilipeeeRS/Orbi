@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Loading from "../../../loading";
-import type { MediaKind } from "@/lib/types";
+import type { FolderKind } from "@/lib/types";
 import { FolderView } from "../folder-view";
 
-// Pastas além de filmes (que têm a própria rota em /movies). Ainda vazias, mas com a mesma tela.
-const FOLDER_SLUGS: Record<string, MediaKind> = {
+// Pastas além de filmes (que têm a própria rota em /movies). "all" junta tudo.
+const FOLDER_SLUGS: Record<string, FolderKind> = {
+  all: "all",
   series: "series",
   music: "music",
   games: "game",

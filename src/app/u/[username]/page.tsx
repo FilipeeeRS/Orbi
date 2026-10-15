@@ -9,7 +9,7 @@ import { Poster, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
 import { getProfileByUsername, getProfileOverview } from "@/lib/queries";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
-import { itemHref, itemTitle, type EntryWithItem, type MediaKind } from "@/lib/types";
+import { itemHref, itemTitle, type EntryWithItem, type FolderKind, type MediaKind } from "@/lib/types";
 import { ProfileHeader } from "./profile-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]">): Promise<Metadata> {
@@ -18,7 +18,14 @@ export async function generateMetadata({ params }: PageProps<"/u/[username]">): 
 }
 
 const FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
-const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
+const FOLDER_PATHS: Record<FolderKind, string> = {
+  all: "all",
+  movie: "movies",
+  series: "series",
+  music: "music",
+  game: "games",
+  book: "books",
+};
 
 export default function ProfilePage(props: PageProps<"/u/[username]">) {
   return (
@@ -57,7 +64,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
         ]}
       />
 
-      <Folders base={base} recent={o.recent} count={o.watched + o.watchlist} t={t} />
+      <Folders base={base} recent={o.recent} counts={folderCounts(o)} t={t} />
 
       {o.watched + o.watchlist === 0 ? (
         <EmptyProfile isOwner={isOwner} t={t} />
@@ -211,31 +218,52 @@ function Diary({ entries, locale }: { entries: EntryWithItem[]; locale: Locale }
   );
 }
 
-function Folders({ base, recent, count, t }: { base: string; recent: EntryWithItem[]; count: number; t: Dictionary }) {
+function folderCounts(o: Awaited<ReturnType<typeof getProfileOverview>>): Record<FolderKind, number> {
+  const movie = o.watched + o.watchlist;
+  const others = FOLDERS.filter((k) => k !== "movie").map((k) => [k, o.kindCounts[k] ?? 0] as const);
+  return {
+    all: movie + others.reduce((sum, [, n]) => sum + n, 0),
+    movie,
+    ...Object.fromEntries(others),
+  } as Record<FolderKind, number>;
+}
+
+// "Tudo" primeiro, depois cada pasta. Pastas com itens ganham a colagem de pôsteres.
+function Folders({
+  base,
+  recent,
+  counts,
+  t,
+}: {
+  base: string;
+  recent: EntryWithItem[];
+  counts: Record<FolderKind, number>;
+  t: Dictionary;
+}) {
+  const kinds: FolderKind[] = ["all", ...FOLDERS];
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-      {FOLDERS.map((kind) =>
-        kind === "movie" ? (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      {kinds.map((kind) => {
+        const posters = kind === "all" || kind === "movie" ? recent.filter((e) => e.items.poster_url).slice(0, 3) : [];
+        return counts[kind] > 0 ? (
           <Link
             key={kind}
-            href={`${base}/movies`}
-            className="group relative col-span-2 flex h-28 flex-col justify-end overflow-hidden rounded-xl border border-border bg-surface p-3 hover:border-accent sm:col-span-1"
+            href={`${base}/${FOLDER_PATHS[kind]}`}
+            className="group relative flex h-28 flex-col justify-end overflow-hidden rounded-xl border border-border bg-surface p-3 hover:border-accent"
           >
             <div className="absolute inset-0 flex opacity-50 transition group-hover:opacity-70">
-              {recent.slice(0, 3).map((e) =>
-                e.items.poster_url ? (
-                  <div key={e.id} className="relative flex-1">
-                    <Image src={e.items.poster_url} alt="" fill sizes="80px" className="object-cover" />
-                  </div>
-                ) : null,
-              )}
+              {posters.map((e) => (
+                <div key={e.id} className="relative flex-1">
+                  <Image src={e.items.poster_url!} alt="" fill sizes="80px" className="object-cover" />
+                </div>
+              ))}
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
             <span className="relative flex items-center gap-1.5 font-semibold">
               <FolderIcon kind={kind} className="size-4 text-accent" />
-              {t.folders.movie}
+              {t.folders[kind]}
             </span>
-            <span className="relative text-xs text-muted">{t.profile.items(count)}</span>
+            <span className="relative text-xs text-muted">{t.profile.items(counts[kind])}</span>
           </Link>
         ) : (
           <Link
@@ -246,11 +274,11 @@ function Folders({ base, recent, count, t }: { base: string; recent: EntryWithIt
             <FolderIcon kind={kind} className="size-6" />
             <div>
               <span className="block text-sm font-semibold">{t.folders[kind]}</span>
-              <span className="text-[11px]">{t.folders.soon}</span>
+              <span className="text-[11px]">{kind === "all" || kind === "movie" ? t.profile.items(0) : t.folders.soon}</span>
             </div>
           </Link>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }

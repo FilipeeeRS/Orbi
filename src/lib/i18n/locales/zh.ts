@@ -13,6 +13,7 @@ export const zh: Dictionary = {
     signOut: "退出",
   },
   folders: {
+    all: "全部",
     movie: "电影",
     series: "剧集",
     music: "音乐",

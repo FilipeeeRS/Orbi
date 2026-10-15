@@ -13,6 +13,7 @@ export const ko: Dictionary = {
     signOut: "로그아웃",
   },
   folders: {
+    all: "전체",
     movie: "영화",
     series: "시리즈",
     music: "음악",

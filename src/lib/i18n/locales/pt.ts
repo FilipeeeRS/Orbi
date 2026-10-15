@@ -11,6 +11,7 @@ export const pt = {
     signOut: "Sair",
   },
   folders: {
+    all: "Tudo",
     movie: "Filmes",
     series: "Séries",
     music: "Músicas",

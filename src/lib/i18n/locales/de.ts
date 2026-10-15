@@ -13,6 +13,7 @@ export const de: Dictionary = {
     signOut: "Abmelden",
   },
   folders: {
+    all: "Alle",
     movie: "Filme",
     series: "Serien",
     music: "Musik",

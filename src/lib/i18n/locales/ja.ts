@@ -13,6 +13,7 @@ export const ja: Dictionary = {
     signOut: "ログアウト",
   },
   folders: {
+    all: "すべて",
     movie: "映画",
     series: "ドラマ",
     music: "音楽",

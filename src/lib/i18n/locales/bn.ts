@@ -13,6 +13,7 @@ export const bn: Dictionary = {
     signOut: "সাইন আউট",
   },
   folders: {
+    all: "সব",
     movie: "সিনেমা",
     series: "সিরিজ",
     music: "গান",

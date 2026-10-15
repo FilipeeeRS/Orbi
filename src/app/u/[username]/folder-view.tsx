@@ -4,7 +4,7 @@ import { Poster, PosterGrid, PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
 import { getDict, getViewer } from "@/lib/session";
 import { getProfileByUsername, listEntries, PAGE_SIZE, SORTS, TABS, type Sort, type Tab } from "@/lib/queries";
-import { itemHref, itemTitle, type MediaKind } from "@/lib/types";
+import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 
 // Listagem de uma pasta (filmes, séries, músicas, jogos ou livros) do perfil, com abas e ordenação.
@@ -16,7 +16,7 @@ export async function FolderView({
 }: {
   username: string;
   query: Record<string, string | string[] | undefined>;
-  kind: MediaKind;
+  kind: FolderKind;
   path: string;
 }) {
   const tab: Tab = TABS.includes(query.tab as Tab) ? (query.tab as Tab) : "watched";
