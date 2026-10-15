@@ -68,6 +68,7 @@ export const tr: Dictionary = {
     next: "Sonraki",
   },
   movie: {
+    onSource: (s: string) => `${s} puanı`,
     watched: "İzlendi",
     watch: "İzlendi olarak işaretle",
     watchlist: "İzleme listesinde",

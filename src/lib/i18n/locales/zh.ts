@@ -67,6 +67,7 @@ export const zh: Dictionary = {
     next: "下一页",
   },
   movie: {
+    onSource: (s: string) => `${s} 评分`,
     watched: "已看过",
     watch: "标记为看过",
     watchlist: "已在想看",

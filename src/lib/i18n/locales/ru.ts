@@ -76,6 +76,7 @@ export const ru: Dictionary = {
     next: "Вперёд",
   },
   movie: {
+    onSource: (s: string) => `на ${s}`,
     watched: "Просмотрено",
     watch: "Отметить как просмотренный",
     watchlist: "В списке «Хочу посмотреть»",

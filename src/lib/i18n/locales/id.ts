@@ -68,6 +68,7 @@ export const id: Dictionary = {
     next: "Berikutnya",
   },
   movie: {
+    onSource: (s: string) => `di ${s}`,
     watched: "Sudah ditonton",
     watch: "Tandai sudah ditonton",
     watchlist: "Ada di watchlist",

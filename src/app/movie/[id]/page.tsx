@@ -77,7 +77,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
             {item.tmdb_rating !== null && (
               <p className="mt-1 text-sm text-muted">
                 <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
-                <span className="text-xs"> / 10 · TMDB</span>
+                <span className="text-xs"> / 10 {t.movie.onSource("TMDB")}</span>
               </p>
             )}
           </div>
@@ -150,7 +150,7 @@ function OrbiRating({ average, count, t }: { average: number | null; count: numb
         </svg>
       </p>
       <p className="mt-1 text-[10px] tracking-widest text-muted uppercase">
-        {t.profile.average} · {count.toLocaleString()}
+        {t.movie.onSource("Orbi")}
       </p>
     </div>
   );

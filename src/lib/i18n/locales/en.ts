@@ -68,6 +68,7 @@ export const en: Dictionary = {
     next: "Next",
   },
   movie: {
+    onSource: (s: string) => `on ${s}`,
     watched: "Watched",
     watch: "Mark as watched",
     watchlist: "On watchlist",

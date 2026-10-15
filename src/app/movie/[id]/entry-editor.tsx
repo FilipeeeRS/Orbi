@@ -110,7 +110,6 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
         </div>
 
         <div className="flex items-center gap-2" title={entry?.rating ? t.movie.clearRating : t.movie.rating}>
-          <span className="w-6 text-end text-sm text-muted tabular-nums">{shown ? (shown / 2).toLocaleString() : ""}</span>
           <div className="flex" onMouseLeave={() => setHover(null)} role="radiogroup" aria-label={t.movie.rating}>
             {[1, 2, 3, 4, 5].map((star) => (
               <div key={star} className="relative size-7">
@@ -133,6 +132,7 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
               </div>
             ))}
           </div>
+          <span className="w-6 text-sm text-muted tabular-nums">{shown ? (shown / 2).toLocaleString() : ""}</span>
         </div>
       </div>
 

@@ -68,6 +68,7 @@ export const ar: Dictionary = {
     next: "التالي",
   },
   movie: {
+    onSource: (s: string) => `على ${s}`,
     watched: "شاهدته",
     watch: "وضع علامة شاهدته",
     watchlist: "في قائمة المشاهدة",

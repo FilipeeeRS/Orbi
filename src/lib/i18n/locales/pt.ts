@@ -66,6 +66,7 @@ export const pt = {
     next: "Próxima",
   },
   movie: {
+    onSource: (s: string) => `no ${s}`,
     watched: "Assistido",
     watch: "Marcar como assistido",
     watchlist: "Na watchlist",

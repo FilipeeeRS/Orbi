@@ -68,6 +68,7 @@ export const bn: Dictionary = {
     next: "পরের",
   },
   movie: {
+    onSource: (s: string) => `${s}-এ`,
     watched: "দেখা হয়েছে",
     watch: "দেখা হয়েছে হিসেবে চিহ্নিত করুন",
     watchlist: "ওয়াচলিস্টে আছে",

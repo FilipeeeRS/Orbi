@@ -68,6 +68,7 @@ export const ja: Dictionary = {
     next: "次へ",
   },
   movie: {
+    onSource: (s: string) => `${s} の評価`,
     watched: "観た",
     watch: "観たに追加",
     watchlist: "観たいリスト登録済み",

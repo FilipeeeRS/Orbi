@@ -68,6 +68,7 @@ export const ko: Dictionary = {
     next: "다음",
   },
   movie: {
+    onSource: (s: string) => `${s} 기준`,
     watched: "봤어요",
     watch: "본 영화로 표시",
     watchlist: "보고 싶어요에 있음",

@@ -68,6 +68,7 @@ export const ur: Dictionary = {
     next: "اگلا",
   },
   movie: {
+    onSource: (s: string) => `${s} پر`,
     watched: "دیکھ لی",
     watch: "دیکھی ہوئی کے طور پر نشان لگائیں",
     watchlist: "واچ لسٹ میں ہے",
