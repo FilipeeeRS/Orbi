@@ -89,7 +89,7 @@ export function ManualMovieForm({ userId, initialTitle }: { userId: string; init
           <textarea name="overview" rows={4} maxLength={5000} className={input} />
         </label>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-like">{error}</span>
+          <span className="text-danger">{error}</span>
           <button
             disabled={status !== "idle"}
             className="rounded-lg bg-accent px-5 py-2 font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"

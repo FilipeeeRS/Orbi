@@ -97,7 +97,7 @@ export function LoginForm() {
           hint={mode === "signup" ? t.auth.passwordHint : undefined}
           autoComplete={mode === "signin" ? "current-password" : "new-password"}
         />
-        {error && <p className="text-sm text-like">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
         {info && <p className="text-sm text-ok">{info}</p>}
         <button
           disabled={pending}

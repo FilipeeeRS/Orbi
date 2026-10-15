@@ -8,6 +8,7 @@ const LocaleContext = createContext<Locale>("pt");
 export function I18nProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = dictionaries[locale].htmlLang;
+    document.documentElement.dir = dictionaries[locale].dir;
   }, [locale]);
   return <LocaleContext value={locale}>{children}</LocaleContext>;
 }

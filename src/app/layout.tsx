@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { I18nProvider } from "@/components/i18n";
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
 // Idioma e usuário dependem da requisição (cookies), então ficam dentro do Suspense.
 async function AppShell({ children }: { children: React.ReactNode }) {
+  await connection(); // o cliente do Supabase lê a hora atual (validade da sessão)
   const [viewer, { locale, t }] = await Promise.all([getViewer(), getDict()]);
 
   return (

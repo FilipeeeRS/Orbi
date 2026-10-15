@@ -1,282 +1,75 @@
-export const LOCALES = ["pt", "en"] as const;
+import { pt, type Dictionary } from "./locales/pt";
+import { en } from "./locales/en";
+import { zh } from "./locales/zh";
+import { hi } from "./locales/hi";
+import { es } from "./locales/es";
+import { fr } from "./locales/fr";
+import { ar } from "./locales/ar";
+import { bn } from "./locales/bn";
+import { ru } from "./locales/ru";
+import { ur } from "./locales/ur";
+import { id } from "./locales/id";
+import { de } from "./locales/de";
+import { ja } from "./locales/ja";
+import { tr } from "./locales/tr";
+import { ko } from "./locales/ko";
+import { it } from "./locales/it";
+
+export type { Dictionary };
+
+export const LOCALES = ["pt", "en", "zh", "hi", "es", "fr", "ar", "bn", "ru", "ur", "id", "de", "ja", "tr", "ko", "it"] as const;
 export type Locale = (typeof LOCALES)[number];
 
-const pt = {
-  htmlLang: "pt-BR",
-  nav: {
-    search: "Buscar filmes…",
-    signIn: "Entrar",
-    profile: "Meu perfil",
-    import: "Importar",
-    settings: "Configurações",
-    signOut: "Sair",
-  },
-  folders: {
-    movie: "Filmes",
-    series: "Séries",
-    music: "Músicas",
-    game: "Jogos",
-    book: "Livros",
-    soon: "Em breve",
-  },
-  home: {
-    title: "Tudo o que você assiste, ouve, joga e lê. Em um só lugar.",
-    subtitle:
-      "Registre filmes, dê notas, escreva reviews e traga seu histórico do Letterboxd. Séries, músicas, jogos e livros vêm aí.",
-    cta: "Começar",
-  },
-  auth: {
-    signInTitle: "Entrar no Orbi",
-    signUpTitle: "Criar conta",
-    email: "E-mail",
-    password: "Senha",
-    signIn: "Entrar",
-    signUp: "Criar conta",
-    google: "Continuar com Google",
-    or: "ou",
-    toSignUp: "Não tem conta? Criar conta",
-    toSignIn: "Já tem conta? Entrar",
-    checkEmail: "Enviamos um link de confirmação para o seu e-mail.",
-    passwordHint: "Mínimo de 8 caracteres",
-  },
-  profile: {
-    watched: "Filmes vistos",
-    thisYear: "Este ano",
-    watchlist: "Watchlist",
-    favorites: "Favoritos",
-    recent: "Atividade recente",
-    folders: "Pastas",
-    empty: "Nada por aqui ainda.",
-    notFound: "Perfil não encontrado.",
-    items: (n: number) => `${n} ${n === 1 ? "item" : "itens"}`,
-  },
-  movies: {
-    tabs: { watched: "Vistos", watchlist: "Watchlist", liked: "Curtidos", reviews: "Reviews" },
-    sort: { recent: "Mais recentes", rating: "Maior nota", title: "Título" },
-    page: (n: number, total: number) => `Página ${n} de ${total}`,
-    prev: "Anterior",
-    next: "Próxima",
-  },
-  movie: {
-    watched: "Assistido",
-    watch: "Marcar como assistido",
-    watchlist: "Na watchlist",
-    addWatchlist: "Quero ver",
-    like: "Curtir",
-    liked: "Curtido",
-    rating: "Nota",
-    clearRating: "Limpar nota",
-    review: "Review",
-    reviewPlaceholder: "Escreva o que achou…",
-    watchedOn: "Assistido em",
-    save: "Salvar",
-    saved: "Salvo",
-    remove: "Remover dos vistos",
-    confirmRemove: "Remover este filme dos vistos? A nota, o like e a review serão apagados.",
-    signInToLog: "Entre para registrar este filme",
-    reviews: "Reviews",
-    noReviews: "Nenhuma review ainda.",
-    notFound: "Filme não encontrado.",
-  },
-  search: {
-    title: (q: string) => `Resultados para “${q}”`,
-    empty: "Nenhum resultado.",
-    prompt: "Digite algo para buscar.",
-  },
-  settings: {
-    title: "Configurações",
-    username: "Nome de usuário",
-    usernameHint: "Letras minúsculas, números e _ (3 a 30). Vira o link do seu perfil.",
-    displayName: "Nome de exibição",
-    bio: "Bio",
-    language: "Idioma",
-    save: "Salvar",
-    saved: "Alterações salvas.",
-    usernameTaken: "Esse nome de usuário já está em uso.",
-    invalid: "Verifique os campos.",
-  },
-  import: {
-    title: "Importar do Letterboxd",
-    steps:
-      "No Letterboxd, vá em Settings → Import & Export → Export your data. Você vai receber um arquivo .zip. Envie esse arquivo aqui, sem descompactar.",
-    choose: "Escolher arquivo .zip",
-    reading: "Lendo o arquivo…",
-    found: (n: number) => `${n} filmes encontrados no export.`,
-    start: "Importar",
-    progress: (done: number, total: number) => `Importando ${done} de ${total}…`,
-    done: (n: number) => `Pronto! ${n} filmes importados.`,
-    notFound: "Não encontramos estes no TMDB (você pode adicioná-los pela busca):",
-    invalid: "Não reconheci esse arquivo. Envie o .zip exportado pelo Letterboxd.",
-    error: "Algo deu errado na importação. Tente de novo; o que já foi importado fica salvo.",
-    note: "Filmes que já estão no seu perfil serão atualizados com os dados do Letterboxd.",
-  },
-  footer: { language: "Idioma", tmdb: "Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB." },
-  manual: {
-    title: "Adicionar filme manualmente",
-    hint: "Para filmes que não estão no TMDB. Ficam disponíveis no catálogo do Orbi para qualquer pessoa.",
-    link: "Não achou? Adicionar manualmente",
-    name: "Título",
-    year: "Ano",
-    overview: "Sinopse",
-    poster: "Capa",
-    posterHint: "JPG, PNG ou WebP, até 5 MB. Proporção 2:3 fica melhor.",
-    choose: "Escolher imagem",
-    submit: "Adicionar",
-    uploading: "Enviando capa…",
-    tooBig: "A imagem passa de 5 MB.",
-    invalid: "Preencha pelo menos o título (e um ano válido, se informar).",
-  },
-  errors: {
-    title: "Algo deu errado",
-    body: "Não foi possível carregar esta página agora.",
-    retry: "Tentar de novo",
-    notFoundTitle: "Página não encontrada",
-    notFoundBody: "O link pode estar errado ou o conteúdo foi removido.",
-    home: "Voltar ao início",
-  },
-  common: { error: "Algo deu errado.", loading: "Carregando…" },
+export const LOCALE_NAMES: Record<Locale, string> = {
+  pt: "Português",
+  en: "English",
+  zh: "中文",
+  hi: "हिन्दी",
+  es: "Español",
+  fr: "Français",
+  ar: "العربية",
+  bn: "বাংলা",
+  ru: "Русский",
+  ur: "اردو",
+  id: "Bahasa Indonesia",
+  de: "Deutsch",
+  ja: "日本語",
+  tr: "Türkçe",
+  ko: "한국어",
+  it: "Italiano",
 };
 
-export type Dictionary = typeof pt;
-
-const en: Dictionary = {
-  htmlLang: "en",
-  nav: {
-    search: "Search films…",
-    signIn: "Sign in",
-    profile: "My profile",
-    import: "Import",
-    settings: "Settings",
-    signOut: "Sign out",
-  },
-  folders: {
-    movie: "Films",
-    series: "Series",
-    music: "Music",
-    game: "Games",
-    book: "Books",
-    soon: "Coming soon",
-  },
-  home: {
-    title: "Everything you watch, listen to, play and read. In one place.",
-    subtitle:
-      "Log films, rate them, write reviews and bring over your Letterboxd history. Series, music, games and books are coming.",
-    cta: "Get started",
-  },
-  auth: {
-    signInTitle: "Sign in to Orbi",
-    signUpTitle: "Create account",
-    email: "Email",
-    password: "Password",
-    signIn: "Sign in",
-    signUp: "Create account",
-    google: "Continue with Google",
-    or: "or",
-    toSignUp: "No account? Create one",
-    toSignIn: "Already have an account? Sign in",
-    checkEmail: "We sent a confirmation link to your email.",
-    passwordHint: "At least 8 characters",
-  },
-  profile: {
-    watched: "Films watched",
-    thisYear: "This year",
-    watchlist: "Watchlist",
-    favorites: "Favorites",
-    recent: "Recent activity",
-    folders: "Folders",
-    empty: "Nothing here yet.",
-    notFound: "Profile not found.",
-    items: (n: number) => `${n} ${n === 1 ? "item" : "items"}`,
-  },
-  movies: {
-    tabs: { watched: "Watched", watchlist: "Watchlist", liked: "Liked", reviews: "Reviews" },
-    sort: { recent: "Most recent", rating: "Highest rated", title: "Title" },
-    page: (n: number, total: number) => `Page ${n} of ${total}`,
-    prev: "Previous",
-    next: "Next",
-  },
-  movie: {
-    watched: "Watched",
-    watch: "Mark as watched",
-    watchlist: "On watchlist",
-    addWatchlist: "Want to watch",
-    like: "Like",
-    liked: "Liked",
-    rating: "Rating",
-    clearRating: "Clear rating",
-    review: "Review",
-    reviewPlaceholder: "Write what you thought…",
-    watchedOn: "Watched on",
-    save: "Save",
-    saved: "Saved",
-    remove: "Remove from watched",
-    confirmRemove: "Remove this film from watched? Rating, like and review will be deleted.",
-    signInToLog: "Sign in to log this film",
-    reviews: "Reviews",
-    noReviews: "No reviews yet.",
-    notFound: "Film not found.",
-  },
-  search: {
-    title: (q: string) => `Results for “${q}”`,
-    empty: "No results.",
-    prompt: "Type something to search.",
-  },
-  settings: {
-    title: "Settings",
-    username: "Username",
-    usernameHint: "Lowercase letters, numbers and _ (3 to 30). Used in your profile link.",
-    displayName: "Display name",
-    bio: "Bio",
-    language: "Language",
-    save: "Save",
-    saved: "Changes saved.",
-    usernameTaken: "That username is taken.",
-    invalid: "Please check the fields.",
-  },
-  import: {
-    title: "Import from Letterboxd",
-    steps:
-      "On Letterboxd, go to Settings → Import & Export → Export your data. You'll get a .zip file. Upload it here as is, without unzipping.",
-    choose: "Choose .zip file",
-    reading: "Reading file…",
-    found: (n: number) => `${n} films found in the export.`,
-    start: "Import",
-    progress: (done: number, total: number) => `Importing ${done} of ${total}…`,
-    done: (n: number) => `Done! ${n} films imported.`,
-    notFound: "We couldn't find these on TMDB (you can add them via search):",
-    invalid: "I don't recognize this file. Upload the .zip exported by Letterboxd.",
-    error: "Something went wrong. Try again; what was already imported is saved.",
-    note: "Films already on your profile will be updated with the Letterboxd data.",
-  },
-  footer: { language: "Language", tmdb: "This product uses the TMDB API but is not endorsed or certified by TMDB." },
-  manual: {
-    title: "Add a film manually",
-    hint: "For films that aren't on TMDB. They become part of Orbi's catalog for everyone.",
-    link: "Can't find it? Add it manually",
-    name: "Title",
-    year: "Year",
-    overview: "Synopsis",
-    poster: "Poster",
-    posterHint: "JPG, PNG or WebP, up to 5 MB. A 2:3 ratio looks best.",
-    choose: "Choose image",
-    submit: "Add",
-    uploading: "Uploading poster…",
-    tooBig: "The image is larger than 5 MB.",
-    invalid: "Fill in at least the title (and a valid year, if given).",
-  },
-  errors: {
-    title: "Something went wrong",
-    body: "We couldn't load this page right now.",
-    retry: "Try again",
-    notFoundTitle: "Page not found",
-    notFoundBody: "The link may be wrong or the content was removed.",
-    home: "Back to home",
-  },
-  common: { error: "Something went wrong.", loading: "Loading…" },
+// Idioma/região usados nas buscas do TMDB e para escolher a tradução preferida.
+export const TMDB_LANGUAGES: Record<Locale, string> = {
+  pt: "pt-BR",
+  en: "en-US",
+  zh: "zh-CN",
+  hi: "hi-IN",
+  es: "es-ES",
+  fr: "fr-FR",
+  ar: "ar-SA",
+  bn: "bn-BD",
+  ru: "ru-RU",
+  ur: "ur-PK",
+  id: "id-ID",
+  de: "de-DE",
+  ja: "ja-JP",
+  tr: "tr-TR",
+  ko: "ko-KR",
+  it: "it-IT",
 };
 
-export const dictionaries: Record<Locale, Dictionary> = { pt, en };
+export const dictionaries: Record<Locale, Dictionary> = { pt, en, zh, hi, es, fr, ar, bn, ru, ur, id, de, ja, tr, ko, it };
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
+}
+
+// "pt-BR,pt;q=0.9,en;q=0.8" → primeiro idioma suportado da lista
+export function localeFromAcceptLanguage(header: string): Locale | null {
+  for (const part of header.split(",")) {
+    const lang = part.trim().slice(0, 2).toLowerCase();
+    if (isLocale(lang)) return lang;
+  }
+  return null;
 }

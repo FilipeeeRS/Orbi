@@ -64,7 +64,7 @@ export function LetterboxdImporter({ username }: { username: string }) {
         </label>
       )}
 
-      {state.step === "idle" && state.error && <p className="text-sm text-like">{state.error}</p>}
+      {state.step === "idle" && state.error && <p className="text-sm text-danger">{state.error}</p>}
 
       {state.step === "ready" && (
         <div className="flex items-center justify-between gap-3">
@@ -93,7 +93,7 @@ export function LetterboxdImporter({ username }: { username: string }) {
 
       {state.step === "finished" && (
         <div className="space-y-3 text-sm">
-          {state.error && <p className="text-like">{state.error}</p>}
+          {state.error && <p className="text-danger">{state.error}</p>}
           <p className="text-ok">{t.import.done(state.imported)}</p>
           <Link href={`/u/${username}/movies`} className="inline-block font-semibold text-accent hover:underline">
             → /u/{username}/movies

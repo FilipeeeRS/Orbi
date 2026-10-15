@@ -1,7 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "./supabase/admin";
-import { getMovie, releaseYear, tmdbImage, TmdbNotFound } from "./tmdb";
+import { getMovieWithTranslations, releaseYear, tmdbImage, TmdbNotFound, type TmdbTranslation } from "./tmdb";
+import { LOCALES, TMDB_LANGUAGES } from "./i18n/dictionaries";
 import type { Item } from "./types";
 
 // Garante que o filme do TMDB exista no catálogo (tabela items) e o devolve.
@@ -16,11 +17,13 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
     .eq("source", "tmdb")
     .eq("external_id", externalId)
     .maybeSingle();
-  if (existing) return existing as Item;
+  // Filmes salvos antes do suporte a vários idiomas só têm "pt": busca as traduções de novo.
+  const legacy = existing && Object.keys(existing.translations ?? {}).every((k) => k === "pt");
+  if (existing && !legacy) return existing as Item;
 
-  let en, pt;
+  let movie;
   try {
-    [en, pt] = await Promise.all([getMovie(tmdbId, "en-US"), getMovie(tmdbId, "pt-BR")]);
+    movie = await getMovieWithTranslations(tmdbId);
   } catch (e) {
     if (e instanceof TmdbNotFound) return null;
     throw e;
@@ -33,14 +36,13 @@ export async function ensureMovie(tmdbId: number): Promise<Item | null> {
         kind: "movie",
         source: "tmdb",
         external_id: externalId,
-        title: en.title,
-        title_pt: pt.title !== en.title ? pt.title : null,
-        original_title: en.original_title,
-        year: releaseYear(en),
-        overview: en.overview || null,
-        overview_pt: pt.overview || null,
-        poster_url: tmdbImage(pt.poster_path ?? en.poster_path, "w500"),
-        backdrop_url: tmdbImage(en.backdrop_path, "w1280"),
+        title: movie.title,
+        original_title: movie.original_title,
+        year: releaseYear(movie),
+        overview: movie.overview || null,
+        poster_url: tmdbImage(movie.poster_path, "w500"),
+        backdrop_url: tmdbImage(movie.backdrop_path, "w1280"),
+        translations: pickTranslations(movie.translations.translations, movie.title),
       },
       { onConflict: "kind,source,external_id" },
     )
@@ -61,3 +63,22 @@ export const getMovieByRouteId = cache(async (id: string): Promise<Item | null> 
   const tmdbId = Number(id);
   return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureMovie(tmdbId) : null;
 });
+
+// Uma tradução por idioma do Orbi, preferindo a região padrão (pt-BR, zh-CN...).
+function pickTranslations(list: TmdbTranslation[], englishTitle: string): Item["translations"] {
+  const out: Item["translations"] = {};
+  for (const locale of LOCALES) {
+    if (locale === "en") continue;
+    const region = TMDB_LANGUAGES[locale].split("-")[1];
+    const candidates = list.filter((t) => t.iso_639_1 === locale);
+    const best = candidates.find((t) => t.iso_3166_1 === region) ?? candidates[0];
+    const title = best?.data.title?.trim();
+    const overview = best?.data.overview?.trim();
+    if (!title && !overview) continue;
+    out[locale] = {
+      ...(title && title !== englishTitle ? { title } : {}),
+      ...(overview ? { overview } : {}),
+    };
+  }
+  return out;
+}

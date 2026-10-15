@@ -1,5 +1,5 @@
 import "server-only";
-import type { Locale } from "./i18n/dictionaries";
+import { TMDB_LANGUAGES, type Locale } from "./i18n/dictionaries";
 
 const API = "https://api.themoviedb.org/3";
 const IMG = "https://image.tmdb.org/t/p";
@@ -14,7 +14,7 @@ export type TmdbMovie = {
   backdrop_path?: string | null;
 };
 
-export const tmdbLanguage = (locale: Locale) => (locale === "pt" ? "pt-BR" : "en-US");
+export const tmdbLanguage = (locale: Locale) => TMDB_LANGUAGES[locale];
 
 export function tmdbImage(path: string | null | undefined, size: "w342" | "w500" | "w1280") {
   return path ? `${IMG}/${size}${path}` : null;
@@ -60,8 +60,18 @@ export async function searchMovies(
   return data.results;
 }
 
-export function getMovie(id: number | string, language: string) {
-  return tmdb<TmdbMovie>(`/movie/${id}`, { language });
+export type TmdbTranslation = {
+  iso_639_1: string;
+  iso_3166_1: string;
+  data: { title?: string; overview?: string };
+};
+
+// Detalhes em inglês + todas as traduções em uma chamada só.
+export function getMovieWithTranslations(id: number | string) {
+  return tmdb<TmdbMovie & { translations: { translations: TmdbTranslation[] } }>(`/movie/${id}`, {
+    language: "en-US",
+    append_to_response: "translations",
+  });
 }
 
 export const releaseYear = (m: Pick<TmdbMovie, "release_date">) =>

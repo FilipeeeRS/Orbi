@@ -30,7 +30,6 @@ export async function createManualMovie(input: ManualMovieInput): Promise<{ erro
       title,
       year,
       overview,
-      overview_pt: overview,
       poster_url: posterUrl,
       created_by: viewer.id,
     })

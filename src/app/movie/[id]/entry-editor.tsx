@@ -160,7 +160,7 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
           />
         </label>
         <div className="flex items-center gap-3">
-          {error && <span className="text-sm text-like">{t.common.error}</span>}
+          {error && <span className="text-sm text-danger">{t.common.error}</span>}
           {saved && !error && <span className="text-sm text-ok">{t.movie.saved}</span>}
           <button
             type="button"

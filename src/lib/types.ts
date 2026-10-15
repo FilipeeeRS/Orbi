@@ -19,14 +19,13 @@ export type Item = {
   source: string;
   external_id: string | null;
   title: string;
-  title_pt: string | null;
   original_title: string | null;
   year: number | null;
   overview: string | null;
-  overview_pt: string | null;
   poster_url: string | null;
   backdrop_url: string | null;
   created_by: string | null;
+  translations: Partial<Record<Locale, { title?: string; overview?: string }>>;
 };
 
 export type Entry = {
@@ -43,8 +42,12 @@ export type Entry = {
 
 export type EntryWithItem = Entry & { items: Item };
 
-export function itemTitle(item: Pick<Item, "title" | "title_pt">, locale: Locale) {
-  return (locale === "pt" && item.title_pt) || item.title;
+export function itemTitle(item: Pick<Item, "title" | "translations">, locale: Locale) {
+  return item.translations?.[locale]?.title || item.title;
+}
+
+export function itemOverview(item: Pick<Item, "overview" | "translations">, locale: Locale) {
+  return item.translations?.[locale]?.overview || item.overview;
 }
 
 // Por enquanto só existem filmes: do TMDB pelo id deles, manuais pelo nosso id.

@@ -8,6 +8,7 @@ import { StarsDisplay } from "@/components/stars";
 import { getDict, getViewer } from "@/lib/session";
 import { getProfileByUsername, listEntries, PAGE_SIZE, SORTS, TABS, type Sort, type Tab } from "@/lib/queries";
 import { itemHref, itemTitle } from "@/lib/types";
+import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 import { ProfileHeader } from "../profile-header";
 
 export const metadata: Metadata = { title: "Filmes" };
@@ -130,7 +131,7 @@ async function MoviesPageContent({ params, searchParams }: PageProps<"/u/[userna
   );
 }
 
-function formatDate(isoDate: string, locale: string) {
+function formatDate(isoDate: string, locale: Locale) {
   const [y, m, d] = isoDate.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(locale === "pt" ? "pt-BR" : "en-US");
+  return new Date(y, m - 1, d).toLocaleDateString(dictionaries[locale].htmlLang);
 }

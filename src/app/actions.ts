@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getViewer, LOCALE_COOKIE } from "@/lib/session";
 import { isLocale } from "@/lib/i18n/dictionaries";
@@ -18,7 +19,7 @@ export async function setLocale(locale: string) {
   refresh();
 }
 
-export type ProfileFormState = { status: "idle" | "saved" | "taken" | "invalid" | "error"; username?: string };
+export type ProfileFormState = { status: "idle" | "taken" | "invalid" | "error" };
 
 export async function updateProfile(_prev: ProfileFormState, form: FormData): Promise<ProfileFormState> {
   const viewer = await getViewer();
@@ -42,6 +43,19 @@ export async function updateProfile(_prev: ProfileFormState, form: FormData): Pr
   if (error) return { status: error.code === "23505" ? "taken" : "error" };
 
   (await cookies()).set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  redirect(`/u/${username}`);
+}
+
+// A foto vai para o Storage pelo navegador (pasta do próprio usuário); aqui só gravamos a URL.
+export async function setAvatar(path: string | null): Promise<{ ok: boolean }> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false };
+  if (path !== null && !path.startsWith(`${viewer.id}/avatar-`)) return { ok: false };
+
+  const supabase = await createClient();
+  const avatarUrl = path ? supabase.storage.from("posters").getPublicUrl(path).data.publicUrl : null;
+  const { error } = await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", viewer.id);
+  if (error) return { ok: false };
   refresh();
-  return { status: "saved", username };
+  return { ok: true };
 }

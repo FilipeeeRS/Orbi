@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { setLocale } from "@/app/actions";
-import { LOCALES } from "@/lib/i18n/dictionaries";
+import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/dictionaries";
 import { useI18n } from "./i18n";
 
 export function LocaleSwitch() {
@@ -10,18 +10,18 @@ export function LocaleSwitch() {
   const [pending, start] = useTransition();
 
   return (
-    <div className="flex items-center gap-2" aria-label={t.footer.language}>
+    <select
+      aria-label={t.footer.language}
+      value={locale}
+      disabled={pending}
+      onChange={(e) => start(() => setLocale(e.target.value))}
+      className="rounded-md border border-border bg-surface px-2 py-1 text-xs text-muted outline-none hover:text-fg focus:border-accent"
+    >
       {LOCALES.map((l) => (
-        <button
-          key={l}
-          disabled={pending || l === locale}
-          onClick={() => start(() => setLocale(l))}
-          className="uppercase disabled:cursor-default enabled:hover:text-fg data-[on=true]:font-semibold data-[on=true]:text-fg"
-          data-on={l === locale}
-        >
-          {l}
-        </button>
+        <option key={l} value={l}>
+          {LOCALE_NAMES[l]}
+        </option>
       ))}
-    </div>
+    </select>
   );
 }

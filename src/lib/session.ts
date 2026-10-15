@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { createClient } from "./supabase/server";
-import { dictionaries, isLocale, type Locale } from "./i18n/dictionaries";
+import { dictionaries, isLocale, localeFromAcceptLanguage, type Locale } from "./i18n/dictionaries";
 import type { Profile } from "./types";
 
 export const LOCALE_COOKIE = "orbi_locale";
@@ -25,9 +25,9 @@ export const getLocale = cache(async (): Promise<Locale> => {
   const fromCookie = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (isLocale(fromCookie)) return fromCookie;
 
-  const accept = (await headers()).get("accept-language") ?? "";
+  const accept = (await headers()).get("accept-language");
   if (!accept) return "pt";
-  return accept.trim().toLowerCase().startsWith("pt") ? "pt" : "en";
+  return localeFromAcceptLanguage(accept) ?? "en";
 });
 
 export async function getDict() {

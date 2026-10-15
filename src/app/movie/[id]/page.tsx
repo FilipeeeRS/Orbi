@@ -11,7 +11,7 @@ import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
 import { getItemReviews } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
-import { itemTitle, type Entry } from "@/lib/types";
+import { itemOverview, itemTitle, type Entry } from "@/lib/types";
 import { EntryEditor } from "./entry-editor";
 
 export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Promise<Metadata> {
@@ -47,7 +47,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   ]);
 
   const title = itemTitle(item, locale);
-  const overview = (locale === "pt" && item.overview_pt) || item.overview;
+  const overview = itemOverview(item, locale);
 
   return (
     <div className="space-y-10">
@@ -58,12 +58,8 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
         </div>
       )}
 
-      <div className={`relative grid gap-6 sm:grid-cols-[200px_1fr] ${item.backdrop_url ? "-mt-24 sm:-mt-32" : ""}`}>
-        <div className="mx-auto w-40 sm:w-full">
-          <PosterImage url={item.poster_url} title={title} eager />
-        </div>
-
-        <div className="space-y-4 sm:pt-24">
+      <div className={`relative grid items-start gap-6 sm:grid-cols-[1fr_220px] sm:gap-10 ${item.backdrop_url ? "-mt-16 sm:-mt-20" : ""}`}>
+        <div className="space-y-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-balance">
               {title} {item.year && <span className="font-normal text-muted">{item.year}</span>}
@@ -84,6 +80,10 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
               {t.movie.signInToLog}
             </Link>
           )}
+        </div>
+
+        <div className="order-first mx-auto w-40 shadow-2xl sm:order-none sm:w-full">
+          <PosterImage url={item.poster_url} title={title} eager />
         </div>
       </div>
 

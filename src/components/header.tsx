@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
+import { UserMenu } from "./user-menu";
 import type { Profile } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -10,7 +11,7 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
     <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
         <Logo />
-        <form action="/search" className="ml-auto w-full max-w-xs">
+        <form action="/search" className="ms-auto w-full max-w-xs">
           <input
             name="q"
             type="search"
@@ -20,21 +21,24 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
         </form>
         <ThemeToggle />
         {viewer ? (
-          <details className="relative">
-            <summary className="block cursor-pointer list-none rounded-full [&::-webkit-details-marker]:hidden">
-              <Avatar profile={viewer} size={32} />
-            </summary>
-            <nav className="absolute right-0 mt-2 w-48 overflow-hidden rounded-lg border border-border bg-surface py-1 text-sm shadow-xl">
-              <MenuLink href={`/u/${viewer.username}`}>{t.nav.profile}</MenuLink>
-              <MenuLink href="/import">{t.nav.import}</MenuLink>
-              <MenuLink href="/settings">{t.nav.settings}</MenuLink>
-              <form action="/auth/signout" method="post">
-                <button className="w-full px-4 py-2 text-left text-muted hover:bg-surface-2 hover:text-fg">
-                  {t.nav.signOut}
-                </button>
-              </form>
-            </nav>
-          </details>
+          <UserMenu
+            avatar={<Avatar profile={viewer} size={30} />}
+            name={viewer.display_name || viewer.username}
+            sections={[
+              [
+                { href: `/u/${viewer.username}`, label: t.nav.profile },
+                { href: `/u/${viewer.username}/movies`, label: t.folders.movie },
+                { href: `/u/${viewer.username}/movies?tab=reviews`, label: t.movies.tabs.reviews },
+                { href: `/u/${viewer.username}/movies?tab=watchlist`, label: t.movies.tabs.watchlist },
+                { href: `/u/${viewer.username}/movies?tab=liked`, label: t.movies.tabs.liked },
+              ],
+              [
+                { href: "/import", label: t.nav.import },
+                { href: "/settings", label: t.nav.settings },
+              ],
+            ]}
+            signOutLabel={t.nav.signOut}
+          />
         ) : (
           <Link
             href="/login"
@@ -45,14 +49,6 @@ export function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary })
         )}
       </div>
     </header>
-  );
-}
-
-function MenuLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link href={href} className="block px-4 py-2 hover:bg-surface-2">
-      {children}
-    </Link>
   );
 }
 
