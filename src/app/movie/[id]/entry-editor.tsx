@@ -88,26 +88,32 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-surface/80 p-4">
-      <div className="flex flex-wrap gap-2">
-        <Toggle on={watched} onClick={toggleWatched} disabled={pending} tone="ok">
-          {watched ? `✓ ${t.movie.watched}` : t.movie.watch}
-        </Toggle>
-        {!watched && (
-          <Toggle on={onWatchlist} onClick={toggleWatchlist} disabled={pending} tone="accent">
-            {onWatchlist ? `✓ ${t.movie.watchlist}` : `+ ${t.movie.addWatchlist}`}
+      {/* Linha única: ações à esquerda, estrelas à direita (clicar na nota atual limpa) */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          <Toggle on={watched} onClick={toggleWatched} disabled={pending} tone="ok">
+            {watched ? `✓ ${t.movie.watched}` : t.movie.watch}
           </Toggle>
-        )}
-        <Toggle on={!!entry?.liked} onClick={() => persist(asWatched({ liked: !entry?.liked }), entry)} disabled={pending} tone="like">
-          {entry?.liked ? `♥ ${t.movie.liked}` : `♡ ${t.movie.like}`}
-        </Toggle>
-      </div>
+          {!watched && (
+            <Toggle on={onWatchlist} onClick={toggleWatchlist} disabled={pending} tone="accent">
+              {onWatchlist ? `✓ ${t.movie.watchlist}` : `+ ${t.movie.addWatchlist}`}
+            </Toggle>
+          )}
+          <Toggle
+            on={!!entry?.liked}
+            onClick={() => persist(asWatched({ liked: !entry?.liked }), entry)}
+            disabled={pending}
+            tone="like"
+          >
+            {entry?.liked ? `♥ ${t.movie.liked}` : `♡ ${t.movie.like}`}
+          </Toggle>
+        </div>
 
-      <div>
-        <p className="mb-1 text-xs text-muted">{t.movie.rating}</p>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2" title={entry?.rating ? t.movie.clearRating : t.movie.rating}>
+          <span className="w-6 text-end text-sm text-muted tabular-nums">{shown ? (shown / 2).toLocaleString() : ""}</span>
           <div className="flex" onMouseLeave={() => setHover(null)} role="radiogroup" aria-label={t.movie.rating}>
             {[1, 2, 3, 4, 5].map((star) => (
-              <div key={star} className="relative size-9">
+              <div key={star} className="relative size-7">
                 <StarIcon fill={shown >= star * 2 ? 1 : shown === star * 2 - 1 ? 0.5 : 0} />
                 {[star * 2 - 1, star * 2].map((value, half) => (
                   <button
@@ -127,12 +133,6 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
               </div>
             ))}
           </div>
-          <span className="w-8 text-sm text-muted tabular-nums">{shown ? (shown / 2).toLocaleString() : ""}</span>
-          {entry?.rating && (
-            <button type="button" onClick={() => rate(entry.rating!)} className="text-xs text-muted hover:text-fg">
-              {t.movie.clearRating}
-            </button>
-          )}
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export function EntryEditor({ itemId, userId, initial }: { itemId: string; userI
           value={review}
           onChange={(e) => setReview(e.target.value)}
           maxLength={20000}
-          rows={4}
+          rows={3}
           placeholder={t.movie.reviewPlaceholder}
           className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none focus:border-accent"
         />
