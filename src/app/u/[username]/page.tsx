@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/u/[username]">): 
 }
 
 const FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
+const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
 
 export default function ProfilePage(props: PageProps<"/u/[username]">) {
   return (
@@ -51,7 +52,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
           ...FOLDERS.filter((k) => k !== "movie" && o.kindCounts[k]).map((k) => ({
             label: t.folders[k],
             value: o.kindCounts[k]!,
-            href: base,
+            href: `${base}/${FOLDER_PATHS[k]}`,
           })),
         ]}
       />
@@ -237,16 +238,17 @@ function Folders({ base, recent, count, t }: { base: string; recent: EntryWithIt
             <span className="relative text-xs text-muted">{t.profile.items(count)}</span>
           </Link>
         ) : (
-          <div
+          <Link
             key={kind}
-            className="flex h-28 flex-col justify-between rounded-xl border border-dashed border-border p-3 text-muted/70"
+            href={`${base}/${FOLDER_PATHS[kind]}`}
+            className="flex h-28 flex-col justify-between rounded-xl border border-dashed border-border p-3 text-muted/70 transition hover:border-accent hover:text-fg"
           >
             <FolderIcon kind={kind} className="size-6" />
             <div>
               <span className="block text-sm font-semibold">{t.folders[kind]}</span>
               <span className="text-[11px]">{t.folders.soon}</span>
             </div>
-          </div>
+          </Link>
         ),
       )}
     </div>
