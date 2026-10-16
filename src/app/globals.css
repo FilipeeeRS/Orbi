@@ -1,9 +1,47 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Temas: o nome termina em "light" (claro) ou não (escuro), ex.: "ocean-dark", "ocean-light"; "custom" à parte. */
+@custom-variant dark (&:where([data-theme]:not([data-theme$="light"]), [data-theme]:not([data-theme$="light"]) *));
+
+/* "dark" e "light" são neutros (preto e branco); as famílias de cor (fire, ocean, purple, pink,
+   forest, sunset) têm versão clara e escura. "custom" é montado com duas cores
+   escolhidas na paleta (borda/destaque e fundo); o resto é derivado delas (themeScript).
+   As cores da bolinha no seletor ficam em components/theme-toggle.tsx (THEMES). */
 
 :root,
 [data-theme="dark"] {
+  --bg: #0b0b0c;
+  --surface: #141416;
+  --surface-2: #1d1d20;
+  --border: #2c2c30;
+  --fg: #f2f2f3;
+  --muted: #94949c;
+  --accent: #f2f2f3;
+  --accent-fg: #0b0b0c;
+  --star: #f5b62a;
+  --like: #ff4757;
+  --danger: #ff6b7d;
+  --ok: #3ccf8e;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f0f0f1;
+  --border: #e2e2e5;
+  --fg: #111113;
+  --muted: #6b6b73;
+  --accent: #111113;
+  --accent-fg: #ffffff;
+  --star: #d99a00;
+  --like: #e0263e;
+  --danger: #c4183a;
+  --ok: #1f9e66;
+  color-scheme: light;
+}
+
+[data-theme="fire-dark"] {
   --bg: #0c0809;
   --surface: #161012;
   --surface-2: #21171a;
@@ -19,7 +57,7 @@
   color-scheme: dark;
 }
 
-[data-theme="light"] {
+[data-theme="fire-light"] {
   --bg: #fbf6f6;
   --surface: #ffffff;
   --surface-2: #f4eaeb;
@@ -33,6 +71,182 @@
   --danger: #c4183a;
   --ok: #1f9e66;
   color-scheme: light;
+}
+
+[data-theme="ocean-dark"] {
+  --bg: #070c12;
+  --surface: #0e151e;
+  --surface-2: #16202c;
+  --border: #223142;
+  --fg: #e8f0f7;
+  --muted: #8597aa;
+  --accent: #3b9eff;
+  --accent-fg: #ffffff;
+  --star: #f5b62a;
+  --like: #ff4d6d;
+  --danger: #ff6b7d;
+  --ok: #3ccf8e;
+  color-scheme: dark;
+}
+
+[data-theme="ocean-light"] {
+  --bg: #f5f9fd;
+  --surface: #ffffff;
+  --surface-2: #e8f0f8;
+  --border: #d3e1ee;
+  --fg: #0c1825;
+  --muted: #5d7186;
+  --accent: #0b72d9;
+  --accent-fg: #ffffff;
+  --star: #d99a00;
+  --like: #e0264e;
+  --danger: #c4183a;
+  --ok: #1f9e66;
+  color-scheme: light;
+}
+
+[data-theme="purple-dark"] {
+  --bg: #0d0a14;
+  --surface: #15111f;
+  --surface-2: #1e1830;
+  --border: #2e2545;
+  --fg: #efeaf8;
+  --muted: #9a8fb3;
+  --accent: #a855f7;
+  --accent-fg: #ffffff;
+  --star: #f5b62a;
+  --like: #ff4d8d;
+  --danger: #ff6b8a;
+  --ok: #3ccf8e;
+  color-scheme: dark;
+}
+
+[data-theme="purple-light"] {
+  --bg: #f9f6fd;
+  --surface: #ffffff;
+  --surface-2: #f0eaf8;
+  --border: #e2d8f0;
+  --fg: #1a1225;
+  --muted: #6f6385;
+  --accent: #8b2ff0;
+  --accent-fg: #ffffff;
+  --star: #d99a00;
+  --like: #d61f6a;
+  --danger: #c4183a;
+  --ok: #1f9e66;
+  color-scheme: light;
+}
+
+[data-theme="forest-dark"] {
+  --bg: #080d0a;
+  --surface: #0f1712;
+  --surface-2: #17221b;
+  --border: #243529;
+  --fg: #e9f3ec;
+  --muted: #8aa393;
+  --accent: #22c55e;
+  --accent-fg: #04170b;
+  --star: #f5b62a;
+  --like: #ff4d5e;
+  --danger: #ff6b7d;
+  --ok: #4ade80;
+  color-scheme: dark;
+}
+
+[data-theme="forest-light"] {
+  --bg: #f5faf6;
+  --surface: #ffffff;
+  --surface-2: #e7f2ea;
+  --border: #d2e5d8;
+  --fg: #0f1d14;
+  --muted: #5c7464;
+  --accent: #15803d;
+  --accent-fg: #ffffff;
+  --star: #d99a00;
+  --like: #e0263e;
+  --danger: #c4183a;
+  --ok: #16a34a;
+  color-scheme: light;
+}
+
+[data-theme="sunset-dark"] {
+  --bg: #110b07;
+  --surface: #1a120c;
+  --surface-2: #251a12;
+  --border: #3a2a1d;
+  --fg: #f7eee6;
+  --muted: #ad9584;
+  --accent: #ff8a1f;
+  --accent-fg: #1a0d00;
+  --star: #ffd23f;
+  --like: #ff4d5e;
+  --danger: #ff6b6b;
+  --ok: #3ccf8e;
+  color-scheme: dark;
+}
+
+[data-theme="sunset-light"] {
+  --bg: #fdf8f3;
+  --surface: #ffffff;
+  --surface-2: #f8ece0;
+  --border: #eedbc8;
+  --fg: #23160c;
+  --muted: #7d6553;
+  --accent: #d9600b;
+  --accent-fg: #ffffff;
+  --star: #c98800;
+  --like: #e0263e;
+  --danger: #c4183a;
+  --ok: #1f9e66;
+  color-scheme: light;
+}
+
+[data-theme="pink-dark"] {
+  --bg: #120a0f;
+  --surface: #1c1118;
+  --surface-2: #271822;
+  --border: #3b2434;
+  --fg: #f8eaf2;
+  --muted: #ad8fa1;
+  --accent: #ff5fa8;
+  --accent-fg: #ffffff;
+  --star: #f5b62a;
+  --like: #ff4d6d;
+  --danger: #ff6b7d;
+  --ok: #3ccf8e;
+  color-scheme: dark;
+}
+
+[data-theme="pink-light"] {
+  --bg: #fdf6fa;
+  --surface: #ffffff;
+  --surface-2: #f8e8f1;
+  --border: #efd5e3;
+  --fg: #24101b;
+  --muted: #80606f;
+  --accent: #d6247a;
+  --accent-fg: #ffffff;
+  --star: #d99a00;
+  --like: #c81e5a;
+  --danger: #c4183a;
+  --ok: #1f9e66;
+  color-scheme: light;
+}
+
+[data-theme="custom"] {
+  --bg: var(--custom-bg, #0b0b0c);
+  --fg: var(--custom-fg, #f2f2f3);
+  --surface: color-mix(in srgb, var(--bg) 94%, var(--fg));
+  --surface-2: color-mix(in srgb, var(--bg) 88%, var(--fg));
+  --border: color-mix(in srgb, var(--bg) 65%, var(--accent));
+  --muted: color-mix(in srgb, var(--fg) 60%, var(--bg));
+  --accent: var(--custom-accent, #f2f2f3);
+  --accent-fg: var(--custom-accent-fg, #0b0b0c);
+  --star: #f5b62a;
+  --like: #ff4757;
+  --danger: #ff6b7d;
+  --ok: #3ccf8e;
+  color-scheme: var(--custom-scheme, dark);
 }
 
 @theme inline {
@@ -64,7 +278,7 @@ body {
   background: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
-/* Fundo de capa no estilo Letterboxd: laterais e base se dissolvem no fundo do site.
+/* Fundo de capa no estilo Letterboxd: laterais e base se dissolvem no fundo do site (o grão só entra quando há imagem).
    Máscaras horizontal e vertical combinadas, com paradas numa curva suave (ease-in-out)
    e um grão leve por cima para esconder as faixas do degradê em tons escuros. */
 .backdrop-fade {
@@ -128,7 +342,7 @@ body {
   mask-composite: intersect;
 }
 
-.backdrop-fade::after {
+.backdrop-fade:has(img)::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -152,4 +366,23 @@ select {
   background-position: left 0.85rem center;
   padding-right: 0.75rem !important;
   padding-left: 2.5rem !important;
+}
+
+/* Lua da logo (components/logo.tsx): x = -17·cos e y = 6·sin (unidades do viewBox de 40),
+   cada eixo indo e voltando com easeInOutSine, que é exatamente uma senoide.
+   Só transform: o navegador anima fora da thread principal, sem travar enquanto a página carrega. */
+@keyframes orbi-moon-x {
+  from { transform: translateX(-42.5%); }
+  to { transform: translateX(42.5%); }
+}
+@keyframes orbi-moon-y {
+  from { transform: translateY(-15%); }
+  to { transform: translateY(15%); }
+}
+.orbi-moon-x {
+  animation: orbi-moon-x calc(var(--orbit, 7s) / 2) cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+.orbi-moon-y {
+  animation: orbi-moon-y calc(var(--orbit, 7s) / 2) cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+  animation-delay: calc(var(--orbit, 7s) / -4);
 }

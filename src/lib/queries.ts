@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "./supabase/server";
+import { applyArtToEntries } from "./art";
 import type { EntryWithItem, FolderKind, Item, MediaKind, Profile } from "./types";
 
 const ENTRY_WITH_ITEM = "*, items!inner(*)";
@@ -11,7 +12,8 @@ export const getProfileByUsername = cache(async (username: string) => {
   return data as Profile | null;
 });
 
-export async function getProfileOverview(userId: string, kind: MediaKind = "movie") {
+// artViewerId: quem está vendo; os pôsteres que essa pessoa escolheu substituem os padrão (é pessoal).
+export async function getProfileOverview(userId: string, kind: MediaKind = "movie", artViewerId: string | null = null) {
   const supabase = await createClient();
   const count = () =>
     supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", kind);
@@ -21,16 +23,24 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
   const countKind = (k: MediaKind) =>
     supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", k);
 
-  const [watched, watchlist, recent, favorites, watchlistPreview, ...rest] = await Promise.all([
+  const [watched, watchlist, recent, favorites, watchlistPreview, recentReviews, ...rest] = await Promise.all([
     count().eq("status", "watched"),
     count().eq("status", "watchlist"),
     list()
       .eq("status", "watched")
       .order("watched_on", { ascending: false, nullsFirst: false })
       .order("updated_at", { ascending: false })
-      .limit(12),
+      .limit(16),
     list().eq("liked", true).order("updated_at", { ascending: false }).limit(4),
     list().eq("status", "watchlist").order("created_at", { ascending: false }).limit(5),
+    // Reviews mais recentes, de qualquer pasta
+    supabase
+      .from("entries")
+      .select(ENTRY_WITH_ITEM)
+      .eq("user_id", userId)
+      .not("review", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(3),
     // Distribuição das notas de todas as pastas: quantos itens com ½★, ★, ... ★★★★★
     ...Array.from({ length: 10 }, (_, i) =>
       supabase.from("entries").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("rating", i + 1),
@@ -39,14 +49,22 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
     ...otherKinds.map((k) => countKind(k)),
   ]);
   const ratingCounts = rest.slice(0, 10);
+  // Pôster/fundo que quem está vendo escolheu, numa consulta só para todas as listas.
+  const lists = [recent.data, favorites.data, watchlistPreview.data, recentReviews.data].flatMap(
+    (rows) => (rows ?? []) as EntryWithItem[],
+  );
+  const withArtAll = artViewerId ? await applyArtToEntries(artViewerId, lists) : lists;
+  const byId = new Map(withArtAll.map((e) => [e.id, e]));
+  const withArt = (rows: unknown) => ((rows ?? []) as EntryWithItem[]).map((e) => byId.get(e.id) ?? e);
   const kindCounts = Object.fromEntries(otherKinds.map((k, i) => [k, rest[10 + i].count ?? 0])) as Partial<Record<MediaKind, number>>;
 
   return {
     watched: watched.count ?? 0,
     watchlist: watchlist.count ?? 0,
-    recent: (recent.data ?? []) as EntryWithItem[],
-    favorites: (favorites.data ?? []) as EntryWithItem[],
-    watchlistPreview: (watchlistPreview.data ?? []) as EntryWithItem[],
+    recent: withArt(recent.data),
+    favorites: withArt(favorites.data),
+    watchlistPreview: withArt(watchlistPreview.data),
+    recentReviews: withArt(recentReviews.data),
     ratingCounts: ratingCounts.map((r) => r.count ?? 0),
     kindCounts,
   };
@@ -102,6 +120,7 @@ export async function listEntries(
   kind: FolderKind = "movie",
   filters: ListFilters = {},
   locale = "pt",
+  artViewerId: string | null = null, // pôsteres escolhidos por quem está vendo
 ) {
   // Listas personalizadas ainda não existem: a aba aparece, mas vazia.
   if (tab === "lists") return { entries: [] as EntryWithItem[], total: 0 };
@@ -166,7 +185,8 @@ export async function listEntries(
 
   const from = (page - 1) * PAGE_SIZE;
   const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
-  return { entries: (data ?? []) as EntryWithItem[], total: count ?? 0 };
+  const entries = (data ?? []) as EntryWithItem[];
+  return { entries: artViewerId ? await applyArtToEntries(artViewerId, entries) : entries, total: count ?? 0 };
 }
 
 export type ReviewWithAuthor = EntryWithItem & {
@@ -294,4 +314,14 @@ export async function getReviewLikes(entryIds: string[], viewerId: string | null
     if (row.user_id === viewerId) mine.add(row.entry_id);
   }
   return { counts, mine };
+}
+
+// Quantos comentários cada review tem (para o 💬 com número embaixo da review).
+export async function getReviewCommentCounts(entryIds: string[]) {
+  const counts = new Map<string, number>();
+  if (!entryIds.length) return counts;
+  const supabase = await createClient();
+  const { data } = await supabase.from("review_comments").select("entry_id").in("entry_id", entryIds).is("deleted_at", null);
+  for (const row of data ?? []) counts.set(row.entry_id, (counts.get(row.entry_id) ?? 0) + 1);
+  return counts;
 }

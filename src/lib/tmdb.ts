@@ -23,7 +23,7 @@ export type TmdbMovie = {
 
 export const tmdbLanguage = (locale: Locale) => TMDB_LANGUAGES[locale];
 
-export function tmdbImage(path: string | null | undefined, size: "w342" | "w500" | "w1280") {
+export function tmdbImage(path: string | null | undefined, size: "w185" | "w342" | "w500" | "w780" | "w1280") {
   return path ? `${IMG}/${size}${path}` : null;
 }
 
@@ -142,7 +142,19 @@ export type MovieInfo = {
   cast: (Named & { character: string })[];
   crew: Partial<Record<CrewRole, Named[]>>;
   releases: { country: string; date: string; certification: string }[];
+  // Classificação indicativa por país (ex.: { BR: "14", US: "PG-13" }); prefere a do cinema.
+  certifications: Record<string, string>;
+  trailer: string | null; // id do vídeo no YouTube
+  // Onde assistir, por país (dados do JustWatch via TMDB)
+  watch: Record<string, WatchOptions>;
 };
+
+export type WatchProvider = { id: number; name: string; logo: string | null };
+export const WATCH_KINDS = ["flatrate", "free", "ads", "rent", "buy"] as const;
+export type WatchKind = (typeof WATCH_KINDS)[number];
+export type WatchOptions = { link: string } & Partial<Record<WatchKind, WatchProvider[]>>;
+
+type TmdbProvider = { provider_id: number; provider_name: string; logo_path: string | null; display_priority: number };
 
 type TmdbFullMovie = {
   runtime: number | null;
@@ -158,6 +170,8 @@ type TmdbFullMovie = {
   release_dates: {
     results: { iso_3166_1: string; release_dates: { release_date: string; type: number; certification: string }[] }[];
   };
+  videos?: { results: { key: string; site: string; type: string; official: boolean; iso_639_1: string }[] };
+  "watch/providers"?: { results: Record<string, { link: string } & Partial<Record<WatchKind, TmdbProvider[]>>> };
 };
 
 export async function getMovieInfo(tmdbId: string, language: string): Promise<MovieInfo | null> {
@@ -166,7 +180,12 @@ export async function getMovieInfo(tmdbId: string, language: string): Promise<Mo
 
   let m: TmdbFullMovie;
   try {
-    m = await tmdb<TmdbFullMovie>(`/movie/${tmdbId}`, { language, append_to_response: "credits,release_dates" });
+    m = await tmdb<TmdbFullMovie>(`/movie/${tmdbId}`, {
+      language,
+      append_to_response: "credits,release_dates,videos,watch/providers",
+      // Vídeos no idioma da pessoa e, na falta, em inglês ou sem idioma.
+      include_video_language: `${language.slice(0, 2)},en,null`,
+    });
   } catch (e) {
     if (e instanceof TmdbNotFound) return null;
     throw e;
@@ -190,8 +209,38 @@ export async function getMovieInfo(tmdbId: string, language: string): Promise<Mo
     .filter((r): r is NonNullable<typeof r> => Boolean(r))
     .sort((a, b) => a.date.localeCompare(b.date));
 
+  const certifications: Record<string, string> = {};
+  for (const { iso_3166_1, release_dates } of m.release_dates.results) {
+    const rated = release_dates.filter((r) => r.certification.trim());
+    const pick = rated.find((r) => r.type === 3) ?? rated.find((r) => r.type === 2) ?? rated[0];
+    if (pick) certifications[iso_3166_1] = pick.certification.trim();
+  }
+
+  // Trailer do YouTube: no idioma da pessoa primeiro, oficial antes de não oficial.
+  const lang = language.slice(0, 2);
+  const trailers = (m.videos?.results ?? []).filter((v) => v.site === "YouTube" && v.type === "Trailer");
+  const score = (v: (typeof trailers)[number]) => (v.iso_639_1 === lang ? 2 : 0) + (v.official ? 1 : 0);
+  const trailer = [...trailers].sort((a, b) => score(b) - score(a))[0]?.key ?? null;
+
+  const watch: Record<string, WatchOptions> = {};
+  for (const [country, r] of Object.entries(m["watch/providers"]?.results ?? {})) {
+    const options: WatchOptions = { link: r.link };
+    for (const kind of WATCH_KINDS) {
+      const list = r[kind];
+      if (list?.length) {
+        options[kind] = [...list]
+          .sort((a, b) => a.display_priority - b.display_priority)
+          .map((p) => ({ id: p.provider_id, name: p.provider_name, logo: p.logo_path }));
+      }
+    }
+    watch[country] = options;
+  }
+
   return {
     runtime: m.runtime || null,
+    certifications,
+    trailer,
+    watch,
     imdbId: m.imdb_id || null,
     genres: m.genres.map(({ id, name }) => ({ id, name })),
     studios: m.production_companies.map(({ id, name }) => ({ id, name })),
@@ -226,13 +275,20 @@ export function hasAdultRating(releaseDates: ReleaseDates | undefined) {
   });
 }
 
-export async function isAdultRatedMovie(tmdbId: number): Promise<boolean> {
+// Só respostas de verdade vão para o cache: se o TMDB falhar, o erro sobe e nada é guardado
+// (antes uma falha virava "não é +18" por semanas e o filme aparecia na busca).
+async function fetchAdultRating(tmdbId: number): Promise<boolean> {
   "use cache";
   cacheLife("weeks");
+  return hasAdultRating(await tmdb<ReleaseDates>(`/movie/${tmdbId}/release_dates`));
+}
+
+// null = não deu para saber agora (o TMDB falhou).
+export async function isAdultRatedMovie(tmdbId: number): Promise<boolean | null> {
   try {
-    return hasAdultRating(await tmdb<ReleaseDates>(`/movie/${tmdbId}/release_dates`));
+    return await fetchAdultRating(tmdbId);
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -318,4 +374,30 @@ export async function tmdbDiscover(
   } catch {
     return { results: [], total_results: 0, total_pages: 0 };
   }
+}
+
+// ---- Imagens alternativas (pôster e fundo escolhidos pelo usuário) ----
+
+type TmdbImage = { file_path: string; iso_639_1: string | null; vote_average: number; vote_count: number };
+
+// Pôsteres e fundos do filme, os do idioma da pessoa primeiro, depois os mais votados. Só caminhos ("/abc.jpg").
+export async function getMovieImages(tmdbId: number, language: string): Promise<{ posters: string[]; backdrops: string[] }> {
+  "use cache";
+  cacheLife("days");
+  const lang = language.slice(0, 2);
+  const data = await tmdb<{ posters: TmdbImage[]; backdrops: TmdbImage[] }>(`/movie/${tmdbId}/images`, {
+    include_image_language: `${lang},en,null`,
+  });
+  const rank = (list: TmdbImage[], preferLang: string | null) =>
+    [...list]
+      .sort(
+        (a, b) =>
+          Number(b.iso_639_1 === preferLang) - Number(a.iso_639_1 === preferLang) ||
+          b.vote_count - a.vote_count ||
+          b.vote_average - a.vote_average,
+      )
+      .map((i) => i.file_path)
+      .slice(0, 60);
+  // Fundos sem texto (idioma nulo) costumam ser os melhores para ficar atrás da página.
+  return { posters: rank(data.posters, lang), backdrops: rank(data.backdrops, null) };
 }

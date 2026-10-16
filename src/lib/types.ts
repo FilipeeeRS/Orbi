@@ -1,4 +1,6 @@
 import type { Locale } from "./i18n/dictionaries";
+import type { AvatarRing } from "./avatar-ring";
+import type { Attachment } from "./attachments";
 
 export type MediaKind = "movie" | "series" | "music" | "game" | "book";
 // "all" = pasta que junta todas as outras
@@ -11,12 +13,14 @@ export type Profile = {
   display_name: string | null;
   avatar_url: string | null;
   cover_url: string | null;
+  sticker_url: string | null; // imagem sem fundo no canto da capa
   location: string | null;
   website: string | null;
   pronouns: string | null;
   is_private: boolean;
   show_adult: boolean;
   favorites: string[];
+  avatar_ring: AvatarRing | null; // null enquanto a migration da borda não foi aplicada
   bio: string | null;
   locale: Locale | null;
   created_at: string;
@@ -52,6 +56,7 @@ export type Entry = {
   liked: boolean;
   review: string | null;
   watched_on: string | null;
+  attachments: Attachment[]; // anexos da review (imagens, GIFs, PDF, Word, vídeos)
   updated_at: string;
 };
 

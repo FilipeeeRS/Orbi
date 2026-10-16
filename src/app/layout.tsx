@@ -4,8 +4,8 @@ import { connection } from "next/server";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Syne } from "next/font/google";
 import { Header } from "@/components/header";
 import { I18nProvider } from "@/components/i18n";
-import { LocaleSwitch } from "@/components/locale-switch";
-import { ThemeToggle, themeScript } from "@/components/theme-toggle";
+import { themeScript } from "@/components/theme-toggle";
+import { SiteFooter } from "@/components/site-footer";
 import { getDict, getViewer } from "@/lib/session";
 import "./globals.css";
 
@@ -48,17 +48,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
     <I18nProvider locale={locale}>
       <Header viewer={viewer} t={t} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 text-xs text-muted">
-          <a href="https://www.themoviedb.org" className="max-w-md hover:text-fg" target="_blank" rel="noreferrer">
-            {t.footer.tmdb}
-          </a>
-          <div className="flex items-center gap-2">
-            <LocaleSwitch />
-            <ThemeToggle />
-          </div>
-        </div>
-      </footer>
+      <SiteFooter t={t} />
     </I18nProvider>
   );
 }

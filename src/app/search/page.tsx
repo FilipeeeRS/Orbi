@@ -6,10 +6,10 @@ import { PosterGrid, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
 import { SORT_LABEL, type Sort } from "@/lib/queries";
 import { FilterBar } from "@/components/filter-bar";
+import { adultMovieIds } from "@/lib/catalog";
 import {
   discoverMovies,
   getPersonMovies,
-  isAdultRatedMovie,
   releaseYear,
   getMovieGenres,
   searchMoviesPages,
@@ -55,8 +55,8 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
     getViewer(),
   ]);
   // Sem a opção +18 ativada (ou sem login), filmes com classificação 18 anos ficam de fora.
-  const adult = viewer?.show_adult ? null : await Promise.all(found.map((m) => isAdultRatedMovie(m.id)));
-  const allowed = adult ? found.filter((_, i) => !adult[i]) : found;
+  const adult = viewer?.show_adult ? null : await adultMovieIds(found.map((m) => m.id));
+  const allowed = adult ? found.filter((m) => !adult.has(m.id)) : found;
 
   // Filtros e ordenação da busca (mesma barra das pastas, sem nota e sem lupa).
   const sort = SEARCH_SORTS.includes(params.sort as SearchSort) ? (params.sort as SearchSort) : "popular";

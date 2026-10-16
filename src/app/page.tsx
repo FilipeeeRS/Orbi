@@ -24,14 +24,7 @@ async function HomeContent() {
       </p>
       <h1 className="font-display text-3xl font-extrabold tracking-tight text-balance sm:text-5xl">{t.home.title}</h1>
       <p className="max-w-xl text-muted text-balance">{t.home.subtitle}</p>
-      <div className="flex flex-wrap justify-center gap-2 text-sm text-muted">
-        {(["movie", "series", "music", "game", "book"] as const).map((k) => (
-          <span key={k} className="rounded-full border border-border px-3 py-1">
-            {t.folders[k]}
-          </span>
-        ))}
-      </div>
-      <Link href="/login" className="rounded-full bg-accent px-6 py-2.5 font-semibold text-accent-fg hover:opacity-90">
+      <Link href="/home" className="rounded-full bg-accent px-6 py-2.5 font-semibold text-accent-fg hover:opacity-90">
         {t.home.cta}
       </Link>
     </section>

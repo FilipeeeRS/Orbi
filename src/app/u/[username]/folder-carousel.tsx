@@ -16,13 +16,27 @@ export function FolderCarousel({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Ao ir para outra página (ex.: Filmes) o Next mantém o perfil montado, só escondido (display: none).
+    // Escondido, a largura é 0: medir aí dava "1 pasta por página" e bagunçava a rolagem ao voltar.
+    let hidden = false;
     const measure = () => {
       const first = el.firstElementChild as HTMLElement | null;
       if (!first) return;
+      if (!el.clientWidth) {
+        hidden = true;
+        return;
+      }
+      if (hidden) {
+        // Voltou a aparecer: recomeça do início
+        hidden = false;
+        el.scrollTo({ left: 0 });
+        setPage(0);
+      }
       const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
       setPerPage(Math.max(1, Math.round((el.clientWidth + gap) / (first.offsetWidth + gap))));
     };
     const onScroll = () => {
+      if (!el.clientWidth) return;
       const gap = parseFloat(getComputedStyle(el).columnGap) || 0;
       setPage(Math.round(Math.abs(el.scrollLeft) / (el.clientWidth + gap)));
     };

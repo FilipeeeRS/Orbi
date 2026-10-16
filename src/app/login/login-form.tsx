@@ -5,14 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
 import { setLocale, signInWithIdentifier } from "@/app/actions";
-import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/dictionaries";
+import { LOCALE_NAMES, LOCALES_ALPHABETICAL } from "@/lib/i18n/dictionaries";
 
 export function LoginForm() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [error, setError] = useState<string | null>(params.get("error") ? t.common.error : null);
   const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -27,7 +27,54 @@ export function LoginForm() {
   }, []);
 
   const supabase = createClient();
-  const callbackUrl = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  const callbackUrl = (to = next) => `${window.location.origin}/auth/callback?next=${encodeURIComponent(to)}`;
+
+  function switchMode(to: typeof mode) {
+    setMode(to);
+    setError(null);
+    setInfo(null);
+  }
+
+  // Esqueci a senha: o link do e-mail volta pelo /auth/callback já logado e cai em /reset-password.
+  // A mensagem é sempre a mesma, para não revelar quais e-mails têm conta.
+  async function onForgot(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = String(new FormData(e.currentTarget).get("email")).trim();
+    setError(null);
+    setInfo(null);
+    setPending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: callbackUrl("/reset-password") });
+    setPending(false);
+    if (error) return setError(error.message);
+    setInfo(t.auth.resetSent);
+  }
+
+  if (mode === "forgot") {
+    return (
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <h1 className="mb-2 text-xl font-bold">{t.auth.forgotTitle}</h1>
+        <p className="mb-6 text-sm text-muted">{t.auth.forgotHint}</p>
+        <form onSubmit={onForgot} className="space-y-3">
+          <Field label={t.auth.email} name="email" type="email" autoComplete="email" />
+          {error && <p className="text-sm text-danger">{error}</p>}
+          {info && <p className="text-sm text-ok">{info}</p>}
+          <button
+            disabled={pending}
+            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
+          >
+            {t.auth.sendReset}
+          </button>
+        </form>
+        <button
+          type="button"
+          onClick={() => switchMode("signin")}
+          className="mt-4 w-full text-center text-sm text-muted hover:text-fg"
+        >
+          {t.auth.backToSignIn}
+        </button>
+      </div>
+    );
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -145,7 +192,7 @@ export function LoginForm() {
                 onChange={(e) => startLocale(() => setLocale(e.target.value))}
                 className="w-full rounded-lg border border-border bg-bg px-3 py-2 outline-none focus:border-accent"
               >
-                {LOCALES.map((l) => (
+                {LOCALES_ALPHABETICAL.map((l) => (
                   <option key={l} value={l}>
                     {LOCALE_NAMES[l]}
                   </option>
@@ -155,16 +202,21 @@ export function LoginForm() {
           </>
         )}
         {mode === "signin" && (
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted select-none">
-            <input
-              key={remembered ? "on" : "off"}
-              type="checkbox"
-              name="remember"
-              defaultChecked={!!remembered}
-              className="size-4 accent-[var(--accent)]"
-            />
-            {t.auth.rememberMe}
-          </label>
+          <div className="flex items-center justify-between gap-2">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted select-none">
+              <input
+                key={remembered ? "on" : "off"}
+                type="checkbox"
+                name="remember"
+                defaultChecked={!!remembered}
+                className="size-4 accent-[var(--accent)]"
+              />
+              {t.auth.rememberMe}
+            </label>
+            <button type="button" onClick={() => switchMode("forgot")} className="text-sm text-muted hover:text-fg">
+              {t.auth.forgotPassword}
+            </button>
+          </div>
         )}
         {error && <p className="text-sm text-danger">{error}</p>}
         {info && <p className="text-sm text-ok">{info}</p>}
@@ -178,11 +230,7 @@ export function LoginForm() {
 
       <button
         type="button"
-        onClick={() => {
-          setMode(mode === "signin" ? "signup" : "signin");
-          setError(null);
-          setInfo(null);
-        }}
+        onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
         className="mt-4 w-full text-center text-sm text-muted hover:text-fg"
       >
         {mode === "signin" ? t.auth.toSignUp : t.auth.toSignIn}

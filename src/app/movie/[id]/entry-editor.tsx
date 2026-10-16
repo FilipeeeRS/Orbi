@@ -6,10 +6,19 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
 import { StarIcon } from "@/components/stars";
 import type { Entry } from "@/lib/types";
+import {
+  ATTACHMENT_TYPES,
+  MAX_ATTACHMENT_BYTES,
+  MAX_ATTACHMENTS,
+  attachmentKind,
+  formatBytes,
+  type Attachment,
+} from "@/lib/attachments";
+import { AttachmentIcon } from "@/components/review-attachments";
 
 type Draft = Pick<
   Entry,
-  "status" | "rating" | "liked" | "review" | "watched_on"
+  "status" | "rating" | "liked" | "review" | "watched_on" | "attachments"
 >;
 
 const today = () => new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD no fuso local
@@ -29,26 +38,33 @@ export function EntryEditor({
   const [entry, setEntry] = useState<Draft | null>(initial);
   const [review, setReview] = useState(initial?.review ?? "");
   const [watchedOn, setWatchedOn] = useState(initial?.watched_on ?? "");
+  const [attachments, setAttachments] = useState<Attachment[]>(initial?.attachments ?? []);
+  const [uploading, setUploading] = useState(false);
+  const [attachError, setAttachError] = useState<string | null>(null);
   const [hover, setHover] = useState<number | null>(null);
   // Filme já assistido abre recolhido (só ações e estrelas); a seta mostra review, data e salvar.
   const [expanded, setExpanded] = useState(initial?.status !== "watched");
   const [error, setError] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
 
   const watched = entry?.status === "watched";
   const onWatchlist = entry?.status === "watchlist";
 
-  function persist(next: Draft | null, previous: Draft | null) {
+  function persist(next: Draft | null, previous: Draft | null, onSaved?: () => void) {
     setEntry(next);
     setError(false);
     start(async () => {
       const supabase = createClient();
+      // Anexos só vão quando existem (ou acabaram de ser removidos): assim nota, visto e watchlist
+      // continuam funcionando mesmo onde a coluna de anexos ainda não foi criada.
+      const sendAttachments = !!(next?.attachments?.length || previous?.attachments?.length);
+      const { attachments, ...withoutAttachments } = next ?? ({} as Draft);
+      const payload = sendAttachments ? { ...withoutAttachments, attachments } : withoutAttachments;
       const { error } = next
         ? await supabase
             .from("entries")
             .upsert(
-              { user_id: userId, item_id: itemId, ...next },
+              { user_id: userId, item_id: itemId, ...payload },
               { onConflict: "user_id,item_id" },
             )
         : await supabase
@@ -61,6 +77,7 @@ export function EntryEditor({
         setError(true);
         return;
       }
+      onSaved?.();
       router.refresh();
     });
   }
@@ -76,6 +93,7 @@ export function EntryEditor({
             liked: false,
             review: null,
             watched_on: watchedOn || today(),
+            attachments: [],
           };
     return { ...base, ...patch };
   }
@@ -87,12 +105,13 @@ export function EntryEditor({
       return persist(next, entry);
     }
     if (
-      (entry?.rating || entry?.liked || entry?.review) &&
+      (entry?.rating || entry?.liked || entry?.review != null) &&
       !confirm(t.movie.confirmRemove)
     )
       return;
     setReview("");
     setWatchedOn("");
+    setAttachments([]);
     persist(null, entry);
   }
 
@@ -106,6 +125,7 @@ export function EntryEditor({
             liked: false,
             review: null,
             watched_on: null,
+            attachments: [],
           },
       entry,
     );
@@ -117,20 +137,53 @@ export function EntryEditor({
     persist(next, entry);
   }
 
+  const reviewValue = review.trim() || (attachments.length ? "" : null);
+
   function saveDetails() {
     const next = asWatched({
-      review: review.trim() || null,
+      // Só anexos, sem texto, também é review: texto vazio ("") a mantém nas listas de reviews.
+      review: reviewValue,
       watched_on: watchedOn || null,
+      attachments,
     });
-    persist(next, entry);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    // Salvou: recolhe o editor (igual a clicar na seta); se der erro, ele fica aberto mostrando o aviso.
+    persist(next, entry, () => setExpanded(false));
   }
 
   const shown = hover ?? entry?.rating ?? 0;
   const dirty =
-    (review.trim() || null) !== (entry?.review ?? null) ||
-    (watchedOn || null) !== (entry?.watched_on ?? null);
+    reviewValue !== (entry?.review ?? null) ||
+    (watchedOn || null) !== (entry?.watched_on ?? null) ||
+    JSON.stringify(attachments) !== JSON.stringify(entry?.attachments ?? []);
+
+  // Anexos vão para o Storage assim que escolhidos; entram na review ao salvar.
+  async function attach(files: FileList | null) {
+    if (!files?.length) return;
+    setAttachError(null);
+    const room = MAX_ATTACHMENTS - attachments.length;
+    const list = [...files].slice(0, room);
+    if (files.length > room) setAttachError(t.movie.attachLimit(MAX_ATTACHMENTS));
+    const bad = list.find((file) => !ATTACHMENT_TYPES.includes(file.type));
+    if (bad) return setAttachError(t.movie.attachType);
+    if (list.some((file) => file.size > MAX_ATTACHMENT_BYTES)) return setAttachError(t.movie.attachTooBig);
+
+    setUploading(true);
+    const supabase = createClient();
+    const added: Attachment[] = [];
+    for (const file of list) {
+      const safe = file.name.normalize("NFKD").replace(/[^A-Za-z0-9._-]+/g, "-").slice(-80);
+      const path = `${userId}/${crypto.randomUUID()}-${safe}`;
+      const { error } = await supabase.storage.from("review-files").upload(path, file, { contentType: file.type });
+      if (error) {
+        setAttachError(error.message);
+        break;
+      }
+      const url = supabase.storage.from("review-files").getPublicUrl(path).data.publicUrl;
+      added.push({ url, name: file.name, type: file.type, size: file.size });
+    }
+    setAttachments((current) => [...current, ...added].slice(0, MAX_ATTACHMENTS));
+    setUploading(false);
+  }
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-surface/80 p-4">
@@ -248,6 +301,37 @@ export function EntryEditor({
             />
           </label>
 
+          {/* Anexos já escolhidos (o botão de anexar fica ao lado da data) */}
+          {attachments.length > 0 && (
+              <ul className="flex flex-wrap gap-2">
+                {attachments.map((a, i) => (
+                  <li key={a.url} className="flex items-center gap-2 rounded-lg border border-border bg-bg py-1 ps-1 pe-2 text-xs">
+                    {attachmentKind(a.type) === "image" ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- miniatura do anexo no Storage
+                      <img src={a.url} alt="" className="size-8 rounded object-cover" />
+                    ) : (
+                      <AttachmentIcon type={a.type} className="size-8" />
+                    )}
+                    <span className="max-w-40 truncate" title={a.name}>
+                      {a.name}
+                    </span>
+                    <span className="text-muted">{formatBytes(a.size)}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAttachments((current) => current.filter((_, j) => j !== i))}
+                      aria-label={t.movie.attachRemove}
+                      title={t.movie.attachRemove}
+                      className="grid size-5 place-items-center rounded-full text-muted hover:bg-surface-2 hover:text-fg"
+                    >
+                      <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden>
+                        <path d="M6 6l12 12M18 6 6 18" />
+                      </svg>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+          )}
+
           <div className="flex flex-wrap items-end justify-between gap-3">
             <label className="text-xs text-muted">
               <span className="mb-1 block">{t.movie.watchedOn}</span>
@@ -259,17 +343,39 @@ export function EntryEditor({
                 className="rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent"
               />
             </label>
+            {/* Anexar (imagens, GIFs, PDF, Word e vídeos curtos) ao lado da data; some ao chegar no limite */}
+            {attachments.length < MAX_ATTACHMENTS && (
+              <label
+                title={t.movie.attachHint}
+                className={`me-auto flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-1.5 text-sm text-muted transition hover:border-muted hover:text-fg ${
+                  uploading ? "pointer-events-none animate-pulse" : ""
+                }`}
+              >
+                <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L15.6 7" />
+                </svg>
+                {uploading ? t.movie.attaching : t.movie.attach}
+                <input
+                  type="file"
+                  multiple
+                  accept={ATTACHMENT_TYPES.join(",")}
+                  className="sr-only"
+                  disabled={uploading}
+                  onChange={(e) => {
+                    attach(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
             <div className="flex items-center gap-3">
-              {error && (
-                <span className="text-sm text-danger">{t.common.error}</span>
-              )}
-              {saved && !error && (
-                <span className="text-sm text-ok">{t.movie.saved}</span>
+              {(error || attachError) && (
+                <span className="text-sm text-danger">{attachError ?? t.common.error}</span>
               )}
               <button
                 type="button"
                 onClick={saveDetails}
-                disabled={pending || !dirty}
+                disabled={pending || uploading || !dirty}
                 className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
               >
                 {t.movie.save}

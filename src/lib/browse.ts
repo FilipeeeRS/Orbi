@@ -1,5 +1,6 @@
 import "server-only";
-import { isAdultRatedMovie, searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear, type TmdbMovie } from "./tmdb";
+import { adultMovieIds } from "./catalog";
+import { searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear, type TmdbMovie } from "./tmdb";
 
 // "Ver tudo" da Home: qualquer filme que existe, direto do TMDB (não só o catálogo do Orbi).
 
@@ -69,8 +70,8 @@ export async function browseMovies(
   }
 
   if (!opts.showAdult) {
-    const adult = await Promise.all(movies.map((m) => isAdultRatedMovie(m.id)));
-    movies = movies.filter((_, i) => !adult[i]);
+    const adult = await adultMovieIds(movies.map((m) => m.id));
+    movies = movies.filter((m) => !adult.has(m.id));
   }
   return { movies, total };
 }

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import type { CrewRole } from "@/lib/tmdb";
+import { useI18n } from "@/components/i18n";
+import type { CrewRole, WatchKind, WatchProvider } from "@/lib/tmdb";
 
 // Um nome da ficha; com href, vira link para a busca (ex.: todos os filmes do diretor).
 export type InfoChip = { name: string; href?: string };
@@ -15,14 +16,25 @@ export type MovieInfoView = {
   details: { label: string; values: InfoChip[] }[];
   genres: InfoChip[];
   releases: { country: string; date: string; certification: string }[];
+  // Onde assistir no país da pessoa (null = o TMDB não tem dados de nenhum país para o filme)
+  watch: { country: string; link: string | null; groups: { kind: WatchKind; providers: WatchProvider[] }[] } | null;
 };
 
-type Tab = "cast" | "crew" | "details" | "genres" | "releases";
+type Tab = "cast" | "crew" | "details" | "genres" | "releases" | "watch";
 const CAST_PREVIEW = 24;
 
-export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dictionary["info"] }) {
-  const tabs = (["cast", "crew", "details", "genres", "releases"] as const).filter((tab) =>
-    tab === "crew" ? info.crew.length : tab === "details" ? info.details.length : info[tab].length,
+// Os textos vêm do dicionário no próprio navegador: alguns são funções (ex.: watchIn(país)),
+// e funções não podem ser enviadas do servidor para um componente cliente.
+export function MovieInfo({ info }: { info: MovieInfoView }) {
+  const labels = useI18n().t.info;
+  const tabs = (["cast", "crew", "details", "genres", "releases", "watch"] as const).filter((tab) =>
+    tab === "crew"
+      ? info.crew.length
+      : tab === "details"
+        ? info.details.length
+        : tab === "watch"
+          ? info.watch
+          : info[tab].length,
   );
   const [tab, setTab] = useState<Tab>(tabs[0] ?? "cast");
   const [allCast, setAllCast] = useState(false);
@@ -84,6 +96,8 @@ export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dicti
         </div>
       )}
 
+      {tab === "watch" && info.watch && <WhereToWatch watch={info.watch} labels={labels} />}
+
       {tab === "releases" && (
         <ul className="divide-y divide-border/60 text-sm">
           {info.releases.map((r) => (
@@ -100,6 +114,55 @@ export function MovieInfo({ info, labels }: { info: MovieInfoView; labels: Dicti
         </ul>
       )}
     </section>
+  );
+}
+
+// Onde assistir: uma linha por tipo (streaming, grátis, com anúncios, aluguel, compra) com os logos dos serviços.
+// Os links levam à página do TMDB/JustWatch do país, que tem os links diretos de cada serviço.
+function WhereToWatch({ watch, labels }: { watch: NonNullable<MovieInfoView["watch"]>; labels: Dictionary["info"] }) {
+  return (
+    <div className="space-y-4">
+      {watch.groups.length ? (
+        <dl className="space-y-3">
+          {watch.groups.map((g) => (
+            <div key={g.kind} className="grid grid-cols-[minmax(0,10rem)_1fr] items-start gap-3">
+              <dt className="flex items-center gap-2 pt-2 text-[11px] tracking-widest text-muted uppercase">
+                <span className="shrink-0">{labels.watchKinds[g.kind]}</span>
+                <span className="mt-1 h-px flex-1 border-b border-dotted border-muted/50" />
+              </dt>
+              <dd className="flex flex-wrap gap-2">
+                {g.providers.map((p) => (
+                  <a
+                    key={p.id}
+                    href={watch.link ?? undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={p.name}
+                    className="flex items-center gap-2 rounded-lg bg-surface-2 py-1 ps-1 pe-3 text-sm text-fg/85 transition hover:bg-border hover:text-fg"
+                  >
+                    {p.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- logo pequeno direto do CDN do TMDB
+                      <img src={`https://image.tmdb.org/t/p/w92${p.logo}`} alt="" className="size-7 rounded-md" loading="lazy" />
+                    ) : (
+                      <span className="size-7 rounded-md bg-border" />
+                    )}
+                    {p.name}
+                  </a>
+                ))}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className="text-sm text-muted">{labels.watchNone(watch.country)}</p>
+      )}
+      <p className="text-xs text-muted">
+        {labels.watchIn(watch.country)} ·{" "}
+        <a href="https://www.justwatch.com" target="_blank" rel="noreferrer" className="hover:text-fg hover:underline">
+          {labels.watchSource}
+        </a>
+      </p>
+    </div>
   );
 }
 

@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { OrbitSync } from "./orbit-sync";
 
 export function Logo({ slogan }: { slogan?: string }) {
   return (
     <Link href="/" className="flex shrink-0 items-center gap-3">
-      <OrbiMark className="size-10" />
+      <OrbiMark className="size-10 text-fg" />
       <span className="font-logo text-2xl leading-none font-extrabold tracking-tight">orbi</span>
       {slogan && (
         <span className="hidden text-xs leading-tight text-muted md:block">{slogan}</span>
@@ -12,42 +13,40 @@ export function Logo({ slogan }: { slogan?: string }) {
   );
 }
 
-// Planeta gasoso vermelho (tipo Júpiter) com faixas; a metade de trás do anel passa por trás dele.
-export function OrbiMark({ className }: { className?: string }) {
+// Metade da frente do anel, que passa na frente do planeta.
+const RING_FRONT = "M3 20a17 6 0 0 0 34 0";
+
+// "Tilted orbit": planeta liso, anel inclinado e uma lua que percorre o anel.
+// Usa a cor do texto (branco nos temas escuros, preto nos claros); o contorno na cor do fundo
+// separa o anel e a lua do planeta.
+// A lua é animada com transform em CSS (.orbi-moon-x/.orbi-moon-y no globals.css), que roda fora da
+// thread principal: não trava enquanto a página carrega, ao contrário do animateMotion do SVG.
+// OrbitSync põe todas as logos no mesmo relógio, então elas giram juntas.
+export function OrbiMark({ className, orbitSeconds = 7 }: { className?: string; orbitSeconds?: number }) {
   return (
-    <svg viewBox="0 0 40 40" className={className} aria-hidden>
-      <defs>
-        <radialGradient id="orbi-planet" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor="#ff8a8f" />
-          <stop offset="45%" stopColor="#ff3b52" />
-          <stop offset="100%" stopColor="#7a0c24" />
-        </radialGradient>
-        <clipPath id="orbi-planet-clip">
-          <circle cx="20" cy="20" r="9.5" />
-        </clipPath>
-        <clipPath id="orbi-ring-front">
-          <rect x="0" y="20" width="40" height="20" />
-        </clipPath>
-      </defs>
-      <g transform="rotate(-25 20 20)">
-        <ellipse cx="20" cy="20" rx="18" ry="6.5" fill="none" className="stroke-fg" strokeWidth="2" opacity="0.45" />
-        <circle cx="20" cy="20" r="9.5" fill="url(#orbi-planet)" />
-        <g clipPath="url(#orbi-planet-clip)" fill="none" strokeLinecap="round">
-          <path d="M9 16.5c4 1.2 8 1.2 13 .3s7-.6 9 .2" stroke="#ffd2d4" strokeOpacity="0.35" strokeWidth="1.4" />
-          <path d="M9 21c5 1 9 .8 14-.2s6.5-.4 8 .3" stroke="#4a0716" strokeOpacity="0.45" strokeWidth="2" />
-          <path d="M10 25c4 .8 8 .7 12 0" stroke="#ffd2d4" strokeOpacity="0.25" strokeWidth="1.2" />
+    <span
+      aria-hidden
+      className={`relative inline-block shrink-0 ${className ?? ""}`}
+      style={{ "--orbit": `${orbitSeconds}s` } as React.CSSProperties}
+    >
+      <svg viewBox="0 0 40 40" className="size-full">
+        <g transform="rotate(-25 20 20)">
+          <ellipse cx="20" cy="20" rx="17" ry="6" fill="none" stroke="currentColor" strokeWidth="2.5" opacity="0.4" />
+          <circle cx="20" cy="20" r="8.5" fill="currentColor" />
+          <path d={RING_FRONT} fill="none" stroke="var(--bg)" strokeWidth="5.5" />
+          <path d={RING_FRONT} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
         </g>
-        <ellipse
-          cx="20"
-          cy="20"
-          rx="18"
-          ry="6.5"
-          fill="none"
-          className="stroke-fg"
-          strokeWidth="2"
-          clipPath="url(#orbi-ring-front)"
-        />
-      </g>
-    </svg>
+      </svg>
+      {/* Lua: mesmo giro de -25° do anel; x e y oscilam em senoide e juntos desenham a elipse */}
+      <span className="absolute inset-0 -rotate-25">
+        <span className="orbi-moon-x absolute inset-0">
+          <span className="orbi-moon-y absolute inset-0">
+            <span className="absolute top-1/2 left-1/2 size-[21%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-bg" />
+            <span className="absolute top-1/2 left-1/2 size-[12.5%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-current" />
+          </span>
+        </span>
+      </span>
+      <OrbitSync />
+    </span>
   );
 }

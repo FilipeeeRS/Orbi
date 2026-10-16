@@ -19,7 +19,11 @@ import {
 import { getMovieGenres, tmdbLanguage } from "@/lib/tmdb";
 import { FilterBar } from "@/components/filter-bar";
 import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
+import { ReviewAttachments } from "@/components/review-attachments";
+import { TranslatableText } from "@/components/translatable-text";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
+import { getUserLists } from "@/lib/lists";
+import { ListsGrid } from "@/app/lists/lists-grid";
 
 // Listagem de uma pasta (filmes, séries, músicas, jogos ou livros) do perfil, com abas e ordenação.
 export async function FolderView({
@@ -47,10 +51,12 @@ export async function FolderView({
   if (!profile) notFound();
 
   const [{ entries, total }, genres] = await Promise.all([
-    listEntries(profile.id, tab, sort, page, kind, filters, locale),
+    listEntries(profile.id, tab, sort, page, kind, filters, locale, viewer?.id ?? null),
     kind === "movie" || kind === "all" ? getMovieGenres(tmdbLanguage(locale)) : Promise.resolve([]),
   ]);
   const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
+  // Aba Listas: as listas personalizadas do perfil (de todas as pastas)
+  const lists = tab === "lists" ? await getUserLists(profile.id) : null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const base = `/u/${profile.username}/${path}`;
   // Mantém filtros e ordenação ao trocar de aba ou de página.
@@ -127,13 +133,15 @@ export async function FolderView({
         )}
       </div>
 
-      {entries.length === 0 ? (
+      {lists ? (
+        <ListsGrid lists={lists} isOwner={viewer?.id === profile.id} username={profile.username} t={t} />
+      ) : entries.length === 0 ? (
         <p className="text-sm text-muted">{t.profile.empty}</p>
       ) : tab === "reviews" ? (
         <ul className="divide-y divide-border">
           {entries.map((e) => (
             <li key={e.id} className="flex gap-4 py-5">
-              <Link href={itemHref(e.items)} className="group w-16 shrink-0 sm:w-20">
+              <Link href={itemHref(e.items)} className="group w-16 shrink-0 self-start sm:w-20">
                 <PosterImage url={e.items.poster_url} title={itemTitle(e.items, locale)} />
               </Link>
               <div className="min-w-0">
@@ -147,7 +155,8 @@ export async function FolderView({
                     <span className="text-xs text-muted">{formatDate(e.watched_on, locale)}</span>
                   )}
                 </div>
-                <p className="mt-2 text-sm whitespace-pre-line">{e.review}</p>
+                {e.review && <TranslatableText text={e.review} className="mt-2 text-sm whitespace-pre-line" />}
+                <ReviewAttachments attachments={e.attachments} />
               </div>
             </li>
           ))}

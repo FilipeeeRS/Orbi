@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { setLocale } from "@/app/actions";
-import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/dictionaries";
+import { LOCALE_NAMES, LOCALES_ALPHABETICAL } from "@/lib/i18n/dictionaries";
 import { useI18n } from "./i18n";
 
 export function LocaleSwitch() {
@@ -17,7 +17,7 @@ export function LocaleSwitch() {
       onChange={(e) => start(() => setLocale(e.target.value))}
       className="rounded-md border border-border bg-surface px-2 py-1 text-xs text-muted outline-none hover:text-fg focus:border-accent"
     >
-      {LOCALES.map((l) => (
+      {LOCALES_ALPHABETICAL.map((l) => (
         <option key={l} value={l}>
           {LOCALE_NAMES[l]}
         </option>

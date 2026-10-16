@@ -13,12 +13,19 @@ import {
   getItemsByIds,
   getProfileByUsername,
   getProfileOverview,
+  getReviewCommentCounts, getReviewLikes,
   getViewerStates,
   isFollowing,
 } from "@/lib/queries";
+import { applyArtToItems } from "@/lib/art";
 import { FolderCarousel } from "./folder-carousel";
 import { Avatar } from "@/components/header";
 import { FollowButton } from "./follow-button";
+import { ReviewLike } from "@/components/review-like";
+import { ReviewAttachments } from "@/components/review-attachments";
+import { TranslatableText } from "@/components/translatable-text";
+import { ReviewComments } from "@/components/review-comments";
+import { StarsDisplay } from "@/components/stars";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, type EntryWithItem, type FolderKind, type MediaKind } from "@/lib/types";
 import { ProfileHeader } from "./profile-header";
@@ -53,11 +60,11 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
 
   const isOwner = viewer?.id === profile.id;
   const [o, friends, following, folderOrder, chosenFavorites] = await Promise.all([
-    getProfileOverview(profile.id),
+    getProfileOverview(profile.id, "movie", viewer?.id ?? null),
     getFriends(profile.id),
     viewer && !isOwner ? isFollowing(viewer.id, profile.id) : false,
     getFolderOrder(profile.id),
-    getItemsByIds(profile.favorites ?? []),
+    getItemsByIds(profile.favorites ?? []).then((items) => (viewer ? applyArtToItems(viewer.id, items) : items)),
   ]);
   // Favoritos escolhidos em Configurações primeiro; os espaços que sobrarem (até 4)
   // são completados pelos curtidos mais recentes.
@@ -68,12 +75,20 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   ].slice(0, 4);
   const base = `/u/${profile.username}`;
   const states = viewer
-    ? await getViewerStates(viewer.id, [...favorites.map((i) => i.id), ...o.recent.map((e) => e.item_id)])
+    ? await getViewerStates(viewer.id, [
+        ...favorites.map((i) => i.id),
+        ...o.recent.map((e) => e.item_id),
+        ...o.recentReviews.map((e) => e.item_id),
+      ])
     : null;
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states?.get(itemId) ?? null } : null);
   // Só a capa escolhida pelo usuário; sem ela, o topo do perfil fica sem imagem.
   const backdrop = profile.cover_url ?? null;
-  const diary = o.recent.filter((e) => e.watched_on).slice(0, 8);
+  const diary = o.recent.filter((e) => e.watched_on).slice(0, 11);
+  const [reviewLikes, commentCounts] = await Promise.all([
+    getReviewLikes(o.recentReviews.map((r) => r.id), viewer?.id ?? null),
+    getReviewCommentCounts(o.recentReviews.map((r) => r.id)),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -148,6 +163,53 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                     />
                   ))}
                 </div>
+              </section>
+            )}
+
+            {o.recentReviews.length > 0 && (
+              <section>
+                <SectionTitle href={`${base}/movies?tab=reviews`} more={t.profile.all}>
+                  {t.profile.recentReviews}
+                </SectionTitle>
+                <ul className="divide-y divide-border">
+                  {o.recentReviews.map((r) => (
+                    <li key={r.id} className="flex gap-4 py-4 first:pt-1">
+                      <Link href={itemHref(r.items)} className="group w-16 shrink-0 self-start sm:w-20">
+                        <PosterImage
+                          url={r.items.poster_url}
+                          title={itemTitle(r.items, locale)}
+                          watched={!!states?.get(r.item_id)?.watched}
+                        />
+                      </Link>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <Link href={itemHref(r.items)} className="block truncate font-semibold hover:text-accent">
+                          {itemTitle(r.items, locale)} <span className="font-normal text-muted">{r.items.year}</span>
+                        </Link>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <StarsDisplay rating={r.rating} valueLang={dictionaries[locale].htmlLang} />
+                          {r.liked && <span className="text-like">♥</span>}
+                        </div>
+                        {r.review && <TranslatableText text={r.review} className="line-clamp-4 text-sm whitespace-pre-line text-fg/85" />}
+                        <ReviewAttachments attachments={r.attachments} />
+                        <ReviewComments
+                          entryId={r.id}
+                          reviewOwnerId={r.user_id}
+                          viewerId={viewer?.id ?? null}
+                          initialCount={commentCounts.get(r.id) ?? 0}
+                          actions={
+                            <ReviewLike
+                              entryId={r.id}
+                              viewerId={viewer?.id ?? null}
+                              initialLiked={reviewLikes.mine.has(r.id)}
+                              initialCount={reviewLikes.counts.get(r.id) ?? 0}
+                              label={t.movie.like}
+                            />
+                          }
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </section>
             )}
 
@@ -268,14 +330,14 @@ function RatingHistogram({ counts, averageLabel }: { counts: number[]; averageLa
 function Diary({ entries, locale }: { entries: EntryWithItem[]; locale: Locale }) {
   const lang = dictionaries[locale].htmlLang;
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-1.5">
       {entries.map((e, i) => {
         const [y, m, d] = e.watched_on!.split("-").map(Number);
         const month = new Date(y, m - 1, d).toLocaleDateString(lang, { month: "short" }).replace(".", "");
         // Só mostra o mês na primeira entrada de cada mês, como no diário do Letterboxd
         const showMonth = i === 0 || entries[i - 1].watched_on!.slice(0, 7) !== e.watched_on!.slice(0, 7);
         return (
-          <li key={e.id} className="flex items-center gap-3 text-sm">
+          <li key={e.id} className="flex items-center gap-3 text-[15px]">
             <span
               className={`grid w-10 shrink-0 place-items-center rounded-md border border-border py-0.5 text-[10px] font-bold tracking-wider text-muted uppercase ${
                 showMonth ? "" : "invisible"
@@ -283,7 +345,7 @@ function Diary({ entries, locale }: { entries: EntryWithItem[]; locale: Locale }
             >
               {month}
             </span>
-            <span className="w-5 text-end text-xs text-muted tabular-nums">{d}</span>
+            <span className="w-5 text-end text-sm text-muted tabular-nums">{d}</span>
             <Link href={itemHref(e.items)} className="truncate hover:text-accent">
               {itemTitle(e.items, locale)}
             </Link>
@@ -358,25 +420,15 @@ function Folders({
           </Link>
         );
       })}
-      <div
-        aria-disabled
-        title={t.folders.inDevelopment}
-        className="flex h-28 cursor-not-allowed flex-col justify-between rounded-xl border border-dashed border-border bg-surface/30 p-3 text-muted/50"
+      <Link
+        href={`${base}/all?tab=lists`}
+        className="flex h-28 flex-col justify-between rounded-xl border border-dashed border-border p-3 text-muted transition hover:border-accent hover:text-fg"
       >
-        <div className="flex items-center justify-between">
-          <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-            <rect x="5" y="11" width="14" height="10" rx="2" />
-            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-          </svg>
-        </div>
-        <div>
-          <span className="block text-sm font-semibold">{t.folders.createList}</span>
-          <span className="text-[11px]">{t.folders.inDevelopment}</span>
-        </div>
-      </div>
+        <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span className="block text-sm font-semibold">{t.folders.createList}</span>
+      </Link>
     </FolderCarousel>
   );
 }

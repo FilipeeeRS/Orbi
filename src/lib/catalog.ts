@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "./supabase/admin";
-import { getMovieWithTranslations, hasAdultRating, releaseYear, tmdbImage, TmdbNotFound, type TmdbTranslation } from "./tmdb";
+import { getMovieWithTranslations, hasAdultRating, isAdultRatedMovie, releaseYear, tmdbImage, TmdbNotFound, type TmdbTranslation } from "./tmdb";
 import { LOCALES, TMDB_LANGUAGES } from "./i18n/dictionaries";
 import type { Item } from "./types";
 
@@ -91,4 +91,24 @@ function pickTranslations(list: TmdbTranslation[], englishTitle: string): Item["
     };
   }
   return out;
+}
+
+// Filmes do TMDB com classificação 18 anos, para tirar da busca e do "Ver tudo" de quem não ativou +18.
+// Junta o que o catálogo do Orbi já sabe (is_adult_rated) com a checagem no TMDB, para não depender
+// só do TMDB responder na hora.
+export async function adultMovieIds(tmdbIds: number[]): Promise<Set<number>> {
+  if (!tmdbIds.length) return new Set();
+  const [known, checks] = await Promise.all([
+    createAdminClient()
+      .from("items")
+      .select("external_id")
+      .eq("kind", "movie")
+      .eq("source", "tmdb")
+      .eq("is_adult_rated", true)
+      .in("external_id", tmdbIds.map(String)),
+    Promise.all(tmdbIds.map((id) => isAdultRatedMovie(id))),
+  ]);
+  const adult = new Set((known.data ?? []).map((row) => Number(row.external_id)));
+  tmdbIds.forEach((id, i) => checks[i] && adult.add(id));
+  return adult;
 }

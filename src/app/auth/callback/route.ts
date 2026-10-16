@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Retorno do login com Google e da confirmação de e-mail.
+// Retorno do login com Google, da confirmação de e-mail e do link de "esqueci a senha".
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");

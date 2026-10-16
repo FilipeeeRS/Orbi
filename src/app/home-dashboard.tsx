@@ -4,8 +4,11 @@ import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
 import { getFriendsActivity, getKindOrderForViewer, getPopularItems, getPopularReviews } from "@/lib/home";
-import { getReviewLikes, getViewerStates } from "@/lib/queries";
+import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
 import { ReviewLike } from "@/components/review-like";
+import { ReviewAttachments } from "@/components/review-attachments";
+import { TranslatableText } from "@/components/translatable-text";
+import { ReviewComments } from "@/components/review-comments";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, type MediaKind, type Profile } from "@/lib/types";
 
@@ -13,35 +16,45 @@ const KINDS: MediaKind[] = ["movie", "series", "music", "game", "book"];
 // "Ver tudo" de cada fileira abre o catálogo da pasta já ordenado por "Populares esta semana".
 const BROWSE_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
 
-// Tela inicial de quem está logado: boas-vindas, amigos, populares da semana e reviews.
+// Tela inicial: boas-vindas, amigos, populares da semana e reviews.
+// Visitante (viewer null) vê só populares e reviews; marcar ou curtir leva para o login.
 // "Listas populares" entra quando existirem listas personalizadas (watchlist é pessoal, não conta).
-export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile; t: Dictionary; locale: Locale }) {
+export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
   const [friends, popularByKind, reviews, kindOrder] = await Promise.all([
-    getFriendsActivity(viewer.id),
+    viewer ? getFriendsActivity(viewer.id) : [],
     Promise.all(KINDS.map(async (kind) => ({ kind, items: await getPopularItems(kind) }))),
     getPopularReviews(6),
-    getKindOrderForViewer(viewer.id, KINDS),
+    viewer ? getKindOrderForViewer(viewer.id, KINDS) : KINDS,
   ]);
   // Todas as pastas aparecem; as que ainda não têm itens mostram capas vazias.
   // e a ordem das pastas segue o que o usuário mais adicionou recentemente.
   const popular = kindOrder.map((kind) => popularByKind.find((p) => p.kind === kind)!);
 
-  const states = await getViewerStates(viewer.id, [
+  const states = await getViewerStates(viewer?.id ?? "", viewer ? [
     ...friends.map((e) => e.item_id),
     ...popular.flatMap((p) => p.items.map((i) => i.id)),
     ...reviews.map((r) => r.item_id),
+  ] : []);
+  const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
+  const [reviewLikes, commentCounts] = await Promise.all([
+    getReviewLikes(reviews.map((r) => r.id), viewer?.id ?? null),
+    getReviewCommentCounts(reviews.map((r) => r.id)),
   ]);
-  const viewerFor = (itemId: string) => ({ id: viewer.id, state: states.get(itemId) ?? null });
-  const reviewLikes = await getReviewLikes(reviews.map((r) => r.id), viewer.id);
 
   return (
     <div className="space-y-12">
-      <header>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-          {t.home.welcome(viewer.display_name || viewer.username)}
-        </h1>
-        <p className="mt-1 text-muted">{t.home.welcomeSub}</p>
-      </header>
+      {viewer ? (
+        <header>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+            {t.home.welcome(viewer.display_name || viewer.username)}
+          </h1>
+          <p className="mt-1 text-muted">{t.home.welcomeSub}</p>
+        </header>
+      ) : (
+        <header>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{t.home.welcomeSub}</h1>
+        </header>
+      )}
 
       {friends.length > 0 && (
         <Section title={t.home.newFromFriends}>
@@ -92,7 +105,7 @@ export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile; t:
           <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
             {reviews.map((r) => (
               <article key={r.id} className="flex gap-4">
-                <Link href={itemHref(r.items)} className="group w-16 shrink-0 sm:w-20">
+                <Link href={itemHref(r.items)} className="group w-16 shrink-0 self-start sm:w-20">
                   <PosterImage
                     url={r.items.poster_url}
                     title={itemTitle(r.items, locale)}
@@ -112,15 +125,24 @@ export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile; t:
                     <StarsDisplay rating={r.rating} valueLang={dictionaries[locale].htmlLang} />
                     {r.liked && <span className="text-like">♥</span>}
                   </Link>
-                  <p className="line-clamp-4 text-sm whitespace-pre-line text-fg/85">{r.review}</p>
+                  {r.review && <TranslatableText text={r.review} className="line-clamp-4 text-sm whitespace-pre-line text-fg/85" />}
+                  <ReviewAttachments attachments={r.attachments} />
+                  <ReviewComments
+                    entryId={r.id}
+                    reviewOwnerId={r.user_id}
+                    viewerId={viewer?.id ?? null}
+                    initialCount={commentCounts.get(r.id) ?? 0}
+                    actions={
+                      <ReviewLike
+                        entryId={r.id}
+                        viewerId={viewer?.id ?? null}
+                        initialLiked={reviewLikes.mine.has(r.id)}
+                        initialCount={reviewLikes.counts.get(r.id) ?? 0}
+                        label={t.movie.like}
+                      />
+                    }
+                  />
                 </div>
-                <ReviewLike
-                  entryId={r.id}
-                  viewerId={viewer.id}
-                  initialLiked={reviewLikes.mine.has(r.id)}
-                  initialCount={reviewLikes.counts.get(r.id) ?? 0}
-                  label={t.movie.like}
-                />
               </article>
             ))}
           </div>

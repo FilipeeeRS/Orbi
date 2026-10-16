@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getDict, getViewer, LOCALE_COOKIE } from "@/lib/session";
 import { itemTitle, type Item } from "@/lib/types";
 import { isLocale } from "@/lib/i18n/dictionaries";
+import { isAvatarRing } from "@/lib/avatar-ring";
 
 export async function setLocale(locale: string) {
   if (!isLocale(locale)) return;
@@ -77,15 +78,17 @@ export async function updateProfile(_prev: ProfileFormState, form: FormData): Pr
   redirect(`/u/${username}`);
 }
 
-// Foto e capa vão para o Storage pelo navegador (pasta do próprio usuário); aqui só gravamos a URL.
-async function setProfileImage(kind: "avatar" | "cover", path: string | null): Promise<{ ok: boolean }> {
+// Foto, capa e sticker vão para o Storage pelo navegador (pasta do próprio usuário); aqui só gravamos a URL.
+const IMAGE_COLUMNS = { avatar: "avatar_url", cover: "cover_url", sticker: "sticker_url" } as const;
+
+async function setProfileImage(kind: keyof typeof IMAGE_COLUMNS, path: string | null): Promise<{ ok: boolean }> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false };
   if (path !== null && !path.startsWith(`${viewer.id}/${kind}-`)) return { ok: false };
 
   const supabase = await createClient();
   const url = path ? supabase.storage.from("posters").getPublicUrl(path).data.publicUrl : null;
-  const column = kind === "avatar" ? "avatar_url" : "cover_url";
+  const column = IMAGE_COLUMNS[kind];
   const { error } = await supabase.from("profiles").update({ [column]: url }).eq("id", viewer.id);
   if (error) return { ok: false };
   refresh();
@@ -98,6 +101,20 @@ export async function setAvatar(path: string | null) {
 
 export async function setCover(path: string | null) {
   return setProfileImage("cover", path);
+}
+
+export async function setSticker(path: string | null) {
+  return setProfileImage("sticker", path);
+}
+
+export async function setAvatarRing(ring: string): Promise<{ ok: boolean }> {
+  const viewer = await getViewer();
+  if (!viewer || !isAvatarRing(ring)) return { ok: false };
+  const supabase = await createClient();
+  const { error } = await supabase.from("profiles").update({ avatar_ring: ring }).eq("id", viewer.id);
+  if (error) return { ok: false };
+  refresh();
+  return { ok: true };
 }
 
 // Login por e-mail ou nome de usuário. O e-mail de quem usa o @ é resolvido aqui no servidor

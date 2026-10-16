@@ -39,6 +39,11 @@ export const LOCALE_NAMES: Record<Locale, string> = {
   it: "Italiano",
 };
 
+// Ordem dos seletores de idioma: alfabética pelo nome no próprio idioma (alfabeto latino primeiro,
+// depois cirílico, árabe, devanágari, bengali, chinês, japonês e coreano). Fixa para o servidor e o
+// navegador ordenarem igual.
+export const LOCALES_ALPHABETICAL: readonly Locale[] = ["id", "de", "en", "es", "fr", "it", "pt", "tr", "ru", "ar", "ur", "hi", "bn", "zh", "ja", "ko"];
+
 // Idioma/região usados nas buscas do TMDB e para escolher a tradução preferida.
 export const TMDB_LANGUAGES: Record<Locale, string> = {
   pt: "pt-BR",
