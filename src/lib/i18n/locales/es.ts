@@ -39,7 +39,7 @@ export const es: Dictionary = {
     watchingNow: "Viendo ahora",
     welcome: (n: string) => `¡Hola de nuevo, ${n}!`,
     welcomeSub: "Mira lo que está pasando en Orbi.",
-    newFromFriends: "Novedades de tus amigos",
+    newFromFriends: "Actividad de amigos",
     popular: (f: string) => `${f} populares esta semana`,
     popularReviews: "Reseñas populares esta semana",
     popularLists: "Listas populares esta semana",

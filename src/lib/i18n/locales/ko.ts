@@ -39,7 +39,7 @@ export const ko: Dictionary = {
     watchingNow: "보는 중",
     welcome: (n: string) => `다시 오신 걸 환영해요, ${n}님!`,
     welcomeSub: "지금 Orbi에서 일어나는 일이에요.",
-    newFromFriends: "친구들의 새 소식",
+    newFromFriends: "친구 활동",
     popular: (f: string) => `이번 주 인기 ${f}`,
     popularReviews: "이번 주 인기 리뷰",
     popularLists: "이번 주 인기 리스트",

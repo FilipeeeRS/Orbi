@@ -39,7 +39,7 @@ export const it: Dictionary = {
     watchingNow: "In visione",
     welcome: (n: string) => `Bentornato, ${n}!`,
     welcomeSub: "Ecco cosa succede su Orbi.",
-    newFromFriends: "Novità dagli amici",
+    newFromFriends: "Attività degli amici",
     popular: (f: string) => `${f} popolari questa settimana`,
     popularReviews: "Recensioni popolari questa settimana",
     popularLists: "Liste popolari questa settimana",

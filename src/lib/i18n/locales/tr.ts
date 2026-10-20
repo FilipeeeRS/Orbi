@@ -39,7 +39,7 @@ export const tr: Dictionary = {
     watchingNow: "Şu an izlenenler",
     welcome: (n: string) => `Tekrar hoş geldin, ${n}!`,
     welcomeSub: "Orbi'de neler oluyor, bak.",
-    newFromFriends: "Arkadaşlardan yeni",
+    newFromFriends: "Arkadaş etkinliği",
     popular: (f: string) => `Bu haftanın popüler ${f.toLowerCase()}`,
     popularReviews: "Bu haftanın popüler incelemeleri",
     popularLists: "Bu haftanın popüler listeleri",

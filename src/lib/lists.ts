@@ -70,11 +70,15 @@ export async function getList(id: string): Promise<ListDetail | null> {
   return { ...(list as unknown as Omit<ListDetail, "items">), items: (rows ?? []).map((r) => r.items as unknown as Item) };
 }
 
-export type PopularList = ListSummary & { owner: Pick<Profile, "username" | "display_name" | "avatar_url" | "avatar_ring"> };
+export type PopularList = ListSummary & {
+  owner: Pick<Profile, "username" | "display_name" | "avatar_url" | "avatar_ring">;
+  likes: number;
+  comments: number;
+};
 
 // Home: listas de todo mundo com mais obras adicionadas na última semana; completa com as atualizadas
 // por último. (A RLS já esconde as de perfis invisíveis.)
-export async function getPopularLists(limit = 6): Promise<PopularList[]> {
+export async function getPopularLists(limit = 3): Promise<PopularList[]> {
   const supabase = await createClient();
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
   const { data: added } = await supabase.from("list_items").select("list_id").gte("added_at", weekAgo).limit(2000);
@@ -99,12 +103,24 @@ export async function getPopularLists(limit = 6): Promise<PopularList[]> {
     list.push((row.items as unknown as { poster_url: string | null }).poster_url);
     byList.set(row.list_id, list);
   }
-  return lists
+  const top = lists
     .map((l) => {
       const posters = byList.get(l.id) ?? [];
-      return { ...l, count: posters.length, posters: posters.slice(0, 5) } as unknown as PopularList;
+      return { ...l, count: posters.length, posters: posters.slice(0, 5), likes: 0, comments: 0 } as unknown as PopularList;
     })
     .filter((l) => l.count > 0 && l.owner)
     .sort((a, b) => (activity.get(b.id) ?? 0) - (activity.get(a.id) ?? 0) || b.updated_at.localeCompare(a.updated_at))
     .slice(0, limit);
+
+  // Curtidas e comentários (se as tabelas ainda não existirem, ficam em 0)
+  const ids = top.map((l) => l.id);
+  const [{ data: likes }, { data: comments }] = await Promise.all([
+    supabase.from("list_likes").select("list_id").in("list_id", ids),
+    supabase.from("list_comments").select("list_id").in("list_id", ids),
+  ]);
+  for (const l of top) {
+    l.likes = (likes ?? []).filter((r) => r.list_id === l.id).length;
+    l.comments = (comments ?? []).filter((r) => r.list_id === l.id).length;
+  }
+  return top;
 }

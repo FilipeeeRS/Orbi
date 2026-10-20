@@ -23,7 +23,7 @@ const SAMPLE = 2000;
 const AUTHOR = "profiles!entries_user_id_fkey!inner(id, username, display_name, avatar_url)";
 
 // Últimas coisas que as pessoas que eu sigo adicionaram, da mais recente para a mais antiga.
-export async function getFriendsActivity(viewerId: string, limit = 6): Promise<EntryWithAuthor[]> {
+export async function getFriendsActivity(viewerId: string, limit = 12): Promise<EntryWithAuthor[]> {
   const supabase = await createClient();
   const { data: follows } = await supabase.from("follows").select("followee_id").eq("follower_id", viewerId);
   const ids = (follows ?? []).map((f) => f.followee_id as string);
@@ -33,6 +33,7 @@ export async function getFriendsActivity(viewerId: string, limit = 6): Promise<E
     .from("entries")
     .select(`*, items!inner(*), ${AUTHOR}`)
     .in("user_id", ids)
+    .not("rating", "is", null)
     .order("updated_at", { ascending: false })
     .limit(limit);
   return (data ?? []) as unknown as EntryWithAuthor[];

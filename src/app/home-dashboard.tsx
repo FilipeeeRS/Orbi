@@ -14,7 +14,6 @@ import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/q
 import { getNotifications, getReadState } from "@/lib/notifications";
 import { NotificationRow } from "@/components/notification-row";
 import { getPopularLists } from "@/lib/lists";
-import { ListCover } from "./lists/lists-grid";
 import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
 import { ReviewAttachments } from "@/components/review-attachments";
@@ -89,7 +88,7 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
     getReadState(),
     // Minha watchlist de todas as pastas, das adicionadas por último
     viewer ? getViewerShelf(viewer.id, "all", "watchlist") : ([] as Item[]),
-    getPopularLists(6),
+    getPopularLists(3),
   ]);
   const states = await getViewerStates(
     viewer?.id ?? "",
@@ -124,6 +123,26 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
         </div>
       )}
 
+      {/* Logado: o que os amigos avaliaram por último, com a foto de quem avaliou no canto */}
+      {friends.length > 0 && (
+        <Section title={t.home.newFromFriends}>
+          <Row>
+            {friends.map((e, i) => (
+              <div key={e.id} className="relative">
+                <Poster item={e.items} locale={locale} eager={i < 6} viewer={viewerFor(e.item_id)} />
+                <Link
+                  href={`/u/${e.profiles.username}`}
+                  className="absolute start-1.5 top-1.5 z-10 rounded-full ring-2 ring-bg transition hover:scale-110"
+                  title={e.profiles.display_name || e.profiles.username}
+                >
+                  <Avatar profile={e.profiles} size={24} />
+                </Link>
+              </div>
+            ))}
+          </Row>
+        </Section>
+      )}
+
       {/* Logado: a sua watchlist (todas as pastas), embaixo das notificações */}
       {viewer && (
         <Section
@@ -144,43 +163,38 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
         </Section>
       )}
 
-      {friends.length > 0 && (
-        <Section title={t.home.newFromFriends}>
-          <Row>
-            {friends.map((e) => (
-              <div key={e.id} className="space-y-1.5">
-                <Poster item={e.items} locale={locale} viewer={viewerFor(e.item_id)} />
-                <Link
-                  href={`/u/${e.profiles.username}`}
-                  className="flex items-center gap-1.5 text-xs text-muted hover:text-fg"
-                  title={e.profiles.display_name || e.profiles.username}
-                >
-                  <Avatar profile={e.profiles} size={18} />
-                  <StarsDisplay rating={e.rating} />
-                  {e.liked && <span className="text-like">♥</span>}
-                </Link>
-              </div>
-            ))}
-          </Row>
-        </Section>
-      )}
-
-      {/* Listas dos usuários (públicas) com mais movimento na semana */}
+      {/* Listas dos usuários (públicas) com mais movimento na semana: 3 por vez, pôsteres em fileira */}
       {lists.length > 0 && (
         <Section title={t.home.popularLists}>
-          <Row>
+          <div className="grid gap-6 sm:grid-cols-3">
             {lists.map((list) => (
-              <Link key={list.id} href={`/u/${list.owner.username}/list/${list.id}`} className="group block">
-                <ListCover posters={list.posters} />
-                <p className="mt-1.5 line-clamp-2 text-sm font-semibold group-hover:text-accent">{list.title}</p>
-                <p className="flex items-center gap-1.5 text-xs text-muted">
-                  <Avatar profile={list.owner} size={16} />
-                  <span className="truncate">{list.owner.display_name || list.owner.username}</span>
-                  <span>· {list.count}</span>
-                </p>
-              </Link>
+              <div key={list.id} className="group min-w-0">
+                <Link href={`/u/${list.owner.username}/list/${list.id}`} className="block">
+                  <ListStrip posters={list.posters} />
+                  <p className="mt-2 truncate font-semibold group-hover:text-accent">{list.title}</p>
+                </Link>
+                <div className="mt-1 flex items-center gap-3 text-xs text-muted">
+                  <Link href={`/u/${list.owner.username}`} className="flex min-w-0 items-center gap-1.5 font-semibold hover:text-fg">
+                    <Avatar profile={list.owner} size={18} />
+                    <span className="truncate">{list.owner.display_name || list.owner.username}</span>
+                  </Link>
+                  <span className="shrink-0">{t.lists.count(list.count)}</span>
+                  <span className="flex shrink-0 items-center gap-1">
+                    <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" aria-hidden>
+                      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
+                    </svg>
+                    {list.comments}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1">
+                    <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" aria-hidden>
+                      <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
+                    </svg>
+                    {list.likes}
+                  </span>
+                </div>
+              </div>
             ))}
-          </Row>
+          </div>
         </Section>
       )}
 
@@ -376,4 +390,25 @@ function Section({
 // Fileira horizontal de 6 itens (3 por linha no celular).
 function Row({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-3 gap-3 sm:grid-cols-6 sm:gap-4">{children}</div>;
+}
+
+// Capa de lista da Home: até 5 pôsteres em fileira, um por cima do outro, o primeiro na frente.
+function ListStrip({ posters }: { posters: (string | null)[] }) {
+  const shown = posters.slice(0, 5);
+  return (
+    <div className="relative aspect-[20/9] overflow-hidden rounded-md">
+      {shown.map((url, i) => (
+        <div
+          key={i}
+          className="absolute inset-y-0 w-[30%] overflow-hidden rounded-md border border-border bg-surface-2 shadow-[4px_0_12px_rgba(0,0,0,0.6)] transition group-hover:border-fg"
+          style={{ insetInlineStart: `${i * 17.5}%`, zIndex: 5 - i }}
+        >
+          {url && (
+            // eslint-disable-next-line @next/next/no-img-element -- pôster da lista (CDN)
+            <img src={url} alt="" loading="lazy" className="size-full object-cover" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }

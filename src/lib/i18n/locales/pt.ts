@@ -37,7 +37,7 @@ export const pt = {
     watchingNow: "Assistindo agora",
     welcome: (n: string) => `Bem-vindo de volta, ${n}!`,
     welcomeSub: "Veja o que está rolando no Orbi.",
-    newFromFriends: "Novidades dos amigos",
+    newFromFriends: "Atividade dos amigos",
     popular: (f: string) => `${f} populares esta semana`,
     popularReviews: "Reviews populares esta semana",
     popularLists: "Listas populares esta semana",

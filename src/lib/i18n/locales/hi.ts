@@ -39,7 +39,7 @@ export const hi: Dictionary = {
     watchingNow: "अभी देख रहे हैं",
     welcome: (n: string) => `वापसी पर स्वागत है, ${n}!`,
     welcomeSub: "देखिए Orbi पर क्या चल रहा है।",
-    newFromFriends: "दोस्तों की नई गतिविधि",
+    newFromFriends: "दोस्तों की गतिविधि",
     popular: (f: string) => `इस हफ़्ते लोकप्रिय ${f}`,
     popularReviews: "इस हफ़्ते लोकप्रिय रिव्यू",
     popularLists: "इस हफ़्ते की लोकप्रिय लिस्ट",

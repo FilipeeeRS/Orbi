@@ -47,7 +47,7 @@ export const ru: Dictionary = {
     watchingNow: "Смотрю сейчас",
     welcome: (n: string) => `С возвращением, ${n}!`,
     welcomeSub: "Вот что происходит в Orbi.",
-    newFromFriends: "Новое от друзей",
+    newFromFriends: "Активность друзей",
     popular: (f: string) => `Популярное на этой неделе: ${f.toLowerCase()}`,
     popularReviews: "Популярные рецензии недели",
     popularLists: "Популярные списки недели",
