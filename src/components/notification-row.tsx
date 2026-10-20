@@ -68,6 +68,14 @@ export function NotificationRow({
           ? `/u/${n.actor.username}`
           : "/notifications";
   const detail = n.kind === "device" ? t.notifications.deviceHint : n.kind === "welcome" ? t.notifications.welcomeHint : n.body;
+  // Data: na Home (compacta) embaixo do texto; na tela de notificações, à direita na mesma linha.
+  const when = (
+    <time dateTime={n.created_at} className={compact ? "mt-1 block text-xs opacity-60" : "shrink-0 text-end text-xs opacity-60"}>
+      {n.kind === "release"
+        ? new Date(n.created_at).toLocaleDateString(lang, { dateStyle: "medium" })
+        : new Date(n.created_at).toLocaleString(lang, { dateStyle: "medium", timeStyle: "short" })}
+    </time>
+  );
   const icon = n.kind in KIND_ICON ? KIND_ICON[n.kind as keyof typeof KIND_ICON] : null;
 
   return (
@@ -100,12 +108,11 @@ export function NotificationRow({
             <span className={n.actor ? "" : "font-semibold"}>{text}</span>
           </span>
           {detail && !compact && <span className="mt-1 line-clamp-2 block whitespace-pre-line opacity-75">{detail}</span>}
-          <time dateTime={n.created_at} className="mt-1 block text-xs opacity-60">
-            {n.kind === "release"
-              ? new Date(n.created_at).toLocaleDateString(lang, { dateStyle: "medium" })
-              : new Date(n.created_at).toLocaleString(lang, { dateStyle: "medium", timeStyle: "short" })}
-          </time>
+          {/* Home (compacta): data embaixo do texto */}
+          {compact && when}
         </span>
+        {/* Tela de notificações: data e hora à direita, na mesma linha */}
+        {!compact && when}
       </NotificationLink>
     </li>
   );

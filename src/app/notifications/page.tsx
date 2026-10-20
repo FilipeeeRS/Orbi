@@ -41,7 +41,7 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-end justify-between gap-3">
         <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.notifications.title}</h1>
-        {all.some((n) => !isRead(n)) && <MarkAllRead label={t.notifications.markAllRead} />}
+        <MarkAllRead label={t.notifications.markAllRead} />
       </div>
       <nav className="mb-2 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none]">
         {FILTERS.map((f) => {
