@@ -146,13 +146,15 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
       }
       side={
         <>
-          <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
-          {/* Trailer numa linha própria, à direita, embaixo dos números */}
-          {media?.trailer?.site === "youtube" && (
-            <div className="flex justify-end">
-              <TrailerButton videoId={media.trailer.id} label={t.movie.trailer} />
-            </div>
-          )}
+          {/* Números à esquerda e Trailer à direita, na mesma linha */}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
+            {media?.trailer?.site === "youtube" && (
+              <span className="ms-auto">
+                <TrailerButton videoId={media.trailer.id} label={t.movie.trailer} />
+              </span>
+            )}
+          </div>
         </>
       }
     >

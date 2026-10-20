@@ -375,6 +375,9 @@ export const bn: Dictionary = {
     count: (n: number) => (n === 1 ? `${n}টি সিনেমা` : `${n}টি সিনেমা`),
   },
   notifications: {
+    markAllRead: "সব পড়া হয়েছে চিহ্নিত করুন",
+    welcome: "Orbi-তে স্বাগতম!",
+    welcomeHint: "এখানে কী কী করা যায় জানতে ট্যাপ করুন।",
     release: (t: string) => `${t} মুক্তি পেয়েছে — এটি আপনার ওয়াচলিস্টে ছিল`,
     newDevice: (d: string) => `আপনার অ্যাকাউন্টে নতুন লগইন: ${d}`,
     deviceHint: "আপনি না হলে সেটিংসে পাসওয়ার্ড বদলান।",

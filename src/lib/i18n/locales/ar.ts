@@ -375,6 +375,9 @@ export const ar: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} فيلم` : `${n} أفلام`),
   },
   notifications: {
+    markAllRead: "تعليم الكل كمقروء",
+    welcome: "مرحبًا بك في Orbi!",
+    welcomeHint: "اضغط لاكتشاف كل ما يمكنك فعله هنا.",
     release: (t: string) => `صدر «${t}» — كان في قائمة المشاهدة`,
     newDevice: (d: string) => `تسجيل دخول جديد إلى حسابك: ${d}`,
     deviceHint: "ليس أنت؟ غيّر كلمة المرور من الإعدادات.",

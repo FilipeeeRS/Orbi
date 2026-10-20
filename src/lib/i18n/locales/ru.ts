@@ -383,6 +383,9 @@ export const ru: Dictionary = {
     count: (n: number) => (n === 1 ? `Фильмов: ${n}` : `Фильмов: ${n}`),
   },
   notifications: {
+    markAllRead: "Отметить всё как прочитанное",
+    welcome: "Добро пожаловать в Orbi!",
+    welcomeHint: "Нажмите, чтобы узнать, что здесь можно делать.",
     release: (t: string) => `Вышло «${t}» — было в вашем списке`,
     newDevice: (d: string) => `Новый вход в аккаунт: ${d}`,
     deviceHint: "Это были не вы? Смените пароль в настройках.",

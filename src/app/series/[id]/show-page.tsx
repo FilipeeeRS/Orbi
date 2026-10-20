@@ -116,28 +116,30 @@ export async function ShowPageContent({ id }: { id: string }) {
       }
       side={
         <>
-          <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
-          {/* Trailer e Editar imagens na mesma linha, à direita */}
-          {(info?.trailer || canEditArt) && (
-            <div className="flex items-center justify-end gap-4">
-              {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
-              {canEditArt && (
-                <ArtEditor
-                  itemId={item.id}
-                  currentPoster={posterUrl}
-                  currentBackdrop={backdropUrl}
-                  labels={{
-                    edit: t.movie.artEdit,
-                    poster: t.movie.artPoster,
-                    backdrop: t.movie.artBackdrop,
-                    reset: t.movie.artReset,
-                    empty: t.movie.artEmpty,
-                    hint: t.movie.artHint,
-                  }}
-                />
-              )}
-            </div>
-          )}
+          {/* Números à esquerda; Editar e Trailer à direita, na mesma linha */}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
+            {(info?.trailer || canEditArt) && (
+              <div className="ms-auto flex items-center gap-4">
+                {canEditArt && (
+                  <ArtEditor
+              itemId={item.id}
+              currentPoster={posterUrl}
+              currentBackdrop={backdropUrl}
+              labels={{
+                edit: t.movie.artEdit,
+                poster: t.movie.artPoster,
+                backdrop: t.movie.artBackdrop,
+                reset: t.movie.artReset,
+                empty: t.movie.artEmpty,
+                hint: t.movie.artHint,
+              }}
+            />
+                )}
+                {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
+              </div>
+            )}
+          </div>
         </>
       }
     >

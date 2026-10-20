@@ -375,6 +375,9 @@ export const id: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} film` : `${n} film`),
   },
   notifications: {
+    markAllRead: "Tandai semua sudah dibaca",
+    welcome: "Selamat datang di Orbi!",
+    welcomeHint: "Ketuk untuk melihat semua yang bisa kamu lakukan di sini.",
     release: (t: string) => `${t} sudah rilis — ada di watchlist-mu`,
     newDevice: (d: string) => `Login baru ke akunmu: ${d}`,
     deviceHint: "Bukan kamu? Ganti kata sandi di Pengaturan.",

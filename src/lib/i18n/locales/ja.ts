@@ -375,6 +375,9 @@ export const ja: Dictionary = {
     count: (n: number) => (n === 1 ? `${n}本` : `${n}本`),
   },
   notifications: {
+    markAllRead: "すべて既読にする",
+    welcome: "Orbiへようこそ！",
+    welcomeHint: "タップして、ここでできることを見てみましょう。",
     release: (t: string) => `「${t}」が公開されました（ウォッチリストに登録済み）`,
     newDevice: (d: string) => `アカウントへの新しいログイン：${d}`,
     deviceHint: "心当たりがない場合は設定でパスワードを変更してください。",

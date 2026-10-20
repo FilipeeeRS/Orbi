@@ -375,6 +375,9 @@ export const hi: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} फ़िल्म` : `${n} फ़िल्में`),
   },
   notifications: {
+    markAllRead: "सभी को पढ़ा हुआ मार्क करें",
+    welcome: "Orbi में आपका स्वागत है!",
+    welcomeHint: "यहाँ क्या-क्या कर सकते हैं, जानने के लिए टैप करें।",
     release: (t: string) => `${t} रिलीज़ हो गई — यह आपकी वॉचलिस्ट में थी`,
     newDevice: (d: string) => `आपके खाते में नया लॉगिन: ${d}`,
     deviceHint: "यह आप नहीं थे? सेटिंग्स में पासवर्ड बदलें।",

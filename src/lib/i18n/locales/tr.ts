@@ -375,6 +375,9 @@ export const tr: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} film` : `${n} film`),
   },
   notifications: {
+    markAllRead: "Tümünü okundu yap",
+    welcome: "Orbi'ye hoş geldin!",
+    welcomeHint: "Burada neler yapabileceğini görmek için dokun.",
     release: (t: string) => `${t} çıktı — izleme listendeydi`,
     newDevice: (d: string) => `Hesabına yeni giriş: ${d}`,
     deviceHint: "Sen değil miydin? Ayarlar'dan şifreni değiştir.",

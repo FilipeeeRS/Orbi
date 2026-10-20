@@ -375,6 +375,9 @@ export const ur: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} فلم` : `${n} فلمیں`),
   },
   notifications: {
+    markAllRead: "سب کو پڑھا ہوا نشان زد کریں",
+    welcome: "Orbi میں خوش آمدید!",
+    welcomeHint: "یہاں کیا کیا کر سکتے ہیں، جاننے کے لیے ٹیپ کریں۔",
     release: (t: string) => `${t} ریلیز ہو گئی — یہ آپ کی واچ لسٹ میں تھی`,
     newDevice: (d: string) => `آپ کے اکاؤنٹ میں نیا لاگ ان: ${d}`,
     deviceHint: "یہ آپ نہیں تھے؟ سیٹنگز میں پاس ورڈ بدلیں۔",

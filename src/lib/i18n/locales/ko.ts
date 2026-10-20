@@ -375,6 +375,9 @@ export const ko: Dictionary = {
     count: (n: number) => (n === 1 ? `영화 ${n}편` : `영화 ${n}편`),
   },
   notifications: {
+    markAllRead: "모두 읽음으로 표시",
+    welcome: "Orbi에 오신 걸 환영해요!",
+    welcomeHint: "여기서 할 수 있는 모든 걸 알아보려면 누르세요.",
     release: (t: string) => `「${t}」이(가) 공개됐어요 — 워치리스트에 있던 작품이에요`,
     newDevice: (d: string) => `계정에 새 로그인: ${d}`,
     deviceHint: "본인이 아니라면 설정에서 비밀번호를 바꾸세요.",

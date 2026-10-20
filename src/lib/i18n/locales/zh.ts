@@ -375,6 +375,9 @@ export const zh: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} 部电影` : `${n} 部电影`),
   },
   notifications: {
+    markAllRead: "全部标为已读",
+    welcome: "欢迎来到 Orbi！",
+    welcomeHint: "点击了解你在这里可以做的一切。",
     release: (t: string) => `《${t}》已上线——在你的待看清单里`,
     newDevice: (d: string) => `你的账户有新的登录：${d}`,
     deviceHint: "不是你本人？请在设置中修改密码。",

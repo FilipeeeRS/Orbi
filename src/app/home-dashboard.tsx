@@ -11,7 +11,7 @@ import { browseCatalog } from "@/lib/anime-db";
 import { browseBooks } from "@/lib/openlibrary";
 import { browseGames } from "@/lib/steam";
 import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
-import { getNotifications, getNotificationsSeenAt } from "@/lib/notifications";
+import { getNotifications, getReadState } from "@/lib/notifications";
 import { NotificationRow } from "@/components/notification-row";
 import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
@@ -80,11 +80,11 @@ export async function HomeDashboard({
 
 // Novidades: as últimas notificações (para quem está logado), a atividade dos amigos e as reviews populares.
 async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
-  const [friends, reviews, notifications, seenAt] = await Promise.all([
+  const [friends, reviews, notifications, isRead] = await Promise.all([
     viewer ? getFriendsActivity(viewer.id) : [],
     getPopularReviews(6),
     viewer ? getNotifications(viewer.id, { limit: 5 }) : [],
-    getNotificationsSeenAt(),
+    getReadState(),
   ]);
   const states = await getViewerStates(
     viewer?.id ?? "",
@@ -104,7 +104,7 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
           {notifications.length ? (
             <ul className="divide-y divide-border ps-4">
               {notifications.map((n) => (
-                <NotificationRow key={n.id} n={n} unread={!seenAt || n.created_at > seenAt} t={t} locale={locale} compact />
+                <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} compact />
               ))}
             </ul>
           ) : (

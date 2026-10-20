@@ -373,6 +373,9 @@ export const pt = {
     count: (n: number) => (n === 1 ? `${n} filme` : `${n} filmes`),
   },
   notifications: {
+    markAllRead: "Marcar tudo como lido",
+    welcome: "Bem-vindo ao Orbi!",
+    welcomeHint: "Toque para conhecer tudo o que dá para fazer por aqui.",
     release: (t: string) => `${t} estreou — estava na sua watchlist`,
     newDevice: (d: string) => `Novo acesso à sua conta: ${d}`,
     deviceHint: "Não foi você? Troque sua senha em Configurações.",
