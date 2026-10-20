@@ -16,6 +16,7 @@ import {
   type Tab,
 } from "@/lib/queries";
 import { getMovieGenres, tmdbLanguage } from "@/lib/tmdb";
+import { CATALOG_GENRES, mirrorReady } from "@/lib/anime-db";
 import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
 import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
@@ -40,9 +41,12 @@ export async function FolderView({
   const tab: Tab = TABS.includes(query.tab as Tab) ? (query.tab as Tab) : "watched";
   const sort: Sort = SORTS.includes(query.sort as Sort) ? (query.sort as Sort) : DEFAULT_SORT;
   const page = Math.max(1, Number(query.page) || 1);
+  // Animes e mangás filtram o gênero pelo nome (AniList); filmes e séries pelo id do TMDB.
+  const aniList = kind === "anime" || kind === "manga";
   const filters: ListFilters = {
     decade: Number(query.decade) || undefined,
-    genre: Number(query.genre) || undefined,
+    genre: aniList ? undefined : Number(query.genre) || undefined,
+    genreName: aniList && typeof query.genre === "string" ? query.genre : undefined,
     rating: query.rating === "none" ? "none" : Number(query.rating) || undefined,
     q: typeof query.q === "string" ? query.q : undefined,
   };
@@ -56,7 +60,10 @@ export async function FolderView({
       ? getMovieGenres(tmdbLanguage(locale))
       : kind === "series"
         ? getMovieGenres(tmdbLanguage(locale), "tv")
-        : Promise.resolve([]),
+        : // Só depois da cópia do AniList no banco existe a coluna de gêneros para filtrar.
+          aniList
+          ? mirrorReady(kind).then((ready) => (ready ? CATALOG_GENRES.map((name) => ({ id: name, name })) : []))
+          : Promise.resolve([]),
   ]);
   const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
   // Aba Listas: as listas personalizadas do perfil (de todas as pastas)
@@ -105,7 +112,7 @@ export async function FolderView({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
-          {TABS.filter((key) => key !== "watching" || kind === "series" || kind === "anime").map((key) => (
+          {TABS.filter((key) => key !== "watching" || kind === "series" || kind === "anime" || kind === "manga").map((key) => (
             <Link
               key={key}
               href={href({ tab: key })}
@@ -113,7 +120,8 @@ export async function FolderView({
                 key === tab ? "border-accent font-semibold text-fg" : "border-transparent text-muted hover:text-fg"
               }`}
             >
-              {t.movies.tabs[key]}
+              {/* Mangá: "Lidos" e "Lendo" no lugar de "Vistos" e "Assistindo" */}
+              {kind === "manga" && (key === "watched" || key === "watching") ? t.manga.tabs[key] : t.movies.tabs[key]}
             </Link>
           ))}
         </nav>

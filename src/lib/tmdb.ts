@@ -370,6 +370,8 @@ export type SeriesInfo = MovieInfo & {
   seasons: SeasonSummary[];
   // Próximo episódio com data marcada (null em série encerrada ou sem data)
   nextAir: { season: number; episode: number; date: string } | null;
+  // Sem episódio marcado: a próxima temporada já anunciada com data de estreia
+  nextSeason: { season: number; date: string } | null;
 };
 
 type TmdbFullShow = Pick<TmdbFullMovie, "videos" | "watch/providers"> & {
@@ -447,6 +449,12 @@ export async function getSeriesInfo(tmdbId: string, language: string): Promise<S
             date: m.next_episode_to_air.air_date,
           }
         : null,
+    nextSeason: (() => {
+      if (m.next_episode_to_air?.air_date) return null;
+      const today = new Date().toISOString().slice(0, 10);
+      const upcoming = m.seasons.find((s) => s.season_number > 0 && s.air_date && s.air_date > today);
+      return upcoming ? { season: upcoming.season_number, date: upcoming.air_date! } : null;
+    })(),
     // Especiais (temporada 0) vão para o fim da lista.
     seasons: m.seasons
       .map((s) => ({ number: s.season_number, name: s.name, episodes: s.episode_count, airDate: s.air_date, poster: s.poster_path }))

@@ -177,6 +177,7 @@ export const ur: Dictionary = {
     execProducers: "ایگزیکٹو پروڈیوسرز",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `سیزن ${n}: ${date}`,
     upNext: "اگلی قسط",
     nextAir: (code: string, date: string) => `نئی قسط ${code}: ${date}`,
     seasonLabel: "سیزن",
@@ -197,6 +198,8 @@ export const ur: Dictionary = {
     signInToLog: "یہ سیریز درج کرنے کے لیے سائن ان کریں",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `اگلا سیزن: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `اگلے سیزن کا اعلان: ${title}`,
     thisSeason: "اس سیزن کے اینیمی",
     seasons: { WINTER: "سردی", SPRING: "بہار", SUMMER: "گرمی", FALL: "خزاں" },
     format: "فارمیٹ",
@@ -225,6 +228,7 @@ export const ur: Dictionary = {
     typeMovie: "فلم",
     typeSeries: "سیریز",
     typeAnime: "اینیمی",
+    typeManga: "مانگا",
     typePerson: "شخص",
     seeAll: (q: string) => `تمام نتائج دیکھیں: “${q}”`,
     title: (q: string) => `“${q}” کے نتائج`,

@@ -231,14 +231,19 @@ export async function ensureAniList(kind: "anime" | "manga", anilistId: number):
 
   const media = await getAnime(anilistId, kind === "anime" ? "ANIME" : "MANGA");
   if (!media) return null;
-  const { data, error } = await admin
-    .from("items")
-    .upsert(toRow(media, media.type), { onConflict: "kind,source,external_id" })
-    .select("*")
-    .single();
+  const row = toRow(media, media.type);
+  const upsert = (values: Partial<typeof row>) =>
+    admin.from("items").upsert(values, { onConflict: "kind,source,external_id" }).select("*").single();
+  let { data, error } = await upsert(row);
+  // Banco ainda sem as colunas da cópia do catálogo (migração catalog_mirror): salva só as antigas.
+  if (error?.code === "PGRST204") ({ data, error } = await upsert(withoutMirrorColumns(row)));
   if (error) throw error;
   return data as Item;
 }
+
+const MIRROR_COLUMNS = ["mal_id", "format", "status", "season", "season_year", "genres", "chapters", "volumes", "source_updated_at"];
+const withoutMirrorColumns = <T extends object>(row: T) =>
+  Object.fromEntries(Object.entries(row).filter(([key]) => !MIRROR_COLUMNS.includes(key))) as Partial<T>;
 
 export const ensureAnime = (id: number) => ensureAniList("anime", id);
 export const ensureManga = (id: number) => ensureAniList("manga", id);

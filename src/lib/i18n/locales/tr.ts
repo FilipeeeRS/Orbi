@@ -177,6 +177,7 @@ export const tr: Dictionary = {
     execProducers: "Yönetici yapımcılar",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `${n}. sezon: ${date}`,
     upNext: "Sıradaki bölüm",
     nextAir: (code: string, date: string) => `Yeni bölüm ${code}: ${date}`,
     seasonLabel: "Sezon",
@@ -197,6 +198,8 @@ export const tr: Dictionary = {
     signInToLog: "Bu diziyi kaydetmek için giriş yap",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `Sonraki sezon: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `Sonraki sezon duyuruldu: ${title}`,
     thisSeason: "Sezonun animeleri",
     seasons: { WINTER: "Kış", SPRING: "İlkbahar", SUMMER: "Yaz", FALL: "Sonbahar" },
     format: "Format",
@@ -225,6 +228,7 @@ export const tr: Dictionary = {
     typeMovie: "Film",
     typeSeries: "Dizi",
     typeAnime: "Anime",
+    typeManga: "Manga",
     typePerson: "Kişi",
     seeAll: (q: string) => `Tüm sonuçları gör: “${q}”`,
     title: (q: string) => `“${q}” için sonuçlar`,

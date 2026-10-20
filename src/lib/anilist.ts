@@ -44,7 +44,7 @@ export type AnimeMedia = AnimeCard & {
   trailer: { id: string; site: string } | null;
   studios: { nodes: { id: number; name: string }[] };
   externalLinks: { site: string; url: string; type: string }[];
-  relations: { edges: { relationType: string; node: AnimeCard & { type: string } }[] };
+  relations: { edges: { relationType: string; node: AnimeCard & { type: string; status: string | null } }[] };
   characters: {
     edges: { role: string; node: { name: { full: string } }; voiceActors: { name: { full: string } }[] }[];
   };
@@ -90,7 +90,7 @@ export async function getAnime(id: number, type: "ANIME" | "MANGA" = "ANIME"): P
         trailer { id site }
         studios(isMain: true) { nodes { id name } }
         externalLinks { site url type }
-        relations { edges { relationType node { ${CARD} type } } }
+        relations { edges { relationType node { ${CARD} type status } } }
         characters(sort: [ROLE, RELEVANCE], perPage: 40) { edges { role node { name { full } } voiceActors(language: JAPANESE) { name { full } } } }
         staff(sort: [RELEVANCE], perPage: 25) { edges { role node { name { full } } } }
         recommendations(sort: [RATING_DESC], perPage: 12) { nodes { mediaRecommendation { ${CARD} } } }
@@ -107,6 +107,7 @@ export async function getAnime(id: number, type: "ANIME" | "MANGA" = "ANIME"): P
 export type AnimeSort = "TRENDING_DESC" | "POPULARITY_DESC" | "SCORE_DESC" | "START_DATE_DESC" | "START_DATE" | "TITLE_ROMAJI" | "TITLE_ROMAJI_DESC";
 
 export type AnimeQuery = {
+  type?: "ANIME" | "MANGA"; // padrão: anime
   page: number;
   perPage: number;
   sort: AnimeSort;
@@ -118,21 +119,22 @@ export type AnimeQuery = {
   showAdult?: boolean;
 };
 
-// Listagens (Ver tudo, temporada, busca): uma página de animes do AniList.
+// Listagens (Ver tudo, temporada, busca): uma página de animes (ou mangás) do AniList.
 export async function browseAnime(q: AnimeQuery): Promise<{ list: AnimeCard[]; total: number; hasNext: boolean }> {
   "use cache";
   cacheLife("hours");
   try {
     const data = await anilist<{ Page: { pageInfo: { total: number; hasNextPage: boolean }; media: AnimeCard[] } }>(
       `query ($page: Int, $perPage: Int, $sort: [MediaSort], $search: String, $genre: String, $season: MediaSeason,
-              $seasonYear: Int, $from: FuzzyDateInt, $to: FuzzyDateInt, $isAdult: Boolean) {
+              $seasonYear: Int, $from: FuzzyDateInt, $to: FuzzyDateInt, $isAdult: Boolean, $type: MediaType) {
         Page(page: $page, perPage: $perPage) {
           pageInfo { total hasNextPage }
-          media(type: ANIME, sort: $sort, search: $search, genre: $genre, season: $season, seasonYear: $seasonYear,
+          media(type: $type, sort: $sort, search: $search, genre: $genre, season: $season, seasonYear: $seasonYear,
                 startDate_greater: $from, startDate_lesser: $to, isAdult: $isAdult, format_not_in: [MUSIC]) { ${CARD} }
         }
       }`,
       {
+        type: q.type ?? "ANIME",
         page: q.page,
         perPage: q.perPage,
         // Na busca por texto, a relevância vem antes da ordenação escolhida.

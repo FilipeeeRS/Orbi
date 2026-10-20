@@ -1,9 +1,12 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "./supabase/server";
+import { animeCover, animeTitle, animeYear, browseAnime, type AnimeSeason, type AnimeSort } from "./anilist";
 import type { ExternalPoster } from "@/components/external-posters";
 import type { Item } from "./types";
 
 // Animes e mangás lidos da cópia do AniList no banco do Orbi (sem limite de requisições nem teto de 5 mil).
+// Enquanto a cópia não existe (migração não aplicada ou importação não feita), cai na API do AniList.
 
 export type CatalogKind = "anime" | "manga";
 export type CatalogSort = "week" | "popular" | "top" | "release" | "release-old" | "title" | "title-desc";
@@ -16,10 +19,25 @@ export type CatalogQuery = {
   q?: string;
   genre?: string;
   decade?: number;
-  season?: string; // WINTER...
+  season?: AnimeSeason;
   seasonYear?: number;
   showAdult?: boolean;
 };
+
+// Mínimo de títulos para considerar a cópia pronta (a importação completa traz dezenas de milhares).
+const READY_MIN = 1000;
+
+// A cópia daquele tipo já está no banco? (Uma consulta por requisição.)
+export const mirrorReady = cache(async (kind: CatalogKind): Promise<boolean> => {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("items")
+    .select("id", { count: "exact", head: true })
+    .eq("kind", kind)
+    .eq("source", "anilist")
+    .not("source_updated_at", "is", null);
+  return !error && (count ?? 0) >= READY_MIN;
+});
 
 const COLUMNS = "id, external_id, title, year, poster_url, is_adult_rated";
 
@@ -31,7 +49,37 @@ export const toPoster = (i: Pick<Item, "id" | "external_id" | "title" | "year" |
   poster: i.poster_url,
 });
 
+// Ordenações das listagens → ordenação do AniList (quando ainda não há cópia no banco).
+const API_SORT: Record<CatalogSort, AnimeSort> = {
+  week: "TRENDING_DESC",
+  popular: "POPULARITY_DESC",
+  top: "SCORE_DESC",
+  release: "START_DATE_DESC",
+  "release-old": "START_DATE",
+  title: "TITLE_ROMAJI",
+  "title-desc": "TITLE_ROMAJI_DESC",
+};
+
 export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPoster[]; total: number }> {
+  if (!(await mirrorReady(q.kind))) {
+    const found = await browseAnime({
+      type: q.kind === "manga" ? "MANGA" : "ANIME",
+      page: q.page,
+      perPage: q.perPage,
+      sort: API_SORT[q.sort],
+      search: q.q?.trim(),
+      genre: q.genre,
+      decade: q.decade,
+      season: q.season,
+      seasonYear: q.seasonYear,
+      showAdult: q.showAdult,
+    });
+    return {
+      list: found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) })),
+      total: found.total,
+    };
+  }
+
   const supabase = await createClient();
   let query = supabase.from("items").select(COLUMNS, { count: "exact" }).eq("kind", q.kind).eq("source", "anilist");
   if (!q.showAdult) query = query.eq("is_adult_rated", false);
@@ -75,16 +123,48 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
   return { list: (data ?? []).map(toPoster), total: count ?? 0 };
 }
 
-// Busca tolerante a erro de digitação (trigramas no Postgres), para as sugestões e a aba da busca.
-export async function searchCatalog(text: string, kinds: CatalogKind[], limit = 20, showAdult = false): Promise<Item[]> {
-  const q = text.trim().slice(0, 100);
-  if (q.length < 2) return [];
+// Os mais populares de uma temporada de anime (Home e página da temporada), já como itens do catálogo.
+export async function seasonItems(season: AnimeSeason, year: number, limit: number): Promise<Item[] | null> {
+  if (!(await mirrorReady("anime"))) return null;
   const supabase = await createClient();
-  const { data } = await supabase.rpc("search_catalog", { q, kinds, max_results: limit * 2 });
-  return ((data ?? []) as Item[]).filter((i) => showAdult || !i.is_adult_rated).slice(0, limit);
+  const { data } = await supabase
+    .from("items")
+    .select("*")
+    .eq("kind", "anime")
+    .eq("source", "anilist")
+    .eq("is_adult_rated", false)
+    .eq("season", season)
+    .eq("season_year", year)
+    .order("tmdb_votes", { ascending: false, nullsFirst: false })
+    .limit(limit);
+  return (data ?? []) as Item[];
 }
 
-// Gêneros que existem no catálogo daquele tipo (filtro das listagens).
+// Busca tolerante a erro de digitação (trigramas no Postgres), para as sugestões e as abas da busca.
+// Sem a cópia, usa a busca do AniList (que não tolera erro).
+export async function searchCatalog(text: string, kind: CatalogKind, limit = 20, showAdult = false): Promise<ExternalPoster[]> {
+  const q = text.trim().slice(0, 100);
+  if (q.length < 2) return [];
+  if (!(await mirrorReady(kind))) {
+    const found = await browseAnime({
+      type: kind === "manga" ? "MANGA" : "ANIME",
+      page: 1,
+      perPage: limit,
+      sort: "POPULARITY_DESC",
+      search: q,
+      showAdult,
+    });
+    return found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) }));
+  }
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("search_catalog", { q, kinds: [kind], max_results: limit * 2 });
+  return ((data ?? []) as Item[])
+    .filter((i) => showAdult || !i.is_adult_rated)
+    .slice(0, limit)
+    .map(toPoster);
+}
+
+// Gêneros do AniList (filtro das listagens e das pastas de anime e mangá).
 export const CATALOG_GENRES = [
   "Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror", "Mahou Shoujo", "Mecha", "Music",
   "Mystery", "Psychological", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller",

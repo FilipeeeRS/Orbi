@@ -177,6 +177,7 @@ export const en: Dictionary = {
     execProducers: "Exec. producers",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `Season ${n} on ${date}`,
     upNext: "Up next",
     nextAir: (code: string, date: string) => `New episode ${code} on ${date}`,
     seasonLabel: "Season",
@@ -197,6 +198,8 @@ export const en: Dictionary = {
     signInToLog: "Sign in to log this series",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `Next season: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `Next season announced: ${title}`,
     thisSeason: "This season's anime",
     seasons: { WINTER: "Winter", SPRING: "Spring", SUMMER: "Summer", FALL: "Fall" },
     format: "Format",
@@ -225,6 +228,7 @@ export const en: Dictionary = {
     typeMovie: "Movie",
     typeSeries: "Series",
     typeAnime: "Anime",
+    typeManga: "Manga",
     typePerson: "Person",
     seeAll: (q: string) => `See all results for “${q}”`,
     title: (q: string) => `Results for “${q}”`,

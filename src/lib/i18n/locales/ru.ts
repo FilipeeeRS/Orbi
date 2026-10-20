@@ -185,6 +185,7 @@ export const ru: Dictionary = {
     execProducers: "Исполнительные продюсеры",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `Сезон ${n} — ${date}`,
     upNext: "Следующий эпизод",
     nextAir: (code: string, date: string) => `Новый эпизод ${code} — ${date}`,
     seasonLabel: "Сезон",
@@ -205,6 +206,8 @@ export const ru: Dictionary = {
     signInToLog: "Войдите, чтобы отметить этот сериал",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `Следующий сезон: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `Анонсирован следующий сезон: ${title}`,
     thisSeason: "Аниме сезона",
     seasons: { WINTER: "Зима", SPRING: "Весна", SUMMER: "Лето", FALL: "Осень" },
     format: "Формат",
@@ -233,6 +236,7 @@ export const ru: Dictionary = {
     typeMovie: "Фильм",
     typeSeries: "Сериал",
     typeAnime: "Аниме",
+    typeManga: "Манга",
     typePerson: "Человек",
     seeAll: (q: string) => `Все результаты по запросу “${q}”`,
     title: (q: string) => `Результаты по запросу «${q}»`,

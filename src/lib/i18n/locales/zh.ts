@@ -177,6 +177,7 @@ export const zh: Dictionary = {
     execProducers: "执行制片人",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `第 ${n} 季：${date}`,
     upNext: "下一集",
     nextAir: (code: string, date: string) => `新一集 ${code}：${date}`,
     seasonLabel: "季",
@@ -197,6 +198,8 @@ export const zh: Dictionary = {
     signInToLog: "登录后即可记录这部剧",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `下一季：${title}（${when}）`,
+    nextSeasonTba: (title: string) => `下一季已公布：${title}`,
     thisSeason: "本季动漫",
     seasons: { WINTER: "冬季", SPRING: "春季", SUMMER: "夏季", FALL: "秋季" },
     format: "类型",
@@ -225,6 +228,7 @@ export const zh: Dictionary = {
     typeMovie: "电影",
     typeSeries: "剧集",
     typeAnime: "动漫",
+    typeManga: "漫画",
     typePerson: "人物",
     seeAll: (q: string) => `查看全部结果： “${q}”`,
     title: (q: string) => `“${q}”的搜索结果`,

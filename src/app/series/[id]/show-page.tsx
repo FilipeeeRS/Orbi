@@ -94,6 +94,10 @@ export async function ShowPageContent({ id }: { id: string }) {
                   )}
                 </span>
               )}
+              {/* Sem episódio marcado: a próxima temporada, se já tem data */}
+              {!info.nextAir && info.nextSeason && (
+                <span>{t.series.nextSeasonOn(info.nextSeason.season, airDate(info.nextSeason.date, locale))}</span>
+              )}
               <span>{t.info.moreAt}</span>
               {info.imdbId && <ExternalLink href={`https://www.imdb.com/title/${info.imdbId}/`}>IMDb</ExternalLink>}
               <ExternalLink href={`https://www.themoviedb.org/tv/${item.external_id}`}>TMDB</ExternalLink>

@@ -177,6 +177,7 @@ export const bn: Dictionary = {
     execProducers: "নির্বাহী প্রযোজক",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `সিজন ${n}: ${date}`,
     upNext: "পরের পর্ব",
     nextAir: (code: string, date: string) => `নতুন পর্ব ${code}: ${date}`,
     seasonLabel: "সিজন",
@@ -197,6 +198,8 @@ export const bn: Dictionary = {
     signInToLog: "এই সিরিজ লগ করতে সাইন ইন করুন",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `পরের সিজন: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `পরের সিজন ঘোষিত: ${title}`,
     thisSeason: "এই মৌসুমের অ্যানিমে",
     seasons: { WINTER: "শীত", SPRING: "বসন্ত", SUMMER: "গ্রীষ্ম", FALL: "শরৎ" },
     format: "ফরম্যাট",
@@ -225,6 +228,7 @@ export const bn: Dictionary = {
     typeMovie: "সিনেমা",
     typeSeries: "সিরিজ",
     typeAnime: "অ্যানিমে",
+    typeManga: "মাঙ্গা",
     typePerson: "ব্যক্তি",
     seeAll: (q: string) => `সব ফলাফল দেখুন: “${q}”`,
     title: (q: string) => `“${q}”-এর ফলাফল`,

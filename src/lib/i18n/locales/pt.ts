@@ -175,6 +175,7 @@ export const pt = {
     execProducers: "Produção executiva",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `Temporada ${n} em ${date}`,
     upNext: "Próximo episódio",
     nextAir: (code: string, date: string) => `Novo episódio ${code} em ${date}`,
     seasonLabel: "Temporada",
@@ -195,6 +196,8 @@ export const pt = {
     signInToLog: "Entre para registrar esta série",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `Próxima temporada: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `Próxima temporada anunciada: ${title}`,
     thisSeason: "Animes da temporada",
     seasons: { WINTER: "Inverno", SPRING: "Primavera", SUMMER: "Verão", FALL: "Outono" },
     format: "Formato",
@@ -223,6 +226,7 @@ export const pt = {
     typeMovie: "Filme",
     typeSeries: "Série",
     typeAnime: "Anime",
+    typeManga: "Mangá",
     typePerson: "Pessoa",
     seeAll: (q: string) => `Ver todos os resultados para “${q}”`,
     title: (q: string) => `Resultados para “${q}”`,

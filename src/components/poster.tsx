@@ -27,7 +27,7 @@ export function Poster({ item, locale, rating, liked, showMeta = true, eager, vi
           <PosterImage url={item.poster_url} title={title} eager={eager} hoverRing={!viewer} />
         </Link>
         {viewer && (
-          <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind === "series" || item.kind === "anime"} badge={badge} />
+          <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind === "series" || item.kind === "anime" || item.kind === "manga"} badge={badge} />
         )}
       </div>
       {showMeta && (rating || liked) ? (

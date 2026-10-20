@@ -5,7 +5,8 @@ import Loading from "../../loading";
 import type { Metadata } from "next";
 import { FolderIcon } from "@/components/folder-icon";
 import { ExternalPosters } from "@/components/external-posters";
-import { ANIME_SEASONS, animeCover, animeTitle, animeYear, browseAnime, seasonOf, shiftSeason, type AnimeSeason } from "@/lib/anilist";
+import { ANIME_SEASONS, seasonOf, shiftSeason, type AnimeSeason } from "@/lib/anilist";
+import { browseCatalog } from "@/lib/anime-db";
 import { getDict, getViewer } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Anime" };
@@ -30,22 +31,22 @@ async function SeasonContent({ searchParams }: PageProps<"/anime/season">) {
     year: Number(query.year) > 1900 ? Number(query.year) : now.year,
   };
 
-  // Até 100 títulos (2 páginas do AniList), o suficiente para uma temporada inteira.
+  // Até 100 títulos (2 páginas de 50), o suficiente para uma temporada inteira.
   const pages = await Promise.all(
     [1, 2].map((page) =>
-      browseAnime({
+      browseCatalog({
+        kind: "anime",
         page,
         perPage: 50,
-        sort: "POPULARITY_DESC",
+        sort: "popular",
         season: current.season,
         seasonYear: current.year,
         showAdult: !!viewer?.show_adult,
       }),
     ),
   );
-  const list = pages
-    .flatMap((p) => p.list)
-    .map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) }));
+  const seen = new Set<number>();
+  const list = pages.flatMap((p) => p.list).filter((a) => !seen.has(a.id) && seen.add(a.id));
 
   const label = (s: { season: AnimeSeason; year: number }) => `${t.anime.seasons[s.season]} ${s.year}`;
   const href = (s: { season: AnimeSeason; year: number }) => `/anime/season?year=${s.year}&season=${s.season.toLowerCase()}`;

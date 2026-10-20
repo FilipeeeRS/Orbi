@@ -177,6 +177,7 @@ export const hi: Dictionary = {
     execProducers: "कार्यकारी निर्माता",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `सीज़न ${n}: ${date}`,
     upNext: "अगला एपिसोड",
     nextAir: (code: string, date: string) => `नया एपिसोड ${code}: ${date}`,
     seasonLabel: "सीज़न",
@@ -197,6 +198,8 @@ export const hi: Dictionary = {
     signInToLog: "इस सीरीज़ को दर्ज करने के लिए साइन इन करें",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `अगला सीज़न: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `अगले सीज़न की घोषणा: ${title}`,
     thisSeason: "इस सीज़न के एनीमे",
     seasons: { WINTER: "सर्दी", SPRING: "वसंत", SUMMER: "गर्मी", FALL: "पतझड़" },
     format: "फ़ॉर्मेट",
@@ -225,6 +228,7 @@ export const hi: Dictionary = {
     typeMovie: "फ़िल्म",
     typeSeries: "सीरीज़",
     typeAnime: "एनीमे",
+    typeManga: "मांगा",
     typePerson: "व्यक्ति",
     seeAll: (q: string) => `सभी परिणाम देखें: “${q}”`,
     title: (q: string) => `“${q}” के नतीजे`,

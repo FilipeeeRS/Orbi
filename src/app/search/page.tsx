@@ -8,7 +8,7 @@ import { type Sort } from "@/lib/queries";
 import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
 import { ExternalPosters } from "@/components/external-posters";
-import { animeCover, animeTitle, animeYear, browseAnime } from "@/lib/anilist";
+import { searchCatalog } from "@/lib/anime-db";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { adultMovieIds } from "@/lib/catalog";
 import {
@@ -23,6 +23,9 @@ import {
 } from "@/lib/tmdb";
 
 export const metadata: Metadata = { title: "Busca" };
+
+const SEARCH_TABS = ["movie", "series", "anime", "manga"] as const;
+type SearchTab = (typeof SEARCH_TABS)[number];
 
 // Ordenações possíveis com o que a busca do TMDB devolve (não há duração nem nota sua aqui).
 const SEARCH_SORTS = ["popular", "release", "release-old", "top", "title", "title-desc"] as const satisfies readonly Sort[];
@@ -42,11 +45,12 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
   const { t, locale } = await getDict();
   const language = tmdbLanguage(locale);
 
-  // Filmes, séries (TMDB) ou animes (AniList), nas abas do topo; a ficha de uma série já manda type=series.
+  // Filmes, séries (TMDB), animes ou mangás (AniList), nas abas do topo; a ficha de uma série já manda type=series.
   const series = params.type === "series";
   const type = series ? "tv" : "movie";
-  const tab: "movie" | "series" | "anime" = params.type === "anime" ? "anime" : series ? "series" : "movie";
-  if (tab === "anime") return <AnimeResults q={q} />;
+  const tab: SearchTab =
+    params.type === "anime" ? "anime" : params.type === "manga" ? "manga" : series ? "series" : "movie";
+  if (tab === "anime" || tab === "manga") return <CatalogResults q={q} kind={tab} />;
 
   // Vindo da ficha: obras de uma pessoa, de um gênero, estúdio, emissora ou país.
   const person = Number(params.person) || null;
@@ -106,7 +110,7 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
     });
   const genres = await getMovieGenres(language, type);
   // Abas Filmes / Séries mantêm o que foi buscado (texto ou pessoa, gênero...).
-  const tabHref = (to: "movie" | "series" | "anime") => {
+  const tabHref = (to: SearchTab) => {
     const next = new URLSearchParams();
     for (const [key, value] of Object.entries(params))
       if (typeof value === "string" && !["type", "sort", "decade", "genre", "in", "network"].includes(key)) next.set(key, value);
@@ -163,13 +167,13 @@ function SearchTabs({
   hrefFor,
   t,
 }: {
-  current: "movie" | "series" | "anime";
-  hrefFor: (to: "movie" | "series" | "anime") => string;
+  current: SearchTab;
+  hrefFor: (to: SearchTab) => string;
   t: Dictionary;
 }) {
   return (
     <nav className="flex gap-4 text-sm">
-      {(["movie", "series", "anime"] as const).map((to) => (
+      {SEARCH_TABS.map((to) => (
         <Link
           key={to}
           href={hrefFor(to)}
@@ -184,23 +188,20 @@ function SearchTabs({
   );
 }
 
-// Aba Animes: busca no AniList (cada temporada aparece separada, como no MyAnimeList).
-async function AnimeResults({ q }: { q: string }) {
+// Abas Animes e Mangás: busca no catálogo do AniList (cada temporada aparece separada, como no MyAnimeList),
+// tolerante a erro de digitação quando a cópia já está no banco.
+async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" }) {
   const [{ t }, viewer] = await Promise.all([getDict(), getViewer()]);
-  const hrefFor = (to: "movie" | "series" | "anime") =>
-    `/search?${new URLSearchParams({ q, ...(to === "movie" ? {} : { type: to }) })}`;
-  const found = q
-    ? await browseAnime({ page: 1, perPage: 50, sort: "POPULARITY_DESC", search: q, showAdult: !!viewer?.show_adult })
-    : { list: [] };
-  const list = found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) }));
+  const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ q, ...(to === "movie" ? {} : { type: to }) })}`;
+  const list = q ? await searchCatalog(q, kind, 50, !!viewer?.show_adult) : [];
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
         <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
-        <SearchTabs current="anime" hrefFor={hrefFor} t={t} />
+        <SearchTabs current={kind} hrefFor={hrefFor} t={t} />
       </div>
       {list.length ? (
-        <ExternalPosters kind="anime" list={list} viewer={viewer} eager={8} />
+        <ExternalPosters kind={kind} list={list} viewer={viewer} eager={8} />
       ) : (
         <p className="text-muted">{q ? t.search.empty : t.search.prompt}</p>
       )}

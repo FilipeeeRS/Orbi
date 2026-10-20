@@ -177,6 +177,7 @@ export const id: Dictionary = {
     execProducers: "Produser eksekutif",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `Musim ${n} pada ${date}`,
     upNext: "Episode berikutnya",
     nextAir: (code: string, date: string) => `Episode baru ${code} pada ${date}`,
     seasonLabel: "Musim",
@@ -197,6 +198,8 @@ export const id: Dictionary = {
     signInToLog: "Masuk untuk mencatat serial ini",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `Musim berikutnya: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `Musim berikutnya diumumkan: ${title}`,
     thisSeason: "Anime musim ini",
     seasons: { WINTER: "Musim dingin", SPRING: "Musim semi", SUMMER: "Musim panas", FALL: "Musim gugur" },
     format: "Format",
@@ -225,6 +228,7 @@ export const id: Dictionary = {
     typeMovie: "Film",
     typeSeries: "Serial",
     typeAnime: "Anime",
+    typeManga: "Manga",
     typePerson: "Orang",
     seeAll: (q: string) => `Lihat semua hasil untuk “${q}”`,
     title: (q: string) => `Hasil untuk “${q}”`,

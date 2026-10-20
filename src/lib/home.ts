@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "./supabase/server";
 import { ensureAnime, ensureMovie, ensureSeries } from "./catalog";
 import { browseAnime, seasonOf } from "./anilist";
+import { seasonItems } from "./anime-db";
 import { isAnime, tmdbTrendingWeek } from "./tmdb";
 import type { EntryWithItem, Item, MediaKind, Profile } from "./types";
 
@@ -41,6 +42,8 @@ export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[
   if (kind === "anime") {
     // Animes da temporada atual (AniList), dos mais populares para os menos.
     const { season, year } = seasonOf();
+    const fromDb = await seasonItems(season, year, limit);
+    if (fromDb) return fromDb;
     const { list } = await browseAnime({ page: 1, perPage: limit, sort: "POPULARITY_DESC", season, seasonYear: year });
     const items = await Promise.all(list.map((a) => ensureAnime(a.id).catch(() => null)));
     return items.filter((i): i is Item => !!i);

@@ -177,6 +177,7 @@ export const ja: Dictionary = {
     execProducers: "製作総指揮",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `シーズン${n}：${date}`,
     upNext: "次のエピソード",
     nextAir: (code: string, date: string) => `新エピソード ${code}：${date}`,
     seasonLabel: "シーズン",
@@ -197,6 +198,8 @@ export const ja: Dictionary = {
     signInToLog: "ログインしてこのシリーズを記録",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `次のシーズン：${title}（${when}）`,
+    nextSeasonTba: (title: string) => `次のシーズン決定：${title}`,
     thisSeason: "今期のアニメ",
     seasons: { WINTER: "冬", SPRING: "春", SUMMER: "夏", FALL: "秋" },
     format: "形式",
@@ -225,6 +228,7 @@ export const ja: Dictionary = {
     typeMovie: "映画",
     typeSeries: "シリーズ",
     typeAnime: "アニメ",
+    typeManga: "マンガ",
     typePerson: "人物",
     seeAll: (q: string) => `すべての結果を見る： “${q}”`,
     title: (q: string) => `「${q}」の検索結果`,

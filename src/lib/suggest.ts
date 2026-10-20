@@ -1,6 +1,7 @@
 import "server-only";
 import { adultMovieIds } from "./catalog";
-import { animeTitle, animeYear, browseAnime, getPopularAnimeIndex, type AnimeCard } from "./anilist";
+import { animeTitle, animeYear, getPopularAnimeIndex, type AnimeCard } from "./anilist";
+import { mirrorReady, searchCatalog } from "./anime-db";
 import { getPopularIndex, isAnime, searchMulti, tmdbImage, type TmdbMultiResult } from "./tmdb";
 
 // Sugestões da busca do topo enquanto a pessoa digita: filmes, séries e pessoas do TMDB.
@@ -9,7 +10,7 @@ import { getPopularIndex, isAnime, searchMulti, tmdbImage, type TmdbMultiResult 
 // com pouco resultado, buscas por pedaços do texto. Tudo é ordenado pela semelhança + popularidade.
 
 export type Suggestion = {
-  type: "movie" | "series" | "anime" | "person";
+  type: "movie" | "series" | "anime" | "manga" | "person";
   id: number;
   title: string;
   year: number | null;
@@ -87,16 +88,19 @@ export async function suggest(query: string, language: string, showAdult: boolea
   // Animes vêm do AniList (cada temporada separada); se ele demorar (limite de requisições), seguimos sem.
   const withTimeout = <T,>(promise: Promise<T>, fallback: T) =>
     Promise.race([promise, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), 1500))]);
-  const [direct, index, animeSearch, animeIndex] = await Promise.all([
+  // Animes e mangás vêm do catálogo (busca por semelhança no banco). Sem a cópia no banco, a busca do
+  // AniList não tolera erro, então os animes populares parecidos com o texto completam a lista.
+  const [direct, index, animeHits, mangaHits, animeIndex] = await Promise.all([
     searchMulti(q, language),
     getPopularIndex(language),
-    withTimeout(browseAnime({ page: 1, perPage: 6, sort: "POPULARITY_DESC", search: q, showAdult }).then((r) => r.list), []),
-    withTimeout(getPopularAnimeIndex(), [] as AnimeCard[]),
+    withTimeout(searchCatalog(q, "anime", 6, showAdult), []),
+    withTimeout(searchCatalog(q, "manga", 4, showAdult), []),
+    mirrorReady("anime").then((ready) => (ready ? [] : withTimeout(getPopularAnimeIndex(), [] as AnimeCard[]))),
   ]);
-  // Animes: a busca do AniList + os populares parecidos com o que foi digitado (erro de digitação).
   const animeTitleSim = (a: AnimeCard) =>
     Math.max(...[a.title.english, a.title.romaji].map((t) => similarity(q, clean(t ?? ""))));
-  const animes = [...new Map([...animeSearch, ...animeIndex.filter((a) => animeTitleSim(a) >= 0.8)].map((a) => [a.id, a])).values()];
+  const aniPop = Math.max(1, ...animeIndex.map((a) => a.popularity ?? 0));
+  const fromIndex = animeIndex.filter((a) => animeTitleSim(a) >= 0.8);
   add(direct);
   add(index.filter((r) => bestSimilarity(q, r) >= 0.8));
   // Pouco resultado (ou nada parecido): talvez erro de digitação, tenta os pedaços.
@@ -106,7 +110,6 @@ export async function suggest(query: string, language: string, showAdult: boolea
   // Tudo vira um candidato no mesmo formato, para ordenar junto (semelhança + popularidade na fonte).
   type Candidate = Suggestion & { sim: number; pop: number };
   const tmdbMax = Math.max(1, ...[...byKey.values()].map((r) => r.popularity ?? 0));
-  const animeMax = Math.max(1, ...animes.map((a) => a.popularity ?? 0));
   const candidates: Candidate[] = [
     ...[...byKey.values()]
       // Séries de anime do TMDB ficam de fora: o anime certo vem do AniList.
@@ -132,7 +135,22 @@ export async function suggest(query: string, language: string, showAdult: boolea
           href: `/${type}/${r.id}`,
         };
       }),
-    ...animes.map(
+    // Do catálogo vêm já ordenados por semelhança; a posição faz as vezes da popularidade.
+    ...(["anime", "manga"] as const).flatMap((kind) =>
+      (kind === "anime" ? animeHits : mangaHits).map(
+        (a, i, all): Candidate => ({
+          type: kind,
+          id: a.id,
+          title: a.title,
+          year: a.year,
+          image: a.poster,
+          href: `/${kind}/${a.id}`,
+          sim: Math.max(similarity(q, clean(a.title)), 0.6),
+          pop: 1 - i / Math.max(1, all.length),
+        }),
+      ),
+    ),
+    ...fromIndex.map(
       (a): Candidate => ({
         type: "anime",
         id: a.id,
@@ -141,7 +159,7 @@ export async function suggest(query: string, language: string, showAdult: boolea
         image: a.coverImage.large,
         href: `/anime/${a.id}`,
         sim: animeTitleSim(a),
-        pop: Math.log1p(a.popularity ?? 0) / Math.log1p(animeMax),
+        pop: Math.log1p(a.popularity ?? 0) / Math.log1p(aniPop),
       }),
     ),
   ];
@@ -154,7 +172,9 @@ export async function suggest(query: string, language: string, showAdult: boolea
     .slice(0, LIMIT * 2)
     .map((x) => x.c);
 
-  let results = ranked;
+  // O mesmo anime pode vir da busca e do índice: fica uma vez só.
+  const seenKeys = new Set<string>();
+  let results = ranked.filter((r) => !seenKeys.has(`${r.type}-${r.id}`) && seenKeys.add(`${r.type}-${r.id}`));
   if (!showAdult) {
     const adult = await adultMovieIds(results.filter((r) => r.type === "movie").map((r) => r.id));
     results = results.filter((r) => r.type !== "movie" || !adult.has(r.id));

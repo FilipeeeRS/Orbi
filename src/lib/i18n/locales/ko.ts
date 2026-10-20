@@ -177,6 +177,7 @@ export const ko: Dictionary = {
     execProducers: "총괄 제작",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `시즌 ${n}: ${date}`,
     upNext: "다음 에피소드",
     nextAir: (code: string, date: string) => `새 에피소드 ${code}: ${date}`,
     seasonLabel: "시즌",
@@ -197,6 +198,8 @@ export const ko: Dictionary = {
     signInToLog: "로그인하고 이 시리즈를 기록하세요",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `다음 시즌: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `다음 시즌 발표: ${title}`,
     thisSeason: "이번 분기 애니",
     seasons: { WINTER: "겨울", SPRING: "봄", SUMMER: "여름", FALL: "가을" },
     format: "형식",
@@ -225,6 +228,7 @@ export const ko: Dictionary = {
     typeMovie: "영화",
     typeSeries: "시리즈",
     typeAnime: "애니메이션",
+    typeManga: "만화",
     typePerson: "인물",
     seeAll: (q: string) => `전체 결과 보기: “${q}”`,
     title: (q: string) => `“${q}” 검색 결과`,

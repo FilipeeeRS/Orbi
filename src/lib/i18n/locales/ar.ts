@@ -177,6 +177,7 @@ export const ar: Dictionary = {
     execProducers: "الإنتاج التنفيذي",
   },
   series: {
+    nextSeasonOn: (n: number, date: string) => `الموسم ${n} في ${date}`,
     upNext: "الحلقة التالية",
     nextAir: (code: string, date: string) => `حلقة جديدة ${code} في ${date}`,
     seasonLabel: "الموسم",
@@ -197,6 +198,8 @@ export const ar: Dictionary = {
     signInToLog: "سجّل الدخول لتسجيل هذا المسلسل",
   },
   anime: {
+    nextSeasonOn: (title: string, when: string) => `الموسم التالي: ${title} — ${when}`,
+    nextSeasonTba: (title: string) => `تم الإعلان عن الموسم التالي: ${title}`,
     thisSeason: "أنمي هذا الموسم",
     seasons: { WINTER: "الشتاء", SPRING: "الربيع", SUMMER: "الصيف", FALL: "الخريف" },
     format: "الصيغة",
@@ -225,6 +228,7 @@ export const ar: Dictionary = {
     typeMovie: "فيلم",
     typeSeries: "مسلسل",
     typeAnime: "أنمي",
+    typeManga: "مانغا",
     typePerson: "شخص",
     seeAll: (q: string) => `عرض كل النتائج لـ “${q}”`,
     title: (q: string) => `نتائج البحث عن «${q}»`,

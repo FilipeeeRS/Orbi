@@ -99,6 +99,7 @@ export const DEFAULT_SORT: Sort = "recent";
 export type ListFilters = {
   decade?: number; // 1990 = anos 90
   genre?: number; // id de gênero do TMDB
+  genreName?: string; // gênero por nome (animes e mangás, do AniList)
   rating?: number | "none"; // 1..10 (meias estrelas) ou sem nota
   q?: string; // parte do título
 };
@@ -131,6 +132,7 @@ export async function listEntries(
   // Filtros
   if (filters.decade) query = query.gte("items.year", filters.decade).lt("items.year", filters.decade + 10);
   if (filters.genre) query = query.contains("items.genre_ids", [filters.genre]);
+  if (filters.genreName) query = query.contains("items.genres", [filters.genreName]);
   if (filters.rating === "none") query = query.is("rating", null);
   else if (filters.rating) query = query.eq("rating", filters.rating);
   const q = filters.q?.trim().slice(0, 100).replace(/[%,()]/g, " ");
