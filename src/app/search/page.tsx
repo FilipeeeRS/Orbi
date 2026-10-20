@@ -193,7 +193,7 @@ function SearchTabs({
   t: Dictionary;
 }) {
   return (
-    <nav className="flex gap-4 text-sm">
+    <nav className="flex max-w-full gap-4 overflow-x-auto text-sm [scrollbar-width:none]">
       {SEARCH_TABS.map((to) => (
         <Link
           key={to}

@@ -15,9 +15,10 @@ type Props = {
   // Quem está logado: habilita os atalhos de "visto" e "curtir" ao passar o mouse.
   viewer?: { id: string; state: ViewerItemState | null } | null;
   badge?: boolean; // selo do status no canto do pôster (false no perfil e nas listas do usuário)
+  showTitle?: boolean; // título e ano embaixo (telas de descobrir: Home, Ver tudo, busca...)
 };
 
-export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer, badge = true }: Props) {
+export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer, badge = true, showTitle = false }: Props) {
   const title = itemTitle(item, locale);
   return (
     <div className="group">
@@ -30,8 +31,9 @@ export function Poster({ item, locale, rating, liked, showMeta = true, eager, vi
           <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind !== "movie" && item.kind !== "music"} badge={badge} />
         )}
       </div>
-      {/* Anime e mangá: muitas capas não têm o nome escrito, então ele vai embaixo (como no AniList) */}
-      {(item.kind === "anime" || item.kind === "manga") && (
+      {/* Regra única: nas telas de descobrir, título e ano embaixo de todos (muitas capas, como as de
+          anime, não têm o nome escrito); no perfil, só estrelas e coração (o nome fica no tooltip). */}
+      {showTitle && (
         <Link href={itemHref(item)} className="mt-1 line-clamp-2 block text-xs">
           {title} {item.year && <span className="text-muted">{item.year}</span>}
         </Link>

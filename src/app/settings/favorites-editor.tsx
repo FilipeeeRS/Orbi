@@ -7,7 +7,7 @@ import { PosterImage } from "@/components/poster";
 
 const SLOTS = 4;
 
-// Até 4 filmes favoritos que aparecem no topo do perfil. Salva a cada mudança.
+// Até 4 favoritos (de qualquer pasta) que aparecem no topo do perfil. Salva a cada mudança.
 export function FavoritesEditor({ initial }: { initial: FavoriteItem[] }) {
   const { t } = useI18n();
   const [items, setItems] = useState(initial);

@@ -89,6 +89,8 @@ export function ReviewComments({
     <div className="mt-2">
       {/* gap pequeno: o ♥ da review já tem respiro próprio (px-2) */}
       <div className="flex items-center gap-2">
+        {/* Ordem: like (actions), comentários, apagar */}
+        {actions}
         <button
           type="button"
           onClick={toggle}
@@ -103,7 +105,6 @@ export function ReviewComments({
           {/* Só o ícone quando não há comentários; com comentários, o número */}
           {count > 0 && <span className="tabular-nums">{count}</span>}
         </button>
-        {actions}
         {/* Dono da review: apagar a review (e a conversa inteira dela) */}
         {viewerId && viewerId === reviewOwnerId && (
           <button

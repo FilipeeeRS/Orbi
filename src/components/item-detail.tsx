@@ -49,6 +49,15 @@ export function ItemDetail({
   children?: React.ReactNode; // seções entre a ficha e as reviews (temporadas, episódios)
 }) {
   const hasOriginal = !!item.original_title && item.original_title !== title;
+  // Nota original da fonte, como referência embaixo do título (a nota grande já é a mistura com o Orbi).
+  const SOURCE_LABEL: Record<string, string> = { tmdb: "TMDB", anilist: "AniList", openlibrary: "Open Library", steam: "Metacritic" };
+  const sourceRating =
+    item.tmdb_rating != null && item.tmdb_rating > 0 && SOURCE_LABEL[item.source] ? (
+      <span>
+        <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
+        <span className="text-xs"> / 10 {t.movie.onSource(SOURCE_LABEL[item.source])}</span>
+      </span>
+    ) : null;
 
   return (
     <div className="mx-auto max-w-[58rem] space-y-10">
@@ -66,7 +75,7 @@ export function ItemDetail({
         )}
       </div>
 
-      <div className={`relative grid items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] -mt-24 sm:-mt-40`}>
+      <div className={`relative grid grid-cols-[minmax(0,1fr)] items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] -mt-24 sm:-mt-40`}>
         <div className="space-y-5">
           {above}
           {/* Grade de 2 colunas: título alinhado com a nota do Orbi; embaixo, TMDB + título original com o "no Orbi" */}
@@ -86,8 +95,9 @@ export function ItemDetail({
                 <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />
               </svg>
             </p>
-            {/* Título original (quando é diferente) */}
+            {/* Nota da fonte e, à direita dela, o título original (quando é diferente) */}
             <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-muted">
+              {sourceRating}
               {hasOriginal && <span className="italic">{item.original_title}</span>}
             </p>
             <p className="text-end text-xs text-muted">{t.movie.onSource("Orbi")}</p>

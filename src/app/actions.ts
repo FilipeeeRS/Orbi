@@ -159,7 +159,9 @@ export async function searchFavoriteCandidates(query: string): Promise<FavoriteC
     .from("entries")
     .select("items!inner(id, title, year, poster_url, translations)")
     .eq("user_id", viewer.id)
-    .eq("liked", true)
+    // Qualquer coisa que a pessoa já viu ou está vendo/lendo/jogando, de todas as pastas (sem watchlist)
+    .in("status", ["watched", "watching"])
+    .neq("items.kind", "season")
     .or(
       `title.ilike.${pattern},original_title.ilike.${pattern},translations->${locale}->>title.ilike.${pattern}`,
       { referencedTable: "items" },

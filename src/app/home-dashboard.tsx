@@ -101,7 +101,7 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
           <Row>
             {friends.map((e) => (
               <div key={e.id} className="space-y-1.5">
-                <Poster item={e.items} locale={locale} showMeta={false} viewer={viewerFor(e.item_id)} />
+                <Poster item={e.items} locale={locale} showMeta={false} showTitle viewer={viewerFor(e.item_id)} />
                 <Link
                   href={`/u/${e.profiles.username}`}
                   className="flex items-center gap-1.5 text-xs text-muted hover:text-fg"
@@ -259,7 +259,7 @@ function ItemRow({
   return (
     <Row>
       {items.map((item, i) => (
-        <Poster key={item.id} item={item} locale={locale} showMeta={false} eager={i < 6} viewer={viewerFor(item.id)} />
+        <Poster key={item.id} item={item} locale={locale} showMeta={false} showTitle eager={i < 6} viewer={viewerFor(item.id)} />
       ))}
       {Array.from({ length: Math.max(0, 6 - items.length) }, (_, i) => (
         <div
