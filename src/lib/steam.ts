@@ -148,3 +148,36 @@ async function fetchMostPlayed(limit: number): Promise<GameCard[]> {
   const games = await Promise.all(ids.map((id) => getGame(id)));
   return games.filter((g): g is Game => !!g).map(({ id, title, year, poster }) => ({ id, title, year, poster }));
 }
+
+// Avaliações dos usuários da Steam: o rótulo ("Extremamente positivas", no idioma da pessoa) e a nota
+// equivalente — cada avaliação positiva vale 10 e cada negativa 0, então a nota é a % de positivas.
+export type GameReviews = { label: string; total: number; positive: number; rating: number | null }; // rating 0..10
+
+export async function getGameReviews(id: number, locale = "en"): Promise<GameReviews | null> {
+  try {
+    return await fetchReviews(id, steamLanguage(locale));
+  } catch {
+    return null;
+  }
+}
+
+async function fetchReviews(id: number, lang: string): Promise<GameReviews | null> {
+  "use cache";
+  cacheLife("hours");
+  const res = await fetch(
+    `https://store.steampowered.com/appreviews/${id}?json=1&language=all&purchase_type=all&num_per_page=0&l=${lang}`,
+  );
+  if (!res.ok) throw new Error(`Steam ${res.status}`);
+  const data = (await res.json()) as {
+    query_summary?: { review_score_desc: string; total_positive: number; total_negative: number; total_reviews: number };
+  };
+  const q = data.query_summary;
+  if (!q || !q.total_reviews) return null;
+  const total = q.total_positive + q.total_negative;
+  return {
+    label: q.review_score_desc,
+    total: q.total_reviews,
+    positive: q.total_positive,
+    rating: total ? Math.round((q.total_positive / total) * 100) / 10 : null,
+  };
+}

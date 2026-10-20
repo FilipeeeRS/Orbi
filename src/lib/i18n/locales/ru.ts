@@ -37,6 +37,8 @@ export const ru: Dictionary = {
     soon: "Скоро",
   },
   home: {
+    emptyWatchlist: "В вашем списке пока пусто.",
+    emptyInProgress: "Сейчас ничего не начато.",
     readingNow: "Читаю сейчас",
     playingNow: "Играю сейчас",
     newsTab: "Новое",
@@ -250,6 +252,7 @@ export const ru: Dictionary = {
     published: (y: number) => `Издана в ${y}`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `Обзоров в Steam: ${n}`,
     play: "Играть",
     played: "Пройдено",
     playing: "Играю",

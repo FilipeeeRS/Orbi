@@ -29,6 +29,7 @@ export function ItemDetail({
   stats,
   t,
   above,
+  sourceLine,
   editor,
   details,
   side,
@@ -43,6 +44,7 @@ export function ItemDetail({
   stats: ItemStatsData;
   t: Dictionary;
   above?: React.ReactNode; // ex.: link para a série acima do título da temporada
+  sourceLine?: React.ReactNode; // no lugar da nota da fonte embaixo do título (jogos: "Muito positivas na Steam")
   editor: React.ReactNode;
   details?: React.ReactNode;
   side?: React.ReactNode; // abaixo dos números do pôster (trailer, trocar arte)
@@ -97,7 +99,7 @@ export function ItemDetail({
             </p>
             {/* Nota da fonte e, à direita dela, o título original (quando é diferente) */}
             <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-muted">
-              {sourceRating}
+              {sourceLine ?? sourceRating}
               {hasOriginal && <span className="italic">{item.original_title}</span>}
             </p>
             <p className="text-end text-xs text-muted">{t.movie.onSource("Orbi")}</p>

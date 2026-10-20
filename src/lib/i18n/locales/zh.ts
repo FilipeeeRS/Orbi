@@ -29,6 +29,8 @@ export const zh: Dictionary = {
     soon: "即将推出",
   },
   home: {
+    emptyWatchlist: "待看清单还是空的。",
+    emptyInProgress: "目前没有进行中的作品。",
     readingNow: "正在读",
     playingNow: "正在玩",
     newsTab: "最新动态",
@@ -242,6 +244,7 @@ export const zh: Dictionary = {
     published: (y: number) => `${y} 年出版`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `Steam 上 ${n} 篇评测`,
     play: "玩",
     played: "玩过",
     playing: "在玩",

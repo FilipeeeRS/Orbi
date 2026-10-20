@@ -27,6 +27,8 @@ export const pt = {
     soon: "Em breve",
   },
   home: {
+    emptyWatchlist: "Nada na sua watchlist ainda.",
+    emptyInProgress: "Nada em andamento no momento.",
     readingNow: "Lendo agora",
     playingNow: "Jogando agora",
     newsTab: "Novidades",
@@ -240,6 +242,7 @@ export const pt = {
     published: (y: number) => `Publicado em ${y}`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `${n} avaliações na Steam`,
     play: "Jogar",
     played: "Jogado",
     playing: "Jogando",

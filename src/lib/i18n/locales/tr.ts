@@ -29,6 +29,8 @@ export const tr: Dictionary = {
     soon: "Yakında",
   },
   home: {
+    emptyWatchlist: "İzleme listende henüz bir şey yok.",
+    emptyInProgress: "Şu an devam eden bir şey yok.",
     readingNow: "Şu an okunanlar",
     playingNow: "Şu an oynananlar",
     newsTab: "Yenilikler",
@@ -242,6 +244,7 @@ export const tr: Dictionary = {
     published: (y: number) => `${y} yılında yayımlandı`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `Steam'de ${n} inceleme`,
     play: "Oyna",
     played: "Oynandı",
     playing: "Oynanıyor",

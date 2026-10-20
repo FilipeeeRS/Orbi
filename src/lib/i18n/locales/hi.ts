@@ -29,6 +29,8 @@ export const hi: Dictionary = {
     soon: "जल्द आ रहा है",
   },
   home: {
+    emptyWatchlist: "आपकी वॉचलिस्ट में अभी कुछ नहीं है।",
+    emptyInProgress: "अभी कुछ भी चल नहीं रहा।",
     readingNow: "अभी पढ़ रहे हैं",
     playingNow: "अभी खेल रहे हैं",
     newsTab: "नया क्या है",
@@ -242,6 +244,7 @@ export const hi: Dictionary = {
     published: (y: number) => `${y} में प्रकाशित`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `Steam पर ${n} रिव्यू`,
     play: "खेलें",
     played: "खेला",
     playing: "खेल रहे हैं",

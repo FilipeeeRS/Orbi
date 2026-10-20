@@ -16,7 +16,7 @@ import { LOCALES, TMDB_LANGUAGES } from "./i18n/dictionaries";
 import type { Item } from "./types";
 import { getAnime } from "./anilist";
 import { getBook } from "./openlibrary";
-import { getGame } from "./steam";
+import { getGame, getGameReviews } from "./steam";
 import { toRow } from "./anilist-sync";
 
 // Garante que o filme do TMDB exista no catálogo (tabela items) e o devolve.
@@ -304,10 +304,10 @@ export const ensureBook = (workId: string) =>
     };
   });
 
-// Jogo da Steam (appid). Nota do Metacritic (0..100) vira 0..10.
+// Jogo da Steam (appid). Nota = % de avaliações positivas na Steam (0..10); quantidade de avaliações = votos.
 export const ensureGame = (appId: number) =>
   ensureExternal("game", "steam", String(appId), async () => {
-    const game = await getGame(appId);
+    const [game, reviews] = await Promise.all([getGame(appId), getGameReviews(appId)]);
     if (!game) return null;
     return {
       title: game.title,
@@ -316,8 +316,8 @@ export const ensureGame = (appId: number) =>
       overview: game.description,
       poster_url: game.poster,
       backdrop_url: game.header,
-      tmdb_rating: game.metacritic != null ? game.metacritic / 10 : null,
-      tmdb_votes: game.recommendations,
+      tmdb_rating: reviews?.rating ?? null,
+      tmdb_votes: reviews?.total ?? game.recommendations,
       is_adult_rated: false,
       runtime: null,
       release_date: null,

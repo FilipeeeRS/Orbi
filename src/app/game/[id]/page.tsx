@@ -3,7 +3,8 @@ import Loading from "../../loading";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getGameByRouteId } from "@/lib/catalog";
-import { getGame } from "@/lib/steam";
+import { getGame, getGameReviews } from "@/lib/steam";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 import { getDict, getViewer } from "@/lib/session";
 import { getItemStats, withSourceStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -32,9 +33,10 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
   if (!item) notFound();
 
   const supabase = await createClient();
-  const [stats, game, entry] = await Promise.all([
+  const [stats, game, reviews, entry] = await Promise.all([
     getItemStats(item.id),
     getGame(Number(id), locale),
+    getGameReviews(Number(id), locale),
     viewer
       ? supabase
           .from("entries")
@@ -46,8 +48,13 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
       : null,
   ]);
 
-  // Números da fonte somados aos do Orbi (Steam: quem recomendou conta como quem jogou); a nota mistura as duas.
-  const shown = withSourceStats(stats, item, { watched: item.tmdb_votes ?? 0 });
+  // Números da fonte somados aos do Orbi (Steam: quem avaliou conta como quem jogou); a nota mistura as duas.
+  // Nota da fonte = % de avaliações positivas da Steam (positiva = 10, negativa = 0), pesando pelo total de avaliações.
+  const shown = withSourceStats(
+    stats,
+    { tmdb_rating: reviews?.rating ?? item.tmdb_rating, tmdb_votes: reviews?.total ?? item.tmdb_votes },
+    { watched: reviews?.total ?? item.tmdb_votes ?? 0 },
+  );
 
   return (
     <ItemDetail
@@ -60,6 +67,13 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
       hideAdult={false}
       stats={shown}
       t={t}
+      sourceLine={
+        reviews && (
+          <span>
+            {reviews.label} · {t.game.reviewsOnSteam(reviews.total.toLocaleString(dictionaries[locale].htmlLang))}
+          </span>
+        )
+      }
       editor={
         viewer ? (
           <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} series verb="play" />

@@ -29,6 +29,8 @@ export const id: Dictionary = {
     soon: "Segera hadir",
   },
   home: {
+    emptyWatchlist: "Belum ada apa pun di watchlist-mu.",
+    emptyInProgress: "Tidak ada yang sedang berjalan saat ini.",
     readingNow: "Sedang dibaca",
     playingNow: "Sedang dimainkan",
     newsTab: "Terbaru",
@@ -242,6 +244,7 @@ export const id: Dictionary = {
     published: (y: number) => `Terbit ${y}`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `${n} ulasan di Steam`,
     play: "Main",
     played: "Sudah dimainkan",
     playing: "Sedang dimainkan",

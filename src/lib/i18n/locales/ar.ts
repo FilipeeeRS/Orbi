@@ -29,6 +29,8 @@ export const ar: Dictionary = {
     soon: "قريبًا",
   },
   home: {
+    emptyWatchlist: "لا شيء في قائمة المشاهدة بعد.",
+    emptyInProgress: "لا شيء قيد التقدم الآن.",
     readingNow: "أقرأه الآن",
     playingNow: "ألعبه الآن",
     newsTab: "الجديد",
@@ -242,6 +244,7 @@ export const ar: Dictionary = {
     published: (y: number) => `نُشر عام ${y}`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `${n} مراجعة على Steam`,
     play: "العب",
     played: "لُعبت",
     playing: "ألعبها",

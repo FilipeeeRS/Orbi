@@ -29,6 +29,8 @@ export const ko: Dictionary = {
     soon: "곧 제공",
   },
   home: {
+    emptyWatchlist: "워치리스트가 아직 비어 있어요.",
+    emptyInProgress: "지금 진행 중인 작품이 없어요.",
     readingNow: "읽는 중",
     playingNow: "플레이 중",
     newsTab: "새 소식",
@@ -242,6 +244,7 @@ export const ko: Dictionary = {
     published: (y: number) => `${y}년 출간`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `Steam 평가 ${n}개`,
     play: "플레이",
     played: "플레이함",
     playing: "플레이 중",

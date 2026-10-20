@@ -200,15 +200,23 @@ async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer:
         <ItemRow items={popular} kind={kind} locale={locale} viewerFor={viewerFor} />
       </Section>
 
-      {viewer && shelf.length > 0 && (
+      {/* Prateleira pessoal: aparece sempre para quem está logado; vazia, um aviso no lugar dos pôsteres */}
+      {viewer && (
         <Section
           title={shelfTitle}
-          more={{
-            href: `/u/${viewer.username}/${BROWSE_PATHS[kind]}?tab=${shelfStatus}`,
-            label: t.profile.all,
-          }}
+          more={
+            shelf.length
+              ? { href: `/u/${viewer.username}/${BROWSE_PATHS[kind]}?tab=${shelfStatus}`, label: t.profile.all }
+              : undefined
+          }
         >
-          <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
+          {shelf.length ? (
+            <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
+          ) : (
+            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+              {shelfStatus === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}
+            </p>
+          )}
         </Section>
       )}
 

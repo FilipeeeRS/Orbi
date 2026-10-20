@@ -29,6 +29,8 @@ export const ja: Dictionary = {
     soon: "近日公開",
   },
   home: {
+    emptyWatchlist: "ウォッチリストはまだ空です。",
+    emptyInProgress: "いま進行中の作品はありません。",
     readingNow: "読書中",
     playingNow: "プレイ中",
     newsTab: "新着",
@@ -242,6 +244,7 @@ export const ja: Dictionary = {
     published: (y: number) => `${y}年刊行`,
   },
   game: {
+    reviewsOnSteam: (n: string) => `Steamのレビュー ${n}件`,
     play: "プレイ",
     played: "プレイ済み",
     playing: "プレイ中",
