@@ -4,7 +4,7 @@ import { isAnime, searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear
 
 // "Ver tudo" da Home: qualquer filme ou série que existe, direto do TMDB (não só o catálogo do Orbi).
 
-export const BROWSE_SORTS = ["week", "popular", "top", "release", "release-old", "title", "title-desc"] as const;
+export const BROWSE_SORTS = ["week", "popular", "top", "top-asc", "release", "release-old", "title", "title-desc"] as const;
 export type BrowseSort = (typeof BROWSE_SORTS)[number];
 
 export type BrowseFilters = { decade?: number; genre?: number; q?: string };
@@ -15,6 +15,7 @@ const TMDB_MAX_PAGES = 500; // limite da própria API
 const DISCOVER_SORT: Record<Exclude<BrowseSort, "week">, string> = {
   popular: "popularity.desc",
   top: "vote_average.desc",
+  "top-asc": "vote_average.asc",
   release: "primary_release_date.desc",
   "release-old": "primary_release_date.asc",
   title: "title.asc",
@@ -63,7 +64,7 @@ export async function browseMovies(
                     ? new Date().toISOString().slice(0, 10)
                     : undefined,
                 // Sem um mínimo de votos, "mais bem avaliados" fica cheio de filmes com 1 voto 10/10.
-                "vote_count.gte": sort === "top" ? 300 : undefined,
+                "vote_count.gte": sort === "top" || sort === "top-asc" ? 300 : undefined,
               },
               p,
               opts.language,
@@ -97,6 +98,8 @@ function sortLocally(list: TmdbMovie[], sort: BrowseSort) {
   switch (sort) {
     case "top":
       return by.sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0));
+    case "top-asc":
+      return by.sort((a, b) => (a.vote_average ?? 0) - (b.vote_average ?? 0));
     case "release":
       return by.sort((a, b) => (b.release_date ?? "").localeCompare(a.release_date ?? ""));
     case "release-old":

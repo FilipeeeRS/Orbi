@@ -108,7 +108,7 @@ export const zh: Dictionary = {
     tabs: { watched: "看过", watching: "在看", watchlist: "想看", liked: "喜欢", reviews: "影评", lists: "清单" },
     sort: { week: "本周热门", release: "上映日期（最新）", releaseOld: "上映日期（最早）", recent: "最近添加", recentOld: "最早添加", yours: "我评分最高", top: "评分最高", popular: "热度", titleAz: "标题（A–Z）", titleZa: "标题（Z–A）", runtimeShort: "片长（最短）", runtimeLong: "片长（最长）" },
     sortGroups: { name: "名称", added: "添加时间", release: "上映日期", average: "平均评分", yours: "你的评分", length: "时长" },
-    sortOrder: { newest: "最新优先", earliest: "最早优先", highest: "最高优先", az: "A–Z", za: "Z–A", shortest: "最短优先", longest: "最长优先" },
+    sortOrder: { newest: "最新优先", earliest: "最早优先", highest: "最高优先", lowest: "最低优先", az: "A–Z", za: "Z–A", shortest: "最短优先", longest: "最长优先" },
     filters: { decade: "年代", genre: "类型", rating: "评分", sortBy: "排序方式", any: "全部", noRating: "未评分", search: "按标题筛选…", clear: "清除筛选" },
     page: (n: number, total: number) => `第 ${n} / ${total} 页`,
     prev: "上一页",
@@ -156,6 +156,7 @@ export const zh: Dictionary = {
     notFound: "找不到这部电影。",
   },
   info: {
+    characters: "角色",
     creator: "主创",
     networks: "播出平台",
     cast: "演员",

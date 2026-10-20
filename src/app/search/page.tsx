@@ -30,7 +30,7 @@ const SEARCH_TABS = ["all", "movie", "series", "book", "anime", "manga", "game"]
 type SearchTab = (typeof SEARCH_TABS)[number];
 
 // Ordenações possíveis com o que a busca do TMDB devolve (não há duração nem nota sua aqui).
-const SEARCH_SORTS = ["popular", "release", "release-old", "top", "title", "title-desc"] as const satisfies readonly Sort[];
+const SEARCH_SORTS = ["popular", "release", "release-old", "top", "top-asc", "title", "title-desc"] as const satisfies readonly Sort[];
 type SearchSort = (typeof SEARCH_SORTS)[number];
 
 export default function SearchPage(props: PageProps<"/search">) {
@@ -111,6 +111,8 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
           return (b.release_date ?? "").localeCompare(a.release_date ?? "");
         case "release-old":
           return (a.release_date || "9999").localeCompare(b.release_date || "9999");
+        case "top-asc":
+          return (a.vote_average ?? 0) - (b.vote_average ?? 0);
         case "top":
           return (b.vote_average ?? 0) - (a.vote_average ?? 0);
         case "title":

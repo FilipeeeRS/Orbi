@@ -13,7 +13,9 @@ const MENU = [
   { key: "release", group: "release", order: "newest" },
   { key: "release-old", group: "release", order: "earliest" },
   { key: "top", group: "average", order: "highest" },
+  { key: "top-asc", group: "average", order: "lowest" },
   { key: "yours", group: "yours", order: "highest" },
+  { key: "yours-asc", group: "yours", order: "lowest" },
   { key: "runtime", group: "length", order: "shortest" },
   { key: "runtime-desc", group: "length", order: "longest" },
 ] as const;

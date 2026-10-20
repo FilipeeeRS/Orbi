@@ -110,10 +110,13 @@ export async function ShowPageContent({ id }: { id: string }) {
       }
       side={
         <>
-          <div className="flex items-center justify-between gap-3">
-            <ItemStats stats={shown} t={t} locale={locale} />
-            {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
-          </div>
+          <ItemStats stats={shown} t={t} locale={locale} />
+          {/* Trailer numa linha própria, à direita, embaixo dos números */}
+          {info?.trailer && (
+            <div className="flex justify-end">
+              <TrailerButton videoId={info.trailer} label={t.movie.trailer} />
+            </div>
+          )}
           {/* Trocar pôster/fundo: só em séries que a pessoa já viu (igual aos filmes) */}
           {viewer && entry?.status === "watched" && (
             <div className="-mt-1 flex justify-end">

@@ -108,7 +108,7 @@ export const it: Dictionary = {
     tabs: { watched: "Visti", watching: "In visione", watchlist: "Watchlist", liked: "Piaciuti", reviews: "Recensioni", lists: "Liste" },
     sort: { week: "Popolari questa settimana", release: "Uscita (più recenti)", releaseOld: "Uscita (meno recenti)", recent: "Aggiunti di recente", recentOld: "Aggiunti per primi", yours: "Votati meglio da te", top: "Meglio votati", popular: "Popolarità", titleAz: "Titolo (A–Z)", titleZa: "Titolo (Z–A)", runtimeShort: "Più brevi prima", runtimeLong: "Più lunghi prima" },
     sortGroups: { name: "Nome", added: "Data di aggiunta", release: "Uscita", average: "Voto medio", yours: "Il tuo voto", length: "Durata" },
-    sortOrder: { newest: "Più recenti prima", earliest: "Meno recenti prima", highest: "Più alti prima", az: "A–Z", za: "Z–A", shortest: "Più brevi prima", longest: "Più lunghi prima" },
+    sortOrder: { newest: "Più recenti prima", earliest: "Meno recenti prima", highest: "Più alti prima", lowest: "Più bassi prima", az: "A–Z", za: "Z–A", shortest: "Più brevi prima", longest: "Più lunghi prima" },
     filters: { decade: "Decennio", genre: "Genere", rating: "Voto", sortBy: "Ordina per", any: "Qualsiasi", noRating: "Senza voto", search: "Filtra per titolo…", clear: "Cancella filtri" },
     page: (n: number, total: number) => `Pagina ${n} di ${total}`,
     prev: "Precedente",
@@ -156,6 +156,7 @@ export const it: Dictionary = {
     notFound: "Film non trovato.",
   },
   info: {
+    characters: "Personaggi",
     creator: "Ideatore",
     networks: "Reti",
     cast: "Cast",

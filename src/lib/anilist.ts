@@ -107,7 +107,7 @@ export async function getAnime(id: number, type: "ANIME" | "MANGA" = "ANIME"): P
   }
 }
 
-export type AnimeSort = "TRENDING_DESC" | "POPULARITY_DESC" | "SCORE_DESC" | "START_DATE_DESC" | "START_DATE" | "TITLE_ROMAJI" | "TITLE_ROMAJI_DESC";
+export type AnimeSort = "TRENDING_DESC" | "POPULARITY_DESC" | "SCORE_DESC" | "SCORE" | "START_DATE_DESC" | "START_DATE" | "TITLE_ROMAJI" | "TITLE_ROMAJI_DESC";
 
 export type AnimeQuery = {
   type?: "ANIME" | "MANGA"; // padrão: anime

@@ -12,6 +12,7 @@ export type InfoChip = { name: string; href?: string };
 // Tudo já vem formatado do servidor (nomes de países/idiomas e datas no idioma do usuário).
 export type MovieInfoView = {
   cast: (InfoChip & { character: string })[];
+  characters?: InfoChip[]; // anime e mangá: personagens (o elenco são os dubladores)
   crew: { role: CrewRole; people: InfoChip[] }[];
   details: { label: string; values: InfoChip[] }[];
   genres: InfoChip[];
@@ -20,15 +21,17 @@ export type MovieInfoView = {
   watch: { country: string; link: string | null; groups: { kind: WatchKind; providers: WatchProvider[] }[] } | null;
 };
 
-type Tab = "cast" | "crew" | "details" | "genres" | "releases" | "watch";
+type Tab = "cast" | "characters" | "crew" | "details" | "genres" | "releases" | "watch";
 const CAST_PREVIEW = 24;
 
 // Os textos vêm do dicionário no próprio navegador: alguns são funções (ex.: watchIn(país)),
 // e funções não podem ser enviadas do servidor para um componente cliente.
 export function MovieInfo({ info }: { info: MovieInfoView }) {
   const labels = useI18n().t.info;
-  const tabs = (["cast", "crew", "details", "genres", "releases", "watch"] as const).filter((tab) =>
-    tab === "crew"
+  const tabs = (["cast", "characters", "crew", "details", "genres", "releases", "watch"] as const).filter((tab) =>
+    tab === "characters"
+      ? info.characters?.length
+      : tab === "crew"
       ? info.crew.length
       : tab === "details"
         ? info.details.length
@@ -77,6 +80,16 @@ export function MovieInfo({ info }: { info: MovieInfoView }) {
               {labels.showAll} ({info.cast.length})
             </button>
           )}
+        </div>
+      )}
+
+      {tab === "characters" && (
+        <div className="flex flex-wrap gap-1.5">
+          {(info.characters ?? []).map((c, i) => (
+            <Chip key={`${c.name}-${i}`} href={c.href}>
+              {c.name}
+            </Chip>
+          ))}
         </div>
       )}
 

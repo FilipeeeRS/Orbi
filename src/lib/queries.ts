@@ -85,7 +85,9 @@ export const SORTS = [
   "release",
   "release-old",
   "yours",
+  "yours-asc",
   "top",
+  "top-asc",
   "popular",
   "title",
   "title-desc",
@@ -153,6 +155,12 @@ export async function listEntries(
       break;
     case "release-old":
       query = query.order("items(release_date)", asc).order("items(year)", asc);
+      break;
+    case "yours-asc":
+      query = query.order("rating", asc);
+      break;
+    case "top-asc":
+      query = query.order("items(tmdb_rating)", asc);
       break;
     case "yours":
       query = query.order("rating", desc);

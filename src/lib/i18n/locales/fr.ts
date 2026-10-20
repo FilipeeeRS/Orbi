@@ -108,7 +108,7 @@ export const fr: Dictionary = {
     tabs: { watched: "Vus", watching: "En cours", watchlist: "Watchlist", liked: "Aimés", reviews: "Critiques", lists: "Listes" },
     sort: { week: "Populaires cette semaine", release: "Sortie (plus récents)", releaseOld: "Sortie (plus anciens)", recent: "Ajoutés récemment", recentOld: "Ajoutés en premier", yours: "Mieux notés par vous", top: "Mieux notés", popular: "Popularité", titleAz: "Titre (A–Z)", titleZa: "Titre (Z–A)", runtimeShort: "Plus courts d'abord", runtimeLong: "Plus longs d'abord" },
     sortGroups: { name: "Nom", added: "Date d'ajout", release: "Date de sortie", average: "Note moyenne", yours: "Votre note", length: "Durée" },
-    sortOrder: { newest: "Plus récents d'abord", earliest: "Plus anciens d'abord", highest: "Meilleures d'abord", az: "A–Z", za: "Z–A", shortest: "Plus courts d'abord", longest: "Plus longs d'abord" },
+    sortOrder: { newest: "Plus récents d'abord", earliest: "Plus anciens d'abord", highest: "Meilleures d'abord", lowest: "Moins bonnes d'abord", az: "A–Z", za: "Z–A", shortest: "Plus courts d'abord", longest: "Plus longs d'abord" },
     filters: { decade: "Décennie", genre: "Genre", rating: "Note", sortBy: "Trier par", any: "Toutes", noRating: "Sans note", search: "Filtrer par titre…", clear: "Effacer les filtres" },
     page: (n: number, total: number) => `Page ${n} sur ${total}`,
     prev: "Précédent",
@@ -156,6 +156,7 @@ export const fr: Dictionary = {
     notFound: "Film introuvable.",
   },
   info: {
+    characters: "Personnages",
     creator: "Création",
     networks: "Chaînes",
     cast: "Distribution",

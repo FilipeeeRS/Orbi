@@ -135,10 +135,15 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
         )
       }
       side={
-        <div className="flex items-center justify-between gap-3">
+        <>
           <ItemStats stats={shown} t={t} locale={locale} />
-          {media?.trailer?.site === "youtube" && <TrailerButton videoId={media.trailer.id} label={t.movie.trailer} />}
-        </div>
+          {/* Trailer numa linha própria, à direita, embaixo dos números */}
+          {media?.trailer?.site === "youtube" && (
+            <div className="flex justify-end">
+              <TrailerButton videoId={media.trailer.id} label={t.movie.trailer} />
+            </div>
+          )}
+        </>
       }
     >
       {(relatedAnime.length > 0 || relatedManga.length > 0) && (
@@ -206,10 +211,11 @@ function aniListView(media: AnimeMedia, t: Dictionary): MovieInfoView {
   const base = media.type === "MANGA" ? "/browse/manga" : "/browse/anime";
 
   return {
-    cast: media.characters.edges.map((c) => ({
-      name: c.node.name.full,
-      character: c.voiceActors[0]?.name.full ?? "",
-    })),
+    // Elenco = dubladores japoneses (o personagem aparece ao passar o mouse); mangá não tem elenco.
+    cast: media.characters.edges.flatMap((c) =>
+      c.voiceActors.slice(0, 1).map((va) => ({ name: va.name.full, character: c.node.name.full })),
+    ),
+    characters: media.characters.edges.map((c) => ({ name: c.node.name.full })),
     crew: (["original", "director", "writers", "producers", "music", "cinematography"] as const)
       .filter((role) => crew.get(role)?.length)
       .map((role) => ({ role, people: crew.get(role)! })),

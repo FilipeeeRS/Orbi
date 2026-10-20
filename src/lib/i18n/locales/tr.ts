@@ -108,7 +108,7 @@ export const tr: Dictionary = {
     tabs: { watched: "İzlenenler", watching: "İzleniyor", watchlist: "İzleme listesi", liked: "Beğenilenler", reviews: "İncelemeler", lists: "Listeler" },
     sort: { week: "Bu hafta popüler", release: "Çıkış tarihi (en yeni)", releaseOld: "Çıkış tarihi (en eski)", recent: "Son eklenenler", recentOld: "İlk eklenenler", yours: "Senin en yüksek puanların", top: "En yüksek puan", popular: "Popülerlik", titleAz: "Başlık (A–Z)", titleZa: "Başlık (Z–A)", runtimeShort: "Önce kısa olanlar", runtimeLong: "Önce uzun olanlar" },
     sortGroups: { name: "Ad", added: "Eklenme zamanı", release: "Çıkış tarihi", average: "Ortalama puan", yours: "Senin puanın", length: "Süre" },
-    sortOrder: { newest: "En yeniler önce", earliest: "En eskiler önce", highest: "En yüksekler önce", az: "A–Z", za: "Z–A", shortest: "En kısalar önce", longest: "En uzunlar önce" },
+    sortOrder: { newest: "En yeniler önce", earliest: "En eskiler önce", highest: "En yüksekler önce", lowest: "En düşükler önce", az: "A–Z", za: "Z–A", shortest: "En kısalar önce", longest: "En uzunlar önce" },
     filters: { decade: "On yıl", genre: "Tür", rating: "Puan", sortBy: "Sırala", any: "Tümü", noRating: "Puansız", search: "Başlığa göre filtrele…", clear: "Filtreleri temizle" },
     page: (n: number, total: number) => `Sayfa ${n} / ${total}`,
     prev: "Önceki",
@@ -156,6 +156,7 @@ export const tr: Dictionary = {
     notFound: "Film bulunamadı.",
   },
   info: {
+    characters: "Karakterler",
     creator: "Yaratıcı",
     networks: "Kanallar",
     cast: "Oyuncular",

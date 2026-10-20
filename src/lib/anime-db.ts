@@ -9,7 +9,7 @@ import type { Item } from "./types";
 // Enquanto a cópia não existe (migração não aplicada ou importação não feita), cai na API do AniList.
 
 export type CatalogKind = "anime" | "manga";
-export type CatalogSort = "week" | "popular" | "top" | "release" | "release-old" | "title" | "title-desc";
+export type CatalogSort = "week" | "popular" | "top" | "top-asc" | "release" | "release-old" | "title" | "title-desc";
 
 export type CatalogQuery = {
   kind: CatalogKind;
@@ -54,6 +54,7 @@ const API_SORT: Record<CatalogSort, AnimeSort> = {
   week: "TRENDING_DESC",
   popular: "POPULARITY_DESC",
   top: "SCORE_DESC",
+  "top-asc": "SCORE",
   release: "START_DATE_DESC",
   "release-old": "START_DATE",
   title: "TITLE_ROMAJI",
@@ -102,6 +103,9 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
     case "top":
       // Sem um mínimo de público, a "melhor nota" fica cheia de títulos com 3 avaliações.
       query = query.gte("tmdb_votes", 1000).order("tmdb_rating", desc);
+      break;
+    case "top-asc":
+      query = query.gte("tmdb_votes", 1000).order("tmdb_rating", asc);
       break;
     case "release":
       query = query.lte("release_date", new Date().toISOString().slice(0, 10)).order("release_date", desc);
