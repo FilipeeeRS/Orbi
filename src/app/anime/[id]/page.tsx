@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Loading from "../../loading";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAnimeByRouteId } from "@/lib/catalog";
+import { getAniListByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
 import { getItemStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -18,7 +18,7 @@ import { ExternalPosters, type ExternalPoster } from "@/components/external-post
 import { PosterSection } from "@/components/recommendations";
 
 export async function generateMetadata({ params }: PageProps<"/anime/[id]">): Promise<Metadata> {
-  const item = await getAnimeByRouteId((await params).id);
+  const item = await getAniListByRouteId("anime", (await params).id);
   return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
 }
 
@@ -34,7 +34,7 @@ export default function AnimePage(props: PageProps<"/anime/[id]">) {
 
 async function AnimePageContent({ params }: PageProps<"/anime/[id]">) {
   const { id } = await params;
-  const [item, viewer, { t, locale }] = await Promise.all([getAnimeByRouteId(id), getViewer(), getDict()]);
+  const [item, viewer, { t, locale }] = await Promise.all([getAniListByRouteId("anime", id), getViewer(), getDict()]);
   if (!item) notFound();
 
   const supabase = await createClient();
