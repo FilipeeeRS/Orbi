@@ -80,15 +80,17 @@ export async function HomeDashboard({
 
 // Novidades: as últimas notificações (para quem está logado), a atividade dos amigos e as reviews populares.
 async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
-  const [friends, reviews, notifications, isRead] = await Promise.all([
+  const [friends, reviews, notifications, isRead, watchlist] = await Promise.all([
     viewer ? getFriendsActivity(viewer.id) : [],
     getPopularReviews(6),
     viewer ? getNotifications(viewer.id, { limit: 5 }) : [],
     getReadState(),
+    // Minha watchlist de todas as pastas, das adicionadas por último
+    viewer ? getViewerShelf(viewer.id, "all", "watchlist") : ([] as Item[]),
   ]);
   const states = await getViewerStates(
     viewer?.id ?? "",
-    viewer ? [...friends.map((e) => e.item_id), ...reviews.map((r) => r.item_id)] : [],
+    viewer ? [...friends.map((e) => e.item_id), ...reviews.map((r) => r.item_id), ...watchlist.map((i) => i.id)] : [],
   );
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
   const [reviewLikes, commentCounts] = await Promise.all([
@@ -117,6 +119,26 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
         <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
           {t.home.newsSoon}
         </div>
+      )}
+
+      {/* Logado: a sua watchlist (todas as pastas), embaixo das notificações */}
+      {viewer && (
+        <Section
+          title={t.home.yourWatchlist}
+          more={watchlist.length ? { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.profile.all } : undefined}
+        >
+          {watchlist.length ? (
+            <Row>
+              {watchlist.map((item, i) => (
+                <Poster key={item.id} item={item} locale={locale} eager={i < 6} viewer={viewerFor(item.id)} />
+              ))}
+            </Row>
+          ) : (
+            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+              {t.home.emptyWatchlist}
+            </p>
+          )}
+        </Section>
       )}
 
       {friends.length > 0 && (

@@ -119,14 +119,21 @@ export async function getFriendsOnItem(viewerId: string, itemId: string, limit =
 }
 
 // Prateleira pessoal da Home: o que a pessoa tem na watchlist (ou está assistindo/lendo) naquela pasta.
-export async function getViewerShelf(viewerId: string, kind: MediaKind, status: "watchlist" | "watching", limit = 6): Promise<Item[]> {
+export async function getViewerShelf(
+  viewerId: string,
+  kind: MediaKind | "all",
+  status: "watchlist" | "watching",
+  limit = 6,
+): Promise<Item[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("entries")
     .select("items!inner(*)")
     .eq("user_id", viewerId)
-    .eq("status", status)
-    .eq("items.kind", kind)
+    .eq("status", status);
+  // "all": todas as pastas (sem temporadas soltas)
+  query = kind === "all" ? query.neq("items.kind", "season") : query.eq("items.kind", kind);
+  const { data } = await query
     .order("updated_at", { ascending: false })
     .limit(limit);
   return (data ?? []).map((row) => row.items as unknown as Item);
