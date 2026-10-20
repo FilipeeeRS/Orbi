@@ -237,7 +237,7 @@ async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" 
   );
 }
 
-// Aba "Tudo": um tópico por tipo (Filmes, Séries, Animes, Mangás) com os 3 primeiros resultados e
+// Aba "Tudo": um tópico por tipo (Filmes, Séries, Livros, Animes, Mangás, Jogos) com uma fileira de resultados e
 // "Ver mais" para a aba daquele tipo. Tipos sem nenhum resultado não aparecem.
 async function AllResults({ q }: { q: string }) {
   const [{ t, locale }, viewer] = await Promise.all([getDict(), getViewer()]);
@@ -255,21 +255,21 @@ async function AllResults({ q }: { q: string }) {
   const [movies, shows, books, animes, mangas, games] = await Promise.all([
     searchMoviesPages(q, language, 1, "movie"),
     searchMoviesPages(q, language, 1, "tv"),
-    searchKind(q, "book", 3, showAdult),
-    searchKind(q, "anime", 3, showAdult),
-    searchKind(q, "manga", 3, showAdult),
-    searchKind(q, "game", 3, showAdult),
+    searchKind(q, "book", 6, showAdult),
+    searchKind(q, "anime", 6, showAdult),
+    searchKind(q, "manga", 6, showAdult),
+    searchKind(q, "game", 6, showAdult),
   ]);
   const adult = showAdult ? null : await adultMovieIds(movies.slice(0, 6).map((m) => m.id));
   const card = (m: { id: number; title: string; release_date?: string; poster_path: string | null }) => ({
     id: m.id,
     title: m.title,
     year: releaseYear(m),
-    poster: tmdbImage(m.poster_path, "w185"),
+    poster: tmdbImage(m.poster_path, "w342"),
   });
   const groups = [
-    { kind: "movie" as const, list: movies.filter((m) => !adult?.has(m.id)).slice(0, 3).map(card) },
-    { kind: "series" as const, list: shows.filter((m) => !isAnime(m)).slice(0, 3).map(card) },
+    { kind: "movie" as const, list: movies.filter((m) => !adult?.has(m.id)).slice(0, 6).map(card) },
+    { kind: "series" as const, list: shows.filter((m) => !isAnime(m)).slice(0, 6).map(card) },
     { kind: "book" as const, list: books },
     { kind: "anime" as const, list: animes },
     { kind: "manga" as const, list: mangas },
@@ -288,27 +288,8 @@ async function AllResults({ q }: { q: string }) {
                 {t.search.more}
               </Link>
             </div>
-            <ul className="grid gap-3 sm:grid-cols-3">
-              {g.list.map((m) => (
-                <li key={m.id}>
-                  <Link
-                    href={`/${g.kind}/${m.id}`}
-                    className="flex items-center gap-3 rounded-lg p-1.5 transition hover:bg-surface-2"
-                  >
-                    <span className="relative h-24 w-16 shrink-0 overflow-hidden rounded bg-surface-2">
-                      {m.poster && (
-                        // eslint-disable-next-line @next/next/no-img-element -- capa pequena direto do TMDB/AniList
-                        <img src={m.poster} alt="" className="size-full object-cover" loading="lazy" />
-                      )}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="line-clamp-2 text-sm font-semibold">{m.title}</span>
-                      {m.year && <span className="text-xs text-muted">{m.year}</span>}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Mesmo padrão da Home: uma fileira de pôsteres com título e ano embaixo */}
+            <ExternalPosters kind={g.kind} list={g.list} viewer={viewer} layout="row" />
           </section>
         ))
       ) : (
