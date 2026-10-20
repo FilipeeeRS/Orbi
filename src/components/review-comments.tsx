@@ -87,8 +87,8 @@ export function ReviewComments({
 
   return (
     <div className="mt-2">
-      {/* gap pequeno: o ♥ da review já tem respiro próprio (px-2) */}
-      <div className="flex items-center gap-2">
+      {/* Mesmo espaço entre os três ícones (like, comentários, apagar) */}
+      <div className="flex items-center gap-4">
         {/* Ordem: like (actions), comentários, apagar */}
         {actions}
         <button
