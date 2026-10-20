@@ -197,12 +197,15 @@ const pretty = (value: string) =>
 // Ficha no mesmo formato da dos filmes/séries: personagens (com a dublagem japonesa no tooltip),
 // equipe, detalhes (estúdio, formato, origem, temporada, situação, onde ler/assistir) e gêneros.
 function aniListView(media: AnimeMedia, t: Dictionary): MovieInfoView {
-  const crew = new Map<CrewRole, { name: string }[]>();
+  // Cada nome leva para a busca com tudo em que a pessoa/personagem/estúdio aparece (elenco e equipe juntos).
+  const find = (key: string, id: number, name: string) => `/search?${new URLSearchParams({ [key]: String(id), q: name })}`;
+  const crew = new Map<CrewRole, { name: string; href: string }[]>();
   for (const s of media.staff.edges) {
     const role = staffRole(s.role);
     if (!role) continue;
     const list = crew.get(role) ?? [];
-    if (!list.some((p) => p.name === s.node.name.full)) list.push({ name: s.node.name.full });
+    if (!list.some((p) => p.name === s.node.name.full))
+      list.push({ name: s.node.name.full, href: find("anistaff", s.node.id, s.node.name.full) });
     crew.set(role, list);
   }
   const season = media.season && media.seasonYear ? `${t.anime.seasons[media.season]} ${media.seasonYear}` : null;
@@ -213,15 +216,20 @@ function aniListView(media: AnimeMedia, t: Dictionary): MovieInfoView {
   return {
     // Elenco = dubladores japoneses (o personagem aparece ao passar o mouse); mangá não tem elenco.
     cast: media.characters.edges.flatMap((c) =>
-      c.voiceActors.slice(0, 1).map((va) => ({ name: va.name.full, character: c.node.name.full })),
+      c.voiceActors
+        .slice(0, 1)
+        .map((va) => ({ name: va.name.full, character: c.node.name.full, href: find("anistaff", va.id, va.name.full) })),
     ),
-    characters: media.characters.edges.map((c) => ({ name: c.node.name.full })),
+    characters: media.characters.edges.map((c) => ({
+      name: c.node.name.full,
+      href: find("anichar", c.node.id, c.node.name.full),
+    })),
     crew: (["original", "director", "writers", "producers", "music", "cinematography"] as const)
       .filter((role) => crew.get(role)?.length)
       .map((role) => ({ role, people: crew.get(role)! })),
     details: [
-      { label: t.info.studios, values: media.studios.nodes.map((s) => ({ name: s.name })) },
-      { label: t.anime.format, values: format ? [{ name: format }] : [] },
+      { label: t.info.studios, values: media.studios.nodes.map((s) => ({ name: s.name, href: find("studio", s.id, s.name) })) },
+      { label: t.anime.format, values: format ? [{ name: format, href: base }] : [] },
       { label: t.anime.source, values: media.source ? [{ name: pretty(media.source) }] : [] },
       {
         label: t.anime.season,

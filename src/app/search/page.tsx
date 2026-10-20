@@ -9,6 +9,7 @@ import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
 import { ExternalPosters } from "@/components/external-posters";
 import { searchCatalog } from "@/lib/anime-db";
+import { animeCover, animeTitle, animeYear, getCharacterWorks, getStaffWorks, getStudioWorks } from "@/lib/anilist";
 import { searchBooks } from "@/lib/openlibrary";
 import { searchGames } from "@/lib/steam";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -62,6 +63,11 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
           : params.type === "movie" || fromInfo
             ? "movie"
             : "all";
+  // Vindo da ficha de anime/mangá: obras de uma pessoa, personagem ou estúdio do AniList.
+  for (const key of ["anistaff", "anichar", "studio"] as const) {
+    const id = Number(params[key]);
+    if (id > 0) return <AniListPersonResults q={q} kind={key} id={id} />;
+  }
   if (tab === "all") return <AllResults q={q} />;
   if (tab === "anime" || tab === "manga" || tab === "book" || tab === "game") return <CatalogResults q={q} kind={tab} />;
 
@@ -303,6 +309,37 @@ async function AllResults({ q }: { q: string }) {
                 </li>
               ))}
             </ul>
+          </section>
+        ))
+      ) : (
+        <p className="text-muted">{t.search.empty}</p>
+      )}
+    </div>
+  );
+}
+
+// Tudo em que uma pessoa (elenco ou equipe), personagem ou estúdio do AniList aparece, em animes e mangás.
+async function AniListPersonResults({ q, kind, id }: { q: string; kind: "anistaff" | "anichar" | "studio"; id: number }) {
+  const [{ t }, viewer] = await Promise.all([getDict(), getViewer()]);
+  const works = await (kind === "anistaff" ? getStaffWorks(id) : kind === "anichar" ? getCharacterWorks(id) : getStudioWorks(id));
+  const groups = (["anime", "manga"] as const)
+    .map((k) => ({
+      kind: k,
+      list: works[k]
+        .filter((a) => !a.isAdult || !!viewer?.show_adult)
+        .map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) })),
+    }))
+    .filter((g) => g.list.length);
+  return (
+    <div className="space-y-8">
+      <h1 className="border-b border-border pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+      {groups.length ? (
+        groups.map((g) => (
+          <section key={g.kind}>
+            <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
+              {t.folders[g.kind]}
+            </h2>
+            <ExternalPosters kind={g.kind} list={g.list} viewer={viewer} eager={8} />
           </section>
         ))
       ) : (

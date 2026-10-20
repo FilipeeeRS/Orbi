@@ -48,9 +48,9 @@ export type AnimeMedia = AnimeCard & {
   externalLinks: { site: string; url: string; type: string }[];
   relations: { edges: { relationType: string; node: AnimeCard & { type: string; status: string | null } }[] };
   characters: {
-    edges: { role: string; node: { name: { full: string } }; voiceActors: { name: { full: string } }[] }[];
+    edges: { role: string; node: { id: number; name: { full: string } }; voiceActors: { id: number; name: { full: string } }[] }[];
   };
-  staff: { edges: { role: string; node: { name: { full: string } } }[] };
+  staff: { edges: { role: string; node: { id: number; name: { full: string } } }[] };
   recommendations: { nodes: { mediaRecommendation: AnimeCard | null }[] };
 };
 
@@ -94,8 +94,8 @@ export async function getAnime(id: number, type: "ANIME" | "MANGA" = "ANIME"): P
         studios(isMain: true) { nodes { id name } }
         externalLinks { site url type }
         relations { edges { relationType node { ${CARD} type status } } }
-        characters(sort: [ROLE, RELEVANCE], perPage: 40) { edges { role node { name { full } } voiceActors(language: JAPANESE) { name { full } } } }
-        staff(sort: [RELEVANCE], perPage: 25) { edges { role node { name { full } } } }
+        characters(sort: [ROLE, RELEVANCE], perPage: 40) { edges { role node { id name { full } } voiceActors(language: JAPANESE) { id name { full } } } }
+        staff(sort: [RELEVANCE], perPage: 25) { edges { role node { id name { full } } } }
         recommendations(sort: [RATING_DESC], perPage: 12) { nodes { mediaRecommendation { ${CARD} } } }
       } }`,
       { id, type },
@@ -237,3 +237,74 @@ export function plainDescription(text: string | null) {
 
 const pad = (n: number | null) => String(n ?? 1).padStart(2, "0");
 export const fuzzyToIso = (d: FuzzyDate) => (d.year ? `${d.year}-${pad(d.month)}-${pad(d.day)}` : null);
+
+// ---- Obras de uma pessoa, personagem ou estúdio (cliques na ficha de anime/mangá) ----
+
+export type AniListWorks = { anime: AnimeCard[]; manga: AnimeCard[] };
+type Node = AnimeCard & { type: "ANIME" | "MANGA" };
+
+const split = (nodes: Node[]): AniListWorks => {
+  const seen = new Set<number>();
+  const unique = nodes.filter((n) => n.format !== "MUSIC" && !seen.has(n.id) && seen.add(n.id));
+  return { anime: unique.filter((n) => n.type === "ANIME"), manga: unique.filter((n) => n.type === "MANGA") };
+};
+
+// Pessoa: tudo em que trabalhou (equipe) e em que dublou (elenco), juntos.
+export async function getStaffWorks(id: number): Promise<AniListWorks> {
+  try {
+    return await fetchStaffWorks(id);
+  } catch {
+    return { anime: [], manga: [] };
+  }
+}
+
+async function fetchStaffWorks(id: number): Promise<AniListWorks> {
+  "use cache";
+  cacheLife("days");
+  const data = await anilist<{ Staff: { staffMedia: { nodes: Node[] }; characterMedia: { nodes: Node[] } } | null }>(
+    `query ($id: Int) { Staff(id: $id) {
+      staffMedia(perPage: 50, sort: [POPULARITY_DESC]) { nodes { ${CARD} type } }
+      characterMedia(perPage: 50, sort: [POPULARITY_DESC]) { nodes { ${CARD} type } }
+    } }`,
+    { id },
+  );
+  return split([...(data.Staff?.characterMedia.nodes ?? []), ...(data.Staff?.staffMedia.nodes ?? [])]);
+}
+
+// Personagem: os animes e mangás em que aparece.
+export async function getCharacterWorks(id: number): Promise<AniListWorks> {
+  try {
+    return await fetchCharacterWorks(id);
+  } catch {
+    return { anime: [], manga: [] };
+  }
+}
+
+async function fetchCharacterWorks(id: number): Promise<AniListWorks> {
+  "use cache";
+  cacheLife("days");
+  const data = await anilist<{ Character: { media: { nodes: Node[] } } | null }>(
+    `query ($id: Int) { Character(id: $id) { media(perPage: 50, sort: [POPULARITY_DESC]) { nodes { ${CARD} type } } } }`,
+    { id },
+  );
+  return split(data.Character?.media.nodes ?? []);
+}
+
+// Estúdio: os animes que produziu.
+export async function getStudioWorks(id: number): Promise<AniListWorks> {
+  try {
+    return await fetchStudioWorks(id);
+  } catch {
+    return { anime: [], manga: [] };
+  }
+}
+
+async function fetchStudioWorks(id: number): Promise<AniListWorks> {
+  "use cache";
+  cacheLife("days");
+  const data = await anilist<{ Studio: { media: { nodes: Node[] } } | null }>(
+    `query ($id: Int) { Studio(id: $id) { media(perPage: 50, sort: [POPULARITY_DESC], isMain: true) { nodes { ${CARD} type } } } }`,
+    { id },
+  );
+  return split(data.Studio?.media.nodes ?? []);
+}
