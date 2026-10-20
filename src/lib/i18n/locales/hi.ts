@@ -42,7 +42,7 @@ export const hi: Dictionary = {
     newFromFriends: "दोस्तों की नई गतिविधि",
     popular: (f: string) => `इस हफ़्ते लोकप्रिय ${f}`,
     popularReviews: "इस हफ़्ते लोकप्रिय रिव्यू",
-    popularLists: "इस हफ़्ते लोकप्रिय सूचियाँ",
+    popularLists: "इस हफ़्ते की लोकप्रिय लिस्ट",
     watchlistOf: (u: string) => `${u} की वॉचलिस्ट`,
     tagline: "रेटिंग प्रेमियों से, रेटिंग प्रेमियों के लिए",
     title: "आप जो देखते, सुनते, खेलते और पढ़ते हैं — सब एक जगह।",

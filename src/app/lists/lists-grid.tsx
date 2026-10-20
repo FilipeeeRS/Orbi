@@ -23,7 +23,7 @@ export function ListsGrid({ lists, isOwner, username, t }: { lists: ListSummary[
 }
 
 // Até 3 pôsteres em leque: o primeiro na frente, os outros um pouco atrás e para a direita.
-function ListCover({ posters }: { posters: (string | null)[] }) {
+export function ListCover({ posters }: { posters: (string | null)[] }) {
   const shown = posters.slice(0, 3);
   return (
     <div className="relative aspect-[2/3]">

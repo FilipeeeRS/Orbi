@@ -42,7 +42,7 @@ export const ar: Dictionary = {
     newFromFriends: "جديد الأصدقاء",
     popular: (f: string) => `${f} الأكثر رواجًا هذا الأسبوع`,
     popularReviews: "المراجعات الأكثر رواجًا هذا الأسبوع",
-    popularLists: "القوائم الأكثر رواجًا هذا الأسبوع",
+    popularLists: "القوائم الشائعة هذا الأسبوع",
     watchlistOf: (u: string) => `قائمة مشاهدة ${u}`,
     tagline: "من عشاق التقييم إلى عشاق التقييم",
     title: "كل ما تشاهده وتسمعه وتلعبه وتقرؤه. في مكان واحد.",

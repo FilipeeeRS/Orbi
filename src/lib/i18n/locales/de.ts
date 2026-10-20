@@ -42,7 +42,7 @@ export const de: Dictionary = {
     newFromFriends: "Neu von Freunden",
     popular: (f: string) => `Beliebte ${f} diese Woche`,
     popularReviews: "Beliebte Rezensionen diese Woche",
-    popularLists: "Beliebte Listen diese Woche",
+    popularLists: "Beliebte Listen dieser Woche",
     watchlistOf: (u: string) => `Watchlist von ${u}`,
     tagline: "Von Rating-Lovern für Rating-Lover",
     title: "Alles, was du schaust, hörst, spielst und liest. An einem Ort.",

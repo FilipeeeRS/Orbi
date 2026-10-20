@@ -13,6 +13,8 @@ import { browseGames } from "@/lib/steam";
 import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
 import { getNotifications, getReadState } from "@/lib/notifications";
 import { NotificationRow } from "@/components/notification-row";
+import { getPopularLists } from "@/lib/lists";
+import { ListCover } from "./lists/lists-grid";
 import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
 import { ReviewAttachments } from "@/components/review-attachments";
@@ -80,13 +82,14 @@ export async function HomeDashboard({
 
 // Novidades: as últimas notificações (para quem está logado), a atividade dos amigos e as reviews populares.
 async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
-  const [friends, reviews, notifications, isRead, watchlist] = await Promise.all([
+  const [friends, reviews, notifications, isRead, watchlist, lists] = await Promise.all([
     viewer ? getFriendsActivity(viewer.id) : [],
     getPopularReviews(6),
     viewer ? getNotifications(viewer.id, { limit: 5 }) : [],
     getReadState(),
     // Minha watchlist de todas as pastas, das adicionadas por último
     viewer ? getViewerShelf(viewer.id, "all", "watchlist") : ([] as Item[]),
+    getPopularLists(6),
   ]);
   const states = await getViewerStates(
     viewer?.id ?? "",
@@ -157,6 +160,25 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
                   {e.liked && <span className="text-like">♥</span>}
                 </Link>
               </div>
+            ))}
+          </Row>
+        </Section>
+      )}
+
+      {/* Listas dos usuários (públicas) com mais movimento na semana */}
+      {lists.length > 0 && (
+        <Section title={t.home.popularLists}>
+          <Row>
+            {lists.map((list) => (
+              <Link key={list.id} href={`/u/${list.owner.username}/list/${list.id}`} className="group block">
+                <ListCover posters={list.posters} />
+                <p className="mt-1.5 line-clamp-2 text-sm font-semibold group-hover:text-accent">{list.title}</p>
+                <p className="flex items-center gap-1.5 text-xs text-muted">
+                  <Avatar profile={list.owner} size={16} />
+                  <span className="truncate">{list.owner.display_name || list.owner.username}</span>
+                  <span>· {list.count}</span>
+                </p>
+              </Link>
             ))}
           </Row>
         </Section>

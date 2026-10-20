@@ -42,7 +42,7 @@ export const ur: Dictionary = {
     newFromFriends: "دوستوں کی نئی سرگرمی",
     popular: (f: string) => `اس ہفتے مقبول ${f}`,
     popularReviews: "اس ہفتے مقبول ریویوز",
-    popularLists: "اس ہفتے مقبول فہرستیں",
+    popularLists: "اس ہفتے کی مقبول فہرستیں",
     watchlistOf: (u: string) => `${u} کی واچ لسٹ`,
     tagline: "ریٹنگ کے شوقینوں سے، ریٹنگ کے شوقینوں کے لیے",
     title: "آپ جو دیکھتے، سنتے، کھیلتے اور پڑھتے ہیں، سب ایک جگہ۔",

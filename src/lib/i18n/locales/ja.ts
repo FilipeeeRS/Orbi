@@ -42,7 +42,7 @@ export const ja: Dictionary = {
     newFromFriends: "フレンドの新着",
     popular: (f: string) => `今週人気の${f}`,
     popularReviews: "今週人気のレビュー",
-    popularLists: "今週人気のリスト",
+    popularLists: "今週の人気リスト",
     watchlistOf: (u: string) => `${u} のウォッチリスト`,
     tagline: "評価好きから、評価好きへ",
     title: "観る、聴く、遊ぶ、読む。そのすべてをひとつの場所に。",

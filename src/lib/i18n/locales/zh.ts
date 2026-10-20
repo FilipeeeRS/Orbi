@@ -42,7 +42,7 @@ export const zh: Dictionary = {
     newFromFriends: "好友动态",
     popular: (f: string) => `本周热门${f}`,
     popularReviews: "本周热门影评",
-    popularLists: "本周热门清单",
+    popularLists: "本周热门片单",
     watchlistOf: (u: string) => `${u} 的想看清单`,
     tagline: "由评分爱好者，为评分爱好者",
     title: "你看的、听的、玩的、读的，尽在一处。",

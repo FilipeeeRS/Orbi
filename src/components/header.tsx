@@ -39,6 +39,7 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
                 { href: `/u/${viewer.username}/all?tab=liked`, label: t.movies.tabs.liked },
                 { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.movies.tabs.watchlist },
                 { href: `/u/${viewer.username}/all?tab=reviews`, label: t.movies.tabs.reviews },
+                { href: `/u/${viewer.username}/all?tab=lists`, label: t.movies.tabs.lists },
               ],
               [
                 { href: "/settings", label: t.nav.settings },
