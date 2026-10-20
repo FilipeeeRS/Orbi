@@ -113,6 +113,8 @@ export const pt = {
     next: "Próxima",
   },
   movie: {
+    friendsActivity: "Atividade dos amigos",
+    noFriendsActivity: "Nenhuma atividade dos amigos ainda.",
     recommendations: "Recomendações",
     adultNotice: "Conteúdo +18. Ative em Configurações para ver as imagens.",
     removeShort: "Remover",

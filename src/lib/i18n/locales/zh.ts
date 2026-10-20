@@ -115,6 +115,8 @@ export const zh: Dictionary = {
     next: "下一页",
   },
   movie: {
+    friendsActivity: "好友动态",
+    noFriendsActivity: "暂无好友动态。",
     recommendations: "推荐",
     adultNotice: "18+ 内容。在设置中开启后即可查看图片。",
     removeShort: "移除",

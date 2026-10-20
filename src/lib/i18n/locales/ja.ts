@@ -115,6 +115,8 @@ export const ja: Dictionary = {
     next: "次へ",
   },
   movie: {
+    friendsActivity: "フレンドのアクティビティ",
+    noFriendsActivity: "まだフレンドのアクティビティはありません。",
     recommendations: "おすすめ",
     adultNotice: "18歳以上向けコンテンツです。設定でオンにすると画像が表示されます。",
     removeShort: "取り消す",

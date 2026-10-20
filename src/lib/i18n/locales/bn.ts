@@ -115,6 +115,8 @@ export const bn: Dictionary = {
     next: "পরের",
   },
   movie: {
+    friendsActivity: "বন্ধুদের কার্যকলাপ",
+    noFriendsActivity: "এখনো বন্ধুদের কোনো কার্যকলাপ নেই।",
     recommendations: "সুপারিশ",
     adultNotice: "১৮+ কনটেন্ট। ছবি দেখতে সেটিংসে চালু করুন।",
     removeShort: "সরান",

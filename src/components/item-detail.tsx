@@ -8,6 +8,7 @@ import { ReviewAttachments } from "@/components/review-attachments";
 import { TranslatableText } from "@/components/translatable-text";
 import { ReviewComments } from "@/components/review-comments";
 import { getItemReviews, getItemStats, getReviewCommentCounts, getReviewLikes } from "@/lib/queries";
+import { getFriendsOnItem } from "@/lib/home";
 import { CREW_ROLES, WATCH_KINDS, type MovieInfo as MovieInfoData } from "@/lib/tmdb";
 import type { MovieInfoView } from "@/app/movie/[id]/movie-info";
 import { dictionaries, TMDB_LANGUAGES, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
@@ -137,7 +138,7 @@ export function SignInToLog({ href, label }: { href: string; label: string }) {
   );
 }
 
-// Reviews da obra, com likes e comentários.
+// Atividade dos amigos e reviews da obra (com likes e comentários).
 export async function ReviewsSection({
   itemId,
   viewerId,
@@ -149,12 +150,49 @@ export async function ReviewsSection({
   t: Dictionary;
   locale: Locale;
 }) {
-  const reviews = await getItemReviews(itemId);
+  const [reviews, friends] = await Promise.all([
+    getItemReviews(itemId),
+    viewerId ? getFriendsOnItem(viewerId, itemId) : null,
+  ]);
   const [reviewLikes, commentCounts] = await Promise.all([
     getReviewLikes(reviews.map((r) => r.id), viewerId),
     getReviewCommentCounts(reviews.map((r) => r.id)),
   ]);
   return (
+    <>
+    {/* Atividade dos amigos (só para quem está logado): nota, like e status de quem você segue */}
+    {friends && (
+      <section>
+        <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
+          {t.movie.friendsActivity}
+        </h2>
+        {friends.length ? (
+          <ul className="flex flex-wrap gap-4">
+            {friends.map((f) => (
+              <li key={f.id}>
+                <Link
+                  href={`/u/${f.profiles.username}`}
+                  title={f.profiles.display_name || f.profiles.username}
+                  className="flex w-16 flex-col items-center gap-1 text-center"
+                >
+                  <Avatar profile={f.profiles} size={44} />
+                  {f.rating ? (
+                    <StarsDisplay rating={f.rating} />
+                  ) : (
+                    <span className="text-[11px] text-muted">
+                      {f.status === "watchlist" ? "🕐" : f.status === "watching" ? "▶" : "✓"}
+                    </span>
+                  )}
+                  {f.liked && <span className="-mt-1 text-xs text-like">♥</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">{t.movie.noFriendsActivity}</p>
+        )}
+      </section>
+    )}
     <section>
       <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
         {t.movie.reviews}
@@ -199,6 +237,7 @@ export async function ReviewsSection({
         <p className="text-sm text-muted">{t.movie.noReviews}</p>
       )}
     </section>
+    </>
   );
 }
 

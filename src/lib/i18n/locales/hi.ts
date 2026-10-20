@@ -115,6 +115,8 @@ export const hi: Dictionary = {
     next: "अगला",
   },
   movie: {
+    friendsActivity: "दोस्तों की गतिविधि",
+    noFriendsActivity: "अभी दोस्तों की कोई गतिविधि नहीं।",
     recommendations: "सुझाव",
     adultNotice: "18+ सामग्री। तस्वीरें देखने के लिए सेटिंग्स में चालू करें।",
     removeShort: "हटाएँ",

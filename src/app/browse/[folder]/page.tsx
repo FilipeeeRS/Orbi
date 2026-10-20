@@ -23,7 +23,8 @@ const SLUGS: Record<string, MediaKind> = {
   games: "game",
   books: "book",
 };
-const DEFAULT_SORT: BrowseSort = "week";
+// "Ver tudo" abre pelo lançamento (mais novos); a fileira de populares da Home manda sort=week.
+const DEFAULT_SORT: BrowseSort = "release";
 
 export default function BrowsePage(props: PageProps<"/browse/[folder]">) {
   return (

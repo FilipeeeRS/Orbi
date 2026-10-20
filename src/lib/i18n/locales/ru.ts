@@ -123,6 +123,8 @@ export const ru: Dictionary = {
     next: "Вперёд",
   },
   movie: {
+    friendsActivity: "Активность друзей",
+    noFriendsActivity: "Друзья пока ничего не отметили.",
     recommendations: "Рекомендации",
     adultNotice: "Контент 18+. Включите в настройках, чтобы увидеть изображения.",
     removeShort: "Убрать",

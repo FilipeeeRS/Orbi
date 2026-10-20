@@ -115,6 +115,8 @@ export const ur: Dictionary = {
     next: "اگلا",
   },
   movie: {
+    friendsActivity: "دوستوں کی سرگرمی",
+    noFriendsActivity: "ابھی دوستوں کی کوئی سرگرمی نہیں۔",
     recommendations: "تجاویز",
     adultNotice: "18+ مواد۔ تصاویر دیکھنے کے لیے ترتیبات میں آن کریں۔",
     removeShort: "ہٹائیں",

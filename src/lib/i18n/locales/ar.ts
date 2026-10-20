@@ -115,6 +115,8 @@ export const ar: Dictionary = {
     next: "التالي",
   },
   movie: {
+    friendsActivity: "نشاط الأصدقاء",
+    noFriendsActivity: "لا يوجد نشاط للأصدقاء بعد.",
     recommendations: "توصيات",
     adultNotice: "محتوى +18. فعّله من الإعدادات لرؤية الصور.",
     removeShort: "إزالة",

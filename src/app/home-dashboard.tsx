@@ -17,7 +17,7 @@ import { ReviewComments } from "@/components/review-comments";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, MEDIA_KINDS, type Item, type MediaKind, type Profile } from "@/lib/types";
 
-// "Ver tudo" de cada fileira abre o catálogo da pasta já ordenado por "Populares esta semana".
+// "Ver tudo": o catálogo da pasta (por lançamento; a fileira de populares abre em "Populares esta semana").
 const BROWSE_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", book: "books", anime: "anime", manga: "manga", game: "games", music: "music" };
 
 type Tab = "news" | MediaKind;
@@ -193,7 +193,7 @@ async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer:
       <Section
         // Animes: os da temporada atual, e o "Ver tudo" abre a página da temporada.
         title={kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind])}
-        more={{ href: kind === "anime" ? "/anime/season" : browse, label: t.profile.all }}
+        more={{ href: kind === "anime" ? "/anime/season" : `${browse}?sort=week`, label: t.profile.all }}
       >
         <ItemRow items={popular} kind={kind} locale={locale} viewerFor={viewerFor} />
       </Section>

@@ -115,6 +115,8 @@ export const es: Dictionary = {
     next: "Siguiente",
   },
   movie: {
+    friendsActivity: "Actividad de amigos",
+    noFriendsActivity: "Aún no hay actividad de amigos.",
     recommendations: "Recomendaciones",
     adultNotice: "Contenido +18. Actívalo en Ajustes para ver las imágenes.",
     removeShort: "Quitar",

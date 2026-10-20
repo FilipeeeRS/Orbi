@@ -115,6 +115,8 @@ export const id: Dictionary = {
     next: "Berikutnya",
   },
   movie: {
+    friendsActivity: "Aktivitas teman",
+    noFriendsActivity: "Belum ada aktivitas teman.",
     recommendations: "Rekomendasi",
     adultNotice: "Konten 18+. Aktifkan di Pengaturan untuk melihat gambarnya.",
     removeShort: "Hapus",

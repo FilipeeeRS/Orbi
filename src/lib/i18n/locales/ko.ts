@@ -115,6 +115,8 @@ export const ko: Dictionary = {
     next: "다음",
   },
   movie: {
+    friendsActivity: "친구 활동",
+    noFriendsActivity: "아직 친구 활동이 없어요.",
     recommendations: "추천",
     adultNotice: "18세 이상 콘텐츠예요. 설정에서 켜면 이미지를 볼 수 있어요.",
     removeShort: "취소",

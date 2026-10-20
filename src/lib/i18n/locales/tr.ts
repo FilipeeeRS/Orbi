@@ -115,6 +115,8 @@ export const tr: Dictionary = {
     next: "Sonraki",
   },
   movie: {
+    friendsActivity: "Arkadaş etkinliği",
+    noFriendsActivity: "Henüz arkadaş etkinliği yok.",
     recommendations: "Öneriler",
     adultNotice: "18+ içerik. Görselleri görmek için Ayarlar'dan aç.",
     removeShort: "Kaldır",

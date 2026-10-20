@@ -84,6 +84,22 @@ export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[
   return [...week, ...allTime].slice(0, limit);
 }
 
+// Página de uma obra: o que as pessoas que eu sigo registraram nela (nota, like, status), mais recentes primeiro.
+export async function getFriendsOnItem(viewerId: string, itemId: string, limit = 24): Promise<EntryWithAuthor[]> {
+  const supabase = await createClient();
+  const { data: follows } = await supabase.from("follows").select("followee_id").eq("follower_id", viewerId);
+  const ids = (follows ?? []).map((f) => f.followee_id as string);
+  if (!ids.length) return [];
+  const { data } = await supabase
+    .from("entries")
+    .select(`*, items!inner(*), ${AUTHOR}`)
+    .eq("item_id", itemId)
+    .in("user_id", ids)
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as unknown as EntryWithAuthor[];
+}
+
 // Prateleira pessoal da Home: o que a pessoa tem na watchlist (ou está assistindo/lendo) naquela pasta.
 export async function getViewerShelf(viewerId: string, kind: MediaKind, status: "watchlist" | "watching", limit = 6): Promise<Item[]> {
   const supabase = await createClient();
