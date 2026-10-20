@@ -42,10 +42,11 @@ const PATHS: Record<FolderKind, React.ReactNode> = {
       <circle cx="17" cy="16" r="3" />
     </>
   ),
+  // Controle de videogame (cruz à esquerda, botões à direita)
   game: (
     <>
-      <path d="M6 9h12a4 4 0 0 1 4 4v1a3 3 0 0 1-5.2 2L15 14H9l-1.8 2A3 3 0 0 1 2 14v-1a4 4 0 0 1 4-4z" />
-      <path d="M7 11.5v3M5.5 13h3M16 12h.01M18 14h.01" />
+      <path d="M17.3 5H6.7a4 4 0 0 0-4 3.6C2.6 9.4 2 14.5 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.4-1.4a2 2 0 0 1 1.4-.6h4.4a2 2 0 0 1 1.4.6L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.5-.6-6.6-.7-7.4A4 4 0 0 0 17.3 5z" />
+      <path d="M6 11h4M8 9v4M15 12h.01M18 10h.01" />
     </>
   ),
   book: (
