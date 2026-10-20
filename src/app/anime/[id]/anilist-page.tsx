@@ -214,11 +214,16 @@ function aniListView(media: AnimeMedia, t: Dictionary): MovieInfoView {
   const base = media.type === "MANGA" ? "/browse/manga" : "/browse/anime";
 
   return {
-    // Elenco = dubladores japoneses (o personagem aparece ao passar o mouse); mangá não tem elenco.
+    // Elenco = dubladores japoneses, com o personagem entre parênteses; mangá não tem elenco.
     cast: media.characters.edges.flatMap((c) =>
       c.voiceActors
         .slice(0, 1)
-        .map((va) => ({ name: va.name.full, character: c.node.name.full, href: find("anistaff", va.id, va.name.full) })),
+        .map((va) => ({
+          // "Dublador (Personagem)" direto no botão; o link leva a tudo em que o dublador aparece
+          name: `${va.name.full} (${c.node.name.full})`,
+          character: c.node.name.full,
+          href: find("anistaff", va.id, va.name.full),
+        })),
     ),
     characters: media.characters.edges.map((c) => ({
       name: c.node.name.full,
