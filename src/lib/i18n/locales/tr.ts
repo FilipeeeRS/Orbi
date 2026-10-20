@@ -29,6 +29,12 @@ export const tr: Dictionary = {
     soon: "Yakında",
   },
   home: {
+    readingNow: "Şu an okunanlar",
+    playingNow: "Şu an oynananlar",
+    newsTab: "Yenilikler",
+    newsSoon: "Yakında: klasörlerindeki yeni çıkanlar, bildirimler ve haftanın öne çıkanları.",
+    yourWatchlist: "İzleme listen",
+    watchingNow: "Şu an izlenenler",
     welcome: (n: string) => `Tekrar hoş geldin, ${n}!`,
     welcomeSub: "Orbi'de neler oluyor, bak.",
     newFromFriends: "Arkadaşlardan yeni",

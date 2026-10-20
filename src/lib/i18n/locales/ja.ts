@@ -29,6 +29,12 @@ export const ja: Dictionary = {
     soon: "近日公開",
   },
   home: {
+    readingNow: "読書中",
+    playingNow: "プレイ中",
+    newsTab: "新着",
+    newsSoon: "近日公開：フォルダの新作、通知、今週のハイライト。",
+    yourWatchlist: "あなたのウォッチリスト",
+    watchingNow: "視聴中",
     welcome: (n: string) => `おかえりなさい、${n}さん！`,
     welcomeSub: "Orbi で話題になっていること。",
     newFromFriends: "フレンドの新着",

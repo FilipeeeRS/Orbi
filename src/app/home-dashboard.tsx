@@ -2,39 +2,85 @@ import Link from "next/link";
 import { Avatar } from "@/components/header";
 import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
+import type { ViewerItemState } from "@/components/poster-actions";
 import { StarsDisplay } from "@/components/stars";
-import { getFriendsActivity, getKindOrderForViewer, getPopularItems, getPopularReviews } from "@/lib/home";
+import { ExternalPosters, type ExternalPoster } from "@/components/external-posters";
+import { getFriendsActivity, getPopularItems, getPopularReviews, getViewerShelf } from "@/lib/home";
+import { browseMovies } from "@/lib/browse";
+import { browseCatalog } from "@/lib/anime-db";
 import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
+import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
 import { ReviewAttachments } from "@/components/review-attachments";
 import { TranslatableText } from "@/components/translatable-text";
 import { ReviewComments } from "@/components/review-comments";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
-import { itemHref, itemTitle, MEDIA_KINDS, type MediaKind, type Profile } from "@/lib/types";
+import { itemHref, itemTitle, MEDIA_KINDS, type Item, type MediaKind, type Profile } from "@/lib/types";
 
-const KINDS = MEDIA_KINDS;
 // "Ver tudo" de cada fileira abre o catálogo da pasta já ordenado por "Populares esta semana".
 const BROWSE_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", book: "books", anime: "anime", manga: "manga", game: "games", music: "music" };
 
-// Tela inicial: boas-vindas, amigos, populares da semana e reviews.
-// Visitante (viewer null) vê só populares e reviews; marcar ou curtir leva para o login.
-// "Listas populares" entra quando existirem listas personalizadas (watchlist é pessoal, não conta).
-export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
-  const [friends, popularByKind, reviews, kindOrder] = await Promise.all([
-    viewer ? getFriendsActivity(viewer.id) : [],
-    Promise.all(KINDS.map(async (kind) => ({ kind, items: await getPopularItems(kind) }))),
-    getPopularReviews(6),
-    viewer ? getKindOrderForViewer(viewer.id, KINDS) : KINDS,
-  ]);
-  // Todas as pastas aparecem; as que ainda não têm itens mostram capas vazias.
-  // e a ordem das pastas segue o que o usuário mais adicionou recentemente.
-  const popular = kindOrder.map((kind) => popularByKind.find((p) => p.kind === kind)!);
+type Tab = "news" | MediaKind;
 
-  const states = await getViewerStates(viewer?.id ?? "", viewer ? [
-    ...friends.map((e) => e.item_id),
-    ...popular.flatMap((p) => p.items.map((i) => i.id)),
-    ...reviews.map((r) => r.item_id),
-  ] : []);
+// Tela inicial: boas-vindas e abas. "Novidades" (a primeira, aberta ao carregar) tem a atividade dos
+// amigos e as reviews populares; cada pasta tem três fileiras: populares da semana (anime: a temporada),
+// a prateleira pessoal (watchlist, ou assistindo/lendo) e uma amostra de tudo da pasta.
+// Visitante (viewer null) vê as mesmas abas, sem a prateleira pessoal; marcar ou curtir leva para o login.
+export async function HomeDashboard({
+  viewer,
+  t,
+  locale,
+  folder,
+}: {
+  viewer: Profile | null;
+  t: Dictionary;
+  locale: Locale;
+  folder?: string | string[];
+}) {
+  const tab: Tab = MEDIA_KINDS.includes(folder as MediaKind) ? (folder as MediaKind) : "news";
+
+  return (
+    <div className="space-y-8">
+      <header>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          {viewer ? t.home.welcome(viewer.display_name || viewer.username) : t.home.welcomeSub}
+        </h1>
+        {viewer && <p className="mt-1 text-muted">{t.home.welcomeSub}</p>}
+      </header>
+
+      {/* Abas: Novidades + uma por pasta (mesma ordem do resto do site) */}
+      <nav className="flex gap-5 overflow-x-auto border-b border-border [scrollbar-width:none]">
+        {(["news", ...MEDIA_KINDS] as Tab[]).map((key) => (
+          <Link
+            key={key}
+            href={key === "news" ? "?" : `?folder=${key}`}
+            scroll={false}
+            className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 text-xs font-semibold tracking-widest whitespace-nowrap uppercase transition ${
+              key === tab ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"
+            }`}
+          >
+            {key !== "news" && <FolderIcon kind={key} className="size-3.5" />}
+            {key === "news" ? t.home.newsTab : t.folders[key]}
+          </Link>
+        ))}
+      </nav>
+
+      {tab === "news" ? (
+        <NewsTab viewer={viewer} t={t} locale={locale} />
+      ) : (
+        <FolderTab kind={tab} viewer={viewer} t={t} locale={locale} />
+      )}
+    </div>
+  );
+}
+
+// Novidades: espaço planejado para lançamentos e notificações; por enquanto, amigos e reviews populares.
+async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
+  const [friends, reviews] = await Promise.all([viewer ? getFriendsActivity(viewer.id) : [], getPopularReviews(6)]);
+  const states = await getViewerStates(
+    viewer?.id ?? "",
+    viewer ? [...friends.map((e) => e.item_id), ...reviews.map((r) => r.item_id)] : [],
+  );
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
   const [reviewLikes, commentCounts] = await Promise.all([
     getReviewLikes(reviews.map((r) => r.id), viewer?.id ?? null),
@@ -43,18 +89,10 @@ export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile | n
 
   return (
     <div className="space-y-12">
-      {viewer ? (
-        <header>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {t.home.welcome(viewer.display_name || viewer.username)}
-          </h1>
-          <p className="mt-1 text-muted">{t.home.welcomeSub}</p>
-        </header>
-      ) : (
-        <header>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{t.home.welcomeSub}</h1>
-        </header>
-      )}
+      {/* Reservado: lançamentos das suas pastas, notificações e destaques */}
+      <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+        {t.home.newsSoon}
+      </div>
 
       {friends.length > 0 && (
         <Section title={t.home.newFromFriends}>
@@ -76,30 +114,6 @@ export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile | n
           </Row>
         </Section>
       )}
-
-      {popular.map(({ kind, items }) => (
-        <Section
-          key={kind}
-          // Animes: os da temporada atual, e o "Ver tudo" abre a página da temporada.
-          title={kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind])}
-          more={{ href: kind === "anime" ? "/anime/season" : `/browse/${BROWSE_PATHS[kind]}`, label: t.profile.all }}
-        >
-          <Row>
-            {items.map((item, i) => (
-              <Poster key={item.id} item={item} locale={locale} showMeta={false} eager={i < 6} viewer={viewerFor(item.id)} />
-            ))}
-            {Array.from({ length: Math.max(0, 6 - items.length) }, (_, i) => (
-              <div
-                key={`empty-${i}`}
-                aria-hidden
-                className="grid aspect-[2/3] place-items-center rounded-md border border-border bg-surface-2 text-muted/40"
-              >
-                <FolderIcon kind={kind} className="size-8" />
-              </div>
-            ))}
-          </Row>
-        </Section>
-      ))}
 
       {reviews.length > 0 && (
         <Section title={t.home.popularReviews}>
@@ -149,8 +163,107 @@ export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile | n
           </div>
         </Section>
       )}
-
     </div>
+  );
+}
+
+// Uma pasta: populares da semana (anime: a temporada), a prateleira pessoal e uma amostra de tudo.
+async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer: Profile | null; t: Dictionary; locale: Locale }) {
+  // Em andamento (assistindo, lendo, jogando) onde faz sentido; filmes e músicas: a watchlist.
+  const shelfStatus = kind === "movie" || kind === "music" ? "watchlist" : "watching";
+  const [popular, shelf, sample] = await Promise.all([
+    getPopularItems(kind),
+    viewer ? getViewerShelf(viewer.id, kind, shelfStatus) : ([] as Item[]),
+    catalogSample(kind, locale, !!viewer?.show_adult),
+  ]);
+  const states = await getViewerStates(viewer?.id ?? "", viewer ? [...popular, ...shelf].map((i) => i.id) : []);
+  const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
+  const browse = `/browse/${BROWSE_PATHS[kind]}`;
+  const shelfTitle =
+    shelfStatus === "watchlist"
+      ? t.home.yourWatchlist
+      : kind === "manga" || kind === "book"
+        ? t.home.readingNow
+        : kind === "game"
+          ? t.home.playingNow
+          : t.home.watchingNow;
+
+  return (
+    <div className="space-y-12">
+      <Section
+        // Animes: os da temporada atual, e o "Ver tudo" abre a página da temporada.
+        title={kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind])}
+        more={{ href: kind === "anime" ? "/anime/season" : browse, label: t.profile.all }}
+      >
+        <ItemRow items={popular} kind={kind} locale={locale} viewerFor={viewerFor} />
+      </Section>
+
+      {viewer && shelf.length > 0 && (
+        <Section
+          title={shelfTitle}
+          more={{
+            href: `/u/${viewer.username}/${BROWSE_PATHS[kind]}?tab=${shelfStatus}`,
+            label: t.profile.all,
+          }}
+        >
+          <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
+        </Section>
+      )}
+
+      <Section title={t.folders.allOf(t.folders[kind])} more={{ href: browse, label: t.profile.all }}>
+        {sample.length ? (
+          <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga"} list={sample} viewer={viewer} layout="row" />
+        ) : (
+          <ItemRow items={[]} kind={kind} locale={locale} viewerFor={viewerFor} />
+        )}
+      </Section>
+    </div>
+  );
+}
+
+// Amostra de "Todos os ...": os mais bem avaliados (filmes e séries, TMDB) ou os mais populares de
+// sempre (animes e mangás, AniList). Pastas sem fonte de dados ficam vazias.
+async function catalogSample(kind: MediaKind, locale: Locale, showAdult: boolean): Promise<ExternalPoster[]> {
+  if (kind === "movie" || kind === "series") {
+    const { movies } = await browseMovies({}, "top", 1, {
+      language: tmdbLanguage(locale),
+      showAdult,
+      type: kind === "series" ? "tv" : "movie",
+    });
+    return movies.slice(0, 6).map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342") }));
+  }
+  if (kind === "anime" || kind === "manga") {
+    return (await browseCatalog({ kind, page: 1, perPage: 6, sort: "popular", showAdult })).list;
+  }
+  return [];
+}
+
+function ItemRow({
+  items,
+  kind,
+  locale,
+  viewerFor,
+}: {
+  items: Item[];
+  kind: MediaKind;
+  locale: Locale;
+  viewerFor: (itemId: string) => { id: string; state: ViewerItemState | null } | null;
+}) {
+  return (
+    <Row>
+      {items.map((item, i) => (
+        <Poster key={item.id} item={item} locale={locale} showMeta={false} eager={i < 6} viewer={viewerFor(item.id)} />
+      ))}
+      {Array.from({ length: Math.max(0, 6 - items.length) }, (_, i) => (
+        <div
+          key={`empty-${i}`}
+          aria-hidden
+          className="grid aspect-[2/3] place-items-center rounded-md border border-border bg-surface-2 text-muted/40"
+        >
+          <FolderIcon kind={kind} className="size-8" />
+        </div>
+      ))}
+    </Row>
   );
 }
 

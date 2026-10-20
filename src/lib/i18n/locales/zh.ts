@@ -29,6 +29,12 @@ export const zh: Dictionary = {
     soon: "即将推出",
   },
   home: {
+    readingNow: "正在读",
+    playingNow: "正在玩",
+    newsTab: "最新动态",
+    newsSoon: "即将推出：你的分类中的新作、通知和本周精选。",
+    yourWatchlist: "你的待看清单",
+    watchingNow: "正在看",
     welcome: (n: string) => `欢迎回来，${n}！`,
     welcomeSub: "看看 Orbi 上正在发生什么。",
     newFromFriends: "好友动态",

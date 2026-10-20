@@ -29,6 +29,12 @@ export const ar: Dictionary = {
     soon: "قريبًا",
   },
   home: {
+    readingNow: "أقرأه الآن",
+    playingNow: "ألعبه الآن",
+    newsTab: "الجديد",
+    newsSoon: "قريبًا: الإصدارات الجديدة من مجلداتك والإشعارات وأبرز ما في الأسبوع.",
+    yourWatchlist: "قائمة المشاهدة",
+    watchingNow: "أشاهده الآن",
     welcome: (n: string) => `مرحبًا بعودتك يا ${n}!`,
     welcomeSub: "إليك ما يحدث على Orbi.",
     newFromFriends: "جديد الأصدقاء",

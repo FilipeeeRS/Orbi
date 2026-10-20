@@ -27,6 +27,12 @@ export const pt = {
     soon: "Em breve",
   },
   home: {
+    readingNow: "Lendo agora",
+    playingNow: "Jogando agora",
+    newsTab: "Novidades",
+    newsSoon: "Em breve: lançamentos das suas pastas, notificações e destaques da semana.",
+    yourWatchlist: "Sua watchlist",
+    watchingNow: "Assistindo agora",
     welcome: (n: string) => `Bem-vindo de volta, ${n}!`,
     welcomeSub: "Veja o que está rolando no Orbi.",
     newFromFriends: "Novidades dos amigos",

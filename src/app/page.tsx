@@ -5,18 +5,18 @@ import { HomeDashboard } from "./home-dashboard";
 import { getDict, getViewer } from "@/lib/session";
 import { SearchSuggest } from "@/components/search-suggest";
 
-export default function Home() {
+export default function Home(props: PageProps<"/">) {
   return (
     <Suspense fallback={<Loading />}>
-      <HomeContent />
+      <HomeContent {...props} />
     </Suspense>
   );
 }
 
-async function HomeContent() {
+async function HomeContent({ searchParams }: PageProps<"/">) {
   const [viewer, { t, locale }] = await Promise.all([getViewer(), getDict()]);
   // Logado: a tela inicial vira a Home com amigos e populares da semana.
-  if (viewer) return <HomeDashboard viewer={viewer} t={t} locale={locale} />;
+  if (viewer) return <HomeDashboard viewer={viewer} t={t} locale={locale} folder={(await searchParams).folder} />;
 
   return (
     <section className="mx-auto flex max-w-4xl flex-col items-center gap-6 py-16 text-center sm:py-24">

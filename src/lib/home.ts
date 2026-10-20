@@ -84,6 +84,20 @@ export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[
   return [...week, ...allTime].slice(0, limit);
 }
 
+// Prateleira pessoal da Home: o que a pessoa tem na watchlist (ou está assistindo/lendo) naquela pasta.
+export async function getViewerShelf(viewerId: string, kind: MediaKind, status: "watchlist" | "watching", limit = 6): Promise<Item[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("entries")
+    .select("items!inner(*)")
+    .eq("user_id", viewerId)
+    .eq("status", status)
+    .eq("items.kind", kind)
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((row) => row.items as unknown as Item);
+}
+
 // Reviews mais recentes da semana (ainda não há like em review); completa com as mais recentes de sempre.
 export async function getPopularReviews(limit = 6): Promise<EntryWithAuthor[]> {
   const supabase = await createClient();

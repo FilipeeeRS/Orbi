@@ -29,6 +29,12 @@ export const de: Dictionary = {
     soon: "Demnächst",
   },
   home: {
+    readingNow: "Liest du gerade",
+    playingNow: "Spielst du gerade",
+    newsTab: "Neuigkeiten",
+    newsSoon: "Bald: Neuerscheinungen aus deinen Ordnern, Benachrichtigungen und Highlights der Woche.",
+    yourWatchlist: "Deine Watchlist",
+    watchingNow: "Schaust du gerade",
     welcome: (n: string) => `Willkommen zurück, ${n}!`,
     welcomeSub: "Das passiert gerade auf Orbi.",
     newFromFriends: "Neu von Freunden",

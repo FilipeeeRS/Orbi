@@ -29,6 +29,12 @@ export const ur: Dictionary = {
     soon: "جلد آ رہا ہے",
   },
   home: {
+    readingNow: "ابھی پڑھ رہے ہیں",
+    playingNow: "ابھی کھیل رہے ہیں",
+    newsTab: "نیا کیا ہے",
+    newsSoon: "جلد آ رہا ہے: آپ کے فولڈرز کی نئی ریلیز، اطلاعات اور ہفتے کی جھلکیاں۔",
+    yourWatchlist: "آپ کی واچ لسٹ",
+    watchingNow: "ابھی دیکھ رہے ہیں",
     welcome: (n: string) => `واپسی پر خوش آمدید، ${n}!`,
     welcomeSub: "دیکھیں Orbi پر کیا چل رہا ہے۔",
     newFromFriends: "دوستوں کی نئی سرگرمی",

@@ -37,6 +37,12 @@ export const ru: Dictionary = {
     soon: "Скоро",
   },
   home: {
+    readingNow: "Читаю сейчас",
+    playingNow: "Играю сейчас",
+    newsTab: "Новое",
+    newsSoon: "Скоро: новинки из ваших папок, уведомления и главное за неделю.",
+    yourWatchlist: "Ваш список",
+    watchingNow: "Смотрю сейчас",
     welcome: (n: string) => `С возвращением, ${n}!`,
     welcomeSub: "Вот что происходит в Orbi.",
     newFromFriends: "Новое от друзей",

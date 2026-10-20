@@ -29,6 +29,12 @@ export const id: Dictionary = {
     soon: "Segera hadir",
   },
   home: {
+    readingNow: "Sedang dibaca",
+    playingNow: "Sedang dimainkan",
+    newsTab: "Terbaru",
+    newsSoon: "Segera hadir: rilis baru dari foldermu, notifikasi, dan sorotan minggu ini.",
+    yourWatchlist: "Watchlist-mu",
+    watchingNow: "Sedang ditonton",
     welcome: (n: string) => `Selamat datang kembali, ${n}!`,
     welcomeSub: "Ini yang sedang ramai di Orbi.",
     newFromFriends: "Terbaru dari teman",

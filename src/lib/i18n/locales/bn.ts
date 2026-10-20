@@ -29,6 +29,12 @@ export const bn: Dictionary = {
     soon: "শীঘ্রই আসছে",
   },
   home: {
+    readingNow: "এখন পড়ছি",
+    playingNow: "এখন খেলছি",
+    newsTab: "নতুন কী",
+    newsSoon: "শিগগিরই: আপনার ফোল্ডারের নতুন রিলিজ, নোটিফিকেশন আর সপ্তাহের হাইলাইট।",
+    yourWatchlist: "আপনার ওয়াচলিস্ট",
+    watchingNow: "এখন দেখছি",
     welcome: (n: string) => `আবার স্বাগতম, ${n}!`,
     welcomeSub: "Orbi-তে কী চলছে দেখে নিন।",
     newFromFriends: "বন্ধুদের নতুন কার্যকলাপ",

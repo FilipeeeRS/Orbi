@@ -29,6 +29,12 @@ export const hi: Dictionary = {
     soon: "जल्द आ रहा है",
   },
   home: {
+    readingNow: "अभी पढ़ रहे हैं",
+    playingNow: "अभी खेल रहे हैं",
+    newsTab: "नया क्या है",
+    newsSoon: "जल्द आ रहा है: आपके फ़ोल्डरों की नई रिलीज़, सूचनाएँ और हफ़्ते की खास बातें।",
+    yourWatchlist: "आपकी वॉचलिस्ट",
+    watchingNow: "अभी देख रहे हैं",
     welcome: (n: string) => `वापसी पर स्वागत है, ${n}!`,
     welcomeSub: "देखिए Orbi पर क्या चल रहा है।",
     newFromFriends: "दोस्तों की नई गतिविधि",

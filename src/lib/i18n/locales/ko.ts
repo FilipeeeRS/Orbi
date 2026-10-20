@@ -29,6 +29,12 @@ export const ko: Dictionary = {
     soon: "곧 제공",
   },
   home: {
+    readingNow: "읽는 중",
+    playingNow: "플레이 중",
+    newsTab: "새 소식",
+    newsSoon: "곧 추가: 내 폴더의 신작, 알림, 이번 주 하이라이트.",
+    yourWatchlist: "내 워치리스트",
+    watchingNow: "보는 중",
     welcome: (n: string) => `다시 오신 걸 환영해요, ${n}님!`,
     welcomeSub: "지금 Orbi에서 일어나는 일이에요.",
     newFromFriends: "친구들의 새 소식",

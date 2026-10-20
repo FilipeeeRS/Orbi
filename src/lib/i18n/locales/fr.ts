@@ -29,6 +29,12 @@ export const fr: Dictionary = {
     soon: "Bientôt",
   },
   home: {
+    readingNow: "En cours de lecture",
+    playingNow: "En cours de jeu",
+    newsTab: "Nouveautés",
+    newsSoon: "Bientôt : les sorties de vos dossiers, les notifications et les temps forts de la semaine.",
+    yourWatchlist: "Votre watchlist",
+    watchingNow: "En cours",
     welcome: (n: string) => `Bon retour, ${n} !`,
     welcomeSub: "Voici ce qui se passe sur Orbi.",
     newFromFriends: "Nouveautés de tes amis",

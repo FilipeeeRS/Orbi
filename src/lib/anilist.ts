@@ -120,17 +120,26 @@ export type AnimeQuery = {
 };
 
 // Listagens (Ver tudo, temporada, busca): uma página de animes (ou mangás) do AniList.
+// Falha (ex.: limite de requisições) vira lista vazia, mas só respostas de verdade vão para o cache.
 export async function browseAnime(q: AnimeQuery): Promise<{ list: AnimeCard[]; total: number; hasNext: boolean }> {
+  try {
+    return await fetchAnimePage(q);
+  } catch {
+    return { list: [], total: 0, hasNext: false };
+  }
+}
+
+async function fetchAnimePage(q: AnimeQuery): Promise<{ list: AnimeCard[]; total: number; hasNext: boolean }> {
   "use cache";
   cacheLife("hours");
-  try {
+  {
     const data = await anilist<{ Page: { pageInfo: { total: number; hasNextPage: boolean }; media: AnimeCard[] } }>(
       `query ($page: Int, $perPage: Int, $sort: [MediaSort], $search: String, $genre: String, $season: MediaSeason,
               $seasonYear: Int, $from: FuzzyDateInt, $to: FuzzyDateInt, $isAdult: Boolean, $type: MediaType) {
         Page(page: $page, perPage: $perPage) {
           pageInfo { total hasNextPage }
           media(type: $type, sort: $sort, search: $search, genre: $genre, season: $season, seasonYear: $seasonYear,
-                startDate_greater: $from, startDate_lesser: $to, isAdult: $isAdult, format_not_in: [MUSIC]) { ${CARD} }
+                startDate_greater: $from, startDate_lesser: $to, isAdult: $isAdult) { ${CARD} }
         }
       }`,
       {
@@ -148,38 +157,51 @@ export async function browseAnime(q: AnimeQuery): Promise<{ list: AnimeCard[]; t
         isAdult: q.showAdult ? undefined : false,
       },
     );
-    return { list: data.Page.media, total: data.Page.pageInfo.total, hasNext: data.Page.pageInfo.hasNextPage };
-  } catch {
-    return { list: [], total: 0, hasNext: false };
+    // Clipes musicais ficam de fora (o filtro format_not_in do AniList zera a lista).
+    const list = data.Page.media.filter((m) => m.format !== "MUSIC");
+    return { list, total: data.Page.pageInfo.total, hasNext: data.Page.pageInfo.hasNextPage };
   }
 }
 
 // Os ~500 animes mais populares, para a busca achar o título mesmo com erro de digitação
 // ("atack on titan"), já que a busca do AniList não tolera erro. Montado uma vez por semana.
 export async function getPopularAnimeIndex(): Promise<AnimeCard[]> {
+  try {
+    return await buildPopularAnimeIndex();
+  } catch {
+    return [];
+  }
+}
+
+// Só um índice completo vai para o cache: se uma página falhar, tenta de novo na próxima vez.
+async function buildPopularAnimeIndex(): Promise<AnimeCard[]> {
   "use cache";
   cacheLife("weeks");
   const pages = [];
   // Uma página por vez: o AniList aceita poucas requisições por minuto.
   for (let page = 1; page <= 10; page++) {
-    const { list, hasNext } = await browseAnime({ page, perPage: 50, sort: "POPULARITY_DESC" });
+    const { list, hasNext } = await fetchAnimePage({ page, perPage: 50, sort: "POPULARITY_DESC" });
     pages.push(...list);
     if (!hasNext) break;
   }
   return pages;
 }
 
-// Gêneros do AniList (filtro das listagens de anime).
+// Gêneros do AniList (filtro das listagens de anime). Falha não vai para o cache.
 export async function getAnimeGenres(): Promise<string[]> {
-  "use cache";
-  cacheLife("weeks");
   try {
-    return (await anilist<{ GenreCollection: string[] }>("query { GenreCollection }", {})).GenreCollection.filter(
-      (g) => g !== "Hentai",
-    );
+    return await fetchGenres();
   } catch {
     return [];
   }
+}
+
+async function fetchGenres(): Promise<string[]> {
+  "use cache";
+  cacheLife("weeks");
+  return (await anilist<{ GenreCollection: string[] }>("query { GenreCollection }", {})).GenreCollection.filter(
+    (g) => g !== "Hentai",
+  );
 }
 
 // Temporada de anime em que uma data cai (inverno = jan–mar, primavera = abr–jun...).
