@@ -137,7 +137,14 @@ export type BookSort = "week" | "month" | "year" | "popular" | "top" | "top-asc"
 
 // "Ver tudo" dos livros: o acervo (com um mínimo de avaliações, para não vir lixo) numa ordem; com texto, a busca.
 // "Populares esta semana" usa o ranking da semana da Open Library.
-export async function browseBooks(opts: { page: number; perPage: number; sort: BookSort; q?: string; decade?: number }) {
+export async function browseBooks(opts: {
+  page: number;
+  perPage: number;
+  sort: BookSort;
+  q?: string;
+  decade?: number;
+  subject?: string; // gênero/assunto ("Fantasy")
+}) {
   // Popularidade: os rankings da própria Open Library (semana, mês, ano e de sempre).
   const period = { week: "weekly", month: "monthly", year: "yearly", popular: "forever" }[opts.sort as string] as
     | "weekly"
@@ -145,7 +152,7 @@ export async function browseBooks(opts: { page: number; perPage: number; sort: B
     | "yearly"
     | "forever"
     | undefined;
-  if (period && !opts.q && !opts.decade) {
+  if (period && !opts.q && !opts.decade && !opts.subject) {
     const list = await trendingBooks(period, opts.perPage, opts.page);
     return { list, total: list.length < opts.perPage ? (opts.page - 1) * opts.perPage + list.length : 1000 };
   }
@@ -153,6 +160,7 @@ export async function browseBooks(opts: { page: number; perPage: number; sort: B
   const filters = [
     opts.q?.trim() ? opts.q.trim() : "ratings_count:[20 TO *]",
     opts.decade ? `first_publish_year:[${opts.decade} TO ${opts.decade + 9}]` : "",
+    opts.subject ? `subject:"${opts.subject.replace(/"/g, "")}"` : "",
   ].filter(Boolean);
   const query = `${filters.join(" AND ")}${sort ? `&sort=${encodeURIComponent(sort)}` : ""}`;
   try {

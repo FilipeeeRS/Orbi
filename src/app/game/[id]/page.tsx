@@ -108,7 +108,7 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
                 ].filter((row) => row.values.length),
                 genres: game.genres.map((g) => {
                   const tag = genreTag(g.id);
-                  return { name: g.name, href: tag ? gamesBy({ tag: String(tag), label: g.name }) : undefined };
+                  return { name: g.name, href: tag ? gamesBy({ genre: String(tag) }) : undefined };
                 }),
                 releases: [],
                 watch: null,

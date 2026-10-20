@@ -403,7 +403,8 @@ export function toView(
           : [],
       },
     ].filter((row) => row.values.length),
-    genres: info.genres.map((g) => ({ name: g.name, href: browse("genre", g.id, g.name) })),
+    // Gênero (em todas as pastas): o "Ver tudo" com o filtro de gênero marcado. O resto vai para a busca.
+    genres: info.genres.map((g) => ({ name: g.name, href: `/browse/${type === "series" ? "series" : "movies"}?genre=${g.id}` })),
     releases: info.releases.map((r) => ({ country: country(r.country), date: date(r.date), certification: r.certification })),
     watch: watchView(info, locale, country),
   };

@@ -77,7 +77,7 @@ async function BookContent({ params }: PageProps<"/book/[id]">) {
                   { label: t.book.authors, values: book.authors.map((name) => ({ name, href: `/search?q=${encodeURIComponent(name)}&type=book` })) },
                   { label: t.book.publishers, values: book.publishers.map((name) => ({ name })) },
                 ].filter((row) => row.values.length),
-                genres: book.subjects.map((s) => ({ name: s })),
+                genres: book.subjects.map((s) => ({ name: s, href: `/browse/books?genre=${encodeURIComponent(s)}` })),
                 releases: [],
                 watch: null,
               }}

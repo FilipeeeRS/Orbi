@@ -26,6 +26,10 @@ const SLUGS: Record<string, MediaKind> = {
   books: "book",
 };
 // "Ver tudo" abre em Popularidade · De todos os tempos; a fileira de populares da Home manda sort=week.
+const BOOK_SUBJECTS = [
+  "Fiction", "Fantasy", "Science fiction", "Romance", "Mystery", "Thriller", "Horror", "Historical fiction",
+  "Young adult fiction", "Children's fiction", "Biography", "History", "Philosophy", "Poetry", "Comics & graphic novels",
+];
 const DEFAULT_SORT: BrowseSort = "popular";
 
 export default function BrowsePage(props: PageProps<"/browse/[folder]">) {
@@ -54,7 +58,10 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
   let genres: { value: string; label: string }[] = [];
   const browsable = kind !== "music";
   if (kind === "book") {
-    const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort, q, decade });
+    const subject = typeof query.genre === "string" ? query.genre : undefined;
+    const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort, q, decade, subject });
+    // Assuntos mais comuns da Open Library (e o que veio da ficha, se não estiver na lista)
+    genres = [...new Set([...BOOK_SUBJECTS, ...(subject ? [subject] : [])])].map((g) => ({ value: g, label: g }));
     list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
     total = found.total;
   } else if (kind === "game") {
