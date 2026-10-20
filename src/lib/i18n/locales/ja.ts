@@ -115,6 +115,8 @@ export const ja: Dictionary = {
     filters: { decade: "年代", genre: "ジャンル", rating: "評価", sortBy: "並べ替え", any: "すべて", noRating: "評価なし", search: "タイトルで絞り込み…", clear: "フィルターをクリア" },
     page: (n: number, total: number) => `${total} ページ中 ${n} ページ目`,
     prev: "前へ",
+    first: "最初のページ",
+    last: "最後のページ",
     next: "次へ",
   },
   movie: {

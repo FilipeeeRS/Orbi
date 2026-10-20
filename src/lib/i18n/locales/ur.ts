@@ -115,6 +115,8 @@ export const ur: Dictionary = {
     filters: { decade: "دہائی", genre: "صنف", rating: "ریٹنگ", sortBy: "ترتیب", any: "کوئی بھی", noRating: "بغیر ریٹنگ", search: "عنوان سے فلٹر کریں…", clear: "فلٹر ہٹائیں" },
     page: (n: number, total: number) => `صفحہ ${n} از ${total}`,
     prev: "پچھلا",
+    first: "پہلا صفحہ",
+    last: "آخری صفحہ",
     next: "اگلا",
   },
   movie: {

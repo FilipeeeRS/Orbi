@@ -123,6 +123,8 @@ export const ru: Dictionary = {
     filters: { decade: "Десятилетие", genre: "Жанр", rating: "Оценка", sortBy: "Сортировка", any: "Любой", noRating: "Без оценки", search: "Фильтр по названию…", clear: "Сбросить фильтры" },
     page: (n: number, total: number) => `Страница ${n} из ${total}`,
     prev: "Назад",
+    first: "Первая страница",
+    last: "Последняя страница",
     next: "Вперёд",
   },
   movie: {

@@ -208,6 +208,27 @@ const GENRE_TAG: Record<string, number> = {
 };
 export const genreTag = (genreId: string) => GENRE_TAG[genreId] ?? null;
 
+// Gêneros do filtro de "Todos os jogos" (tags da loja; nomes como a Steam mostra).
+export const GAME_GENRES: { tag: number; name: string }[] = [
+  { tag: 19, name: "Action" },
+  { tag: 21, name: "Adventure" },
+  { tag: 597, name: "Casual" },
+  { tag: 1664, name: "Puzzle" },
+  { tag: 1625, name: "Platformer" },
+  { tag: 1774, name: "Shooter" },
+  { tag: 1667, name: "Horror" },
+  { tag: 122, name: "RPG" },
+  { tag: 1695, name: "Open World" },
+  { tag: 599, name: "Simulation" },
+  { tag: 9, name: "Strategy" },
+  { tag: 701, name: "Sports" },
+  { tag: 699, name: "Racing" },
+  { tag: 128, name: "Massively Multiplayer" },
+  { tag: 492, name: "Indie" },
+  { tag: 113, name: "Free to Play" },
+  { tag: 493, name: "Early Access" },
+];
+
 export type GameFilters = { developer?: string; publisher?: string; tag?: number; os?: string };
 
 export async function browseGames(opts: { page: number; perPage: number; sort: string; q?: string } & GameFilters) {

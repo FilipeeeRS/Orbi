@@ -115,6 +115,8 @@ export const de: Dictionary = {
     filters: { decade: "Jahrzehnt", genre: "Genre", rating: "Bewertung", sortBy: "Sortieren nach", any: "Alle", noRating: "Ohne Bewertung", search: "Nach Titel filtern…", clear: "Filter zurücksetzen" },
     page: (n: number, total: number) => `Seite ${n} von ${total}`,
     prev: "Zurück",
+    first: "Erste Seite",
+    last: "Letzte Seite",
     next: "Weiter",
   },
   movie: {

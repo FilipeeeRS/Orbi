@@ -115,6 +115,8 @@ export const ko: Dictionary = {
     filters: { decade: "연대", genre: "장르", rating: "별점", sortBy: "정렬", any: "전체", noRating: "별점 없음", search: "제목으로 필터…", clear: "필터 지우기" },
     page: (n: number, total: number) => `${total}페이지 중 ${n}페이지`,
     prev: "이전",
+    first: "첫 페이지",
+    last: "마지막 페이지",
     next: "다음",
   },
   movie: {

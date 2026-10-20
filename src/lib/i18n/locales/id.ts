@@ -115,6 +115,8 @@ export const id: Dictionary = {
     filters: { decade: "Dekade", genre: "Genre", rating: "Nilai", sortBy: "Urutkan", any: "Semua", noRating: "Tanpa nilai", search: "Filter judul…", clear: "Hapus filter" },
     page: (n: number, total: number) => `Halaman ${n} dari ${total}`,
     prev: "Sebelumnya",
+    first: "Halaman pertama",
+    last: "Halaman terakhir",
     next: "Berikutnya",
   },
   movie: {

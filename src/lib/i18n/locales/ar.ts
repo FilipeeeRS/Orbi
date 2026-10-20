@@ -115,6 +115,8 @@ export const ar: Dictionary = {
     filters: { decade: "العقد", genre: "النوع", rating: "التقييم", sortBy: "ترتيب حسب", any: "الكل", noRating: "بدون تقييم", search: "تصفية بالعنوان…", clear: "مسح عوامل التصفية" },
     page: (n: number, total: number) => `صفحة ${n} من ${total}`,
     prev: "السابق",
+    first: "الصفحة الأولى",
+    last: "الصفحة الأخيرة",
     next: "التالي",
   },
   movie: {

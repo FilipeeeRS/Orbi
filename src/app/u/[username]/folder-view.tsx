@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Pagination } from "@/components/pagination";
 import { notFound } from "next/navigation";
 import { Poster, PosterGrid, PosterImage } from "@/components/poster";
 import { StarsDisplay } from "@/components/stars";
@@ -188,25 +189,7 @@ export async function FolderView({
         </PosterGrid>
       )}
 
-      {pages > 1 && (
-        <nav className="flex items-center justify-center gap-4 pt-4 text-sm">
-          {page > 1 ? (
-            <Link href={href({ page: page - 1 })} className="hover:text-accent">
-              ← {t.movies.prev}
-            </Link>
-          ) : (
-            <span />
-          )}
-          <span className="text-muted">{t.movies.page(page, pages)}</span>
-          {page < pages ? (
-            <Link href={href({ page: page + 1 })} className="hover:text-accent">
-              {t.movies.next} →
-            </Link>
-          ) : (
-            <span />
-          )}
-        </nav>
-      )}
+      <Pagination page={page} pages={pages} hrefFor={(n) => href({ page: n })} t={t} />
     </div>
   );
 }

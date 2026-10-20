@@ -1,14 +1,14 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import Loading from "../../loading";
 import { FilterBar } from "@/components/filter-bar";
 import { FolderIcon } from "@/components/folder-icon";
+import { Pagination } from "@/components/pagination";
 import { ExternalPosters, type ExternalPoster } from "@/components/external-posters";
 import { BROWSE_PAGE_SIZE, BROWSE_SORTS, browseMovies, type BrowseSort } from "@/lib/browse";
 import { browseCatalog, CATALOG_GENRES } from "@/lib/anime-db";
 import { browseBooks } from "@/lib/openlibrary";
-import { browseGames } from "@/lib/steam";
+import { browseGames, GAME_GENRES } from "@/lib/steam";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { sortOptions } from "@/lib/sort-options";
 import { getDict, getViewer } from "@/lib/session";
@@ -66,11 +66,13 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
       q,
       developer: typeof query.developer === "string" ? query.developer : undefined,
       publisher: typeof query.publisher === "string" ? query.publisher : undefined,
-      tag: Number(query.tag) || undefined,
+      // Gênero do filtro (tag da loja) ou vindo da ficha de um jogo
+      tag: Number(query.genre) || Number(query.tag) || undefined,
       os: typeof query.os === "string" ? query.os : undefined,
     });
     list = found.list;
     total = found.total;
+    genres = GAME_GENRES.map((g) => ({ value: String(g.tag), label: g.name }));
   } else if (kind === "anime" || kind === "manga") {
     const found = await browseCatalog({
       kind,
@@ -140,25 +142,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
         <p className="text-sm text-muted">{t.profile.empty}</p>
       )}
 
-      {pages > 1 && (
-        <nav className="flex items-center justify-center gap-4 pt-4 text-sm">
-          {page > 1 ? (
-            <Link href={pageHref(page - 1)} className="hover:text-accent">
-              ← {t.movies.prev}
-            </Link>
-          ) : (
-            <span />
-          )}
-          <span className="text-muted">{t.movies.page(page, pages)}</span>
-          {page < pages ? (
-            <Link href={pageHref(page + 1)} className="hover:text-accent">
-              {t.movies.next} →
-            </Link>
-          ) : (
-            <span />
-          )}
-        </nav>
-      )}
+      <Pagination page={page} pages={pages} hrefFor={pageHref} t={t} />
     </div>
   );
 }

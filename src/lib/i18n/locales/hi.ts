@@ -115,6 +115,8 @@ export const hi: Dictionary = {
     filters: { decade: "दशक", genre: "शैली", rating: "रेटिंग", sortBy: "क्रम", any: "कोई भी", noRating: "बिना रेटिंग", search: "शीर्षक से फ़िल्टर करें…", clear: "फ़िल्टर हटाएँ" },
     page: (n: number, total: number) => `पेज ${n} / ${total}`,
     prev: "पिछला",
+    first: "पहला पेज",
+    last: "आख़िरी पेज",
     next: "अगला",
   },
   movie: {

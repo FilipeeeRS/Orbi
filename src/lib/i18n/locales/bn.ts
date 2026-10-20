@@ -115,6 +115,8 @@ export const bn: Dictionary = {
     filters: { decade: "দশক", genre: "ধরন", rating: "রেটিং", sortBy: "সাজান", any: "যেকোনো", noRating: "রেটিং নেই", search: "শিরোনাম দিয়ে ফিল্টার…", clear: "ফিল্টার মুছুন" },
     page: (n: number, total: number) => `পৃষ্ঠা ${n} / ${total}`,
     prev: "আগের",
+    first: "প্রথম পৃষ্ঠা",
+    last: "শেষ পৃষ্ঠা",
     next: "পরের",
   },
   movie: {

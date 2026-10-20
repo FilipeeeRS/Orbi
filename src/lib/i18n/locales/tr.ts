@@ -115,6 +115,8 @@ export const tr: Dictionary = {
     filters: { decade: "On yıl", genre: "Tür", rating: "Puan", sortBy: "Sırala", any: "Tümü", noRating: "Puansız", search: "Başlığa göre filtrele…", clear: "Filtreleri temizle" },
     page: (n: number, total: number) => `Sayfa ${n} / ${total}`,
     prev: "Önceki",
+    first: "İlk sayfa",
+    last: "Son sayfa",
     next: "Sonraki",
   },
   movie: {

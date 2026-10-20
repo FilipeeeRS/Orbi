@@ -113,6 +113,8 @@ export const pt = {
     filters: { decade: "Década", genre: "Gênero", rating: "Nota", sortBy: "Ordenar por", any: "Qualquer", noRating: "Sem nota", search: "Filtrar por título…", clear: "Limpar filtros" },
     page: (n: number, total: number) => `Página ${n} de ${total}`,
     prev: "Anterior",
+    first: "Primeira página",
+    last: "Última página",
     next: "Próxima",
   },
   movie: {
