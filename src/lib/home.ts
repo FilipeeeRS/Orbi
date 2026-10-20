@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "./supabase/server";
-import { ensureAnime, ensureBook, ensureGame, ensureMovie, ensureSeries } from "./catalog";
+import { ensureAnime, ensureBook, ensureGame, ensureManga, ensureMovie, ensureSeries } from "./catalog";
 import { trendingBooks } from "./openlibrary";
 import { mostPlayedGames } from "./steam";
 import { browseAnime, seasonOf } from "./anilist";
@@ -48,6 +48,12 @@ export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[
     if (fromDb) return fromDb;
     const { list } = await browseAnime({ page: 1, perPage: limit, sort: "POPULARITY_DESC", season, seasonYear: year });
     const items = await Promise.all(list.map((a) => ensureAnime(a.id).catch(() => null)));
+    return items.filter((i): i is Item => !!i);
+  }
+  if (kind === "manga") {
+    // Em alta no AniList agora (o "populares da semana" dos mangás).
+    const { list } = await browseAnime({ type: "MANGA", page: 1, perPage: limit * 2, sort: "TRENDING_DESC" });
+    const items = await Promise.all(list.filter((m) => !m.isAdult).slice(0, limit).map((m) => ensureManga(m.id).catch(() => null)));
     return items.filter((i): i is Item => !!i);
   }
   if (kind === "book") {
