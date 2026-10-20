@@ -181,3 +181,52 @@ async function fetchReviews(id: number, lang: string): Promise<GameReviews | nul
     rating: total ? Math.round((q.total_positive / total) * 100) / 10 : null,
   };
 }
+
+// ---- Catálogo inteiro (busca da loja): o "Ver tudo" dos jogos, com paginação e ordenação ----
+
+// Ordenações das listagens → filtros/ordem da busca da loja.
+const STORE_SORT: Record<string, string> = {
+  week: "filter=topsellers", // mais vendidos agora
+  month: "filter=popularnew", // lançamentos populares
+  year: "filter=globaltopsellers",
+  popular: "sort_by=Reviews_DESC",
+  top: "sort_by=Reviews_DESC",
+  "top-asc": "sort_by=Reviews_ASC",
+  release: "sort_by=Released_DESC",
+  "release-old": "sort_by=Released_ASC",
+  title: "sort_by=Name_ASC",
+  "title-desc": "sort_by=Name_DESC",
+};
+
+export async function browseGames(opts: { page: number; perPage: number; sort: string; q?: string }) {
+  try {
+    return await fetchStorePage(opts.page, opts.perPage, STORE_SORT[opts.sort] ?? STORE_SORT.top, opts.q?.trim() ?? "");
+  } catch {
+    return { list: [] as GameCard[], total: 0 };
+  }
+}
+
+async function fetchStorePage(page: number, perPage: number, order: string, q: string) {
+  "use cache";
+  cacheLife("hours");
+  // category1=998 = só jogos (sem DLC, trilha sonora, software)
+  const url = `https://store.steampowered.com/search/results/?infinite=1&category1=998&cc=US&l=english&start=${
+    (page - 1) * perPage
+  }&count=${perPage}&${order}${q ? `&term=${encodeURIComponent(q)}` : ""}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Steam ${res.status}`);
+  const data = (await res.json()) as { total_count: number; results_html: string };
+  // Cada resultado é um <a data-ds-appid="..."> com o título e a data de lançamento.
+  const rows = data.results_html.split("<a ").slice(1);
+  const list = await Promise.all(
+    rows
+      .map((html) => ({
+        id: Number(html.match(/data-ds-appid="(\d+)"/)?.[1]),
+        title: decodeEntities(html.match(/<span class="title">([^<]*)/)?.[1] ?? ""),
+        year: yearOf(html.match(/search_released[^>]*>\s*([^<]*)/)?.[1]),
+      }))
+      .filter((g) => g.id && g.title)
+      .map(async (g) => ({ ...g, poster: await gamePoster(g.id) })),
+  );
+  return { list, total: data.total_count };
+}

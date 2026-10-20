@@ -110,8 +110,8 @@ export const ja: Dictionary = {
   movies: {
     tabs: { watched: "観た", watching: "視聴中", watchlist: "観たい", liked: "いいね", reviews: "レビュー", lists: "リスト" },
     sort: { week: "今週の人気", release: "公開日（新しい順）", releaseOld: "公開日（古い順）", recent: "最近追加した順", recentOld: "追加が古い順", yours: "自分の評価が高い順", top: "評価が高い順", popular: "人気順", titleAz: "タイトル（A–Z）", titleZa: "タイトル（Z–A）", runtimeShort: "上映時間（短い順）", runtimeLong: "上映時間（長い順）" },
-    sortGroups: { name: "タイトル", added: "追加日", release: "公開日", average: "平均評価", yours: "あなたの評価", length: "上映時間" },
-    sortOrder: { newest: "新しい順", earliest: "古い順", highest: "高い順", lowest: "低い順", az: "A–Z", za: "Z–A", shortest: "短い順", longest: "長い順" },
+    sortGroups: { popularity: "人気", name: "タイトル", added: "追加日", release: "公開日", average: "平均評価", yours: "あなたの評価", length: "上映時間" },
+    sortOrder: { thisWeek: "今週", thisMonth: "今月", thisYear: "今年", allTime: "歴代", newest: "新しい順", earliest: "古い順", highest: "高い順", lowest: "低い順", az: "A–Z", za: "Z–A", shortest: "短い順", longest: "長い順" },
     filters: { decade: "年代", genre: "ジャンル", rating: "評価", sortBy: "並べ替え", any: "すべて", noRating: "評価なし", search: "タイトルで絞り込み…", clear: "フィルターをクリア" },
     page: (n: number, total: number) => `${total} ページ中 ${n} ページ目`,
     prev: "前へ",

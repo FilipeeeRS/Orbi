@@ -2,10 +2,12 @@ import type { Dictionary } from "./i18n/dictionaries";
 
 // Opções do "Ordenar por" agrupadas em tópicos, como no Letterboxd:
 // "Lançamento" → Mais novos primeiro / Mais antigos primeiro, e assim por diante.
-// As opções sem tópico (popularidade) ficam soltas no topo. A ordem do menu é sempre a desta lista.
+// A ordem do menu é sempre a desta lista.
 const MENU = [
-  { key: "week" },
-  { key: "popular" },
+  { key: "week", group: "popularity", order: "thisWeek" },
+  { key: "month", group: "popularity", order: "thisMonth" },
+  { key: "year", group: "popularity", order: "thisYear" },
+  { key: "popular", group: "popularity", order: "allTime" },
   { key: "title", group: "name", order: "az" },
   { key: "title-desc", group: "name", order: "za" },
   { key: "recent", group: "added", order: "newest" },
@@ -23,9 +25,9 @@ const MENU = [
 export type SortOption = { value: string; label: string; group?: string };
 
 export function sortOptions(keys: readonly string[], t: Dictionary): SortOption[] {
-  return MENU.filter((m) => keys.includes(m.key)).map((m) =>
-    "group" in m
-      ? { value: m.key, label: t.movies.sortOrder[m.order], group: t.movies.sortGroups[m.group] }
-      : { value: m.key, label: t.movies.sort[m.key] },
-  );
+  return MENU.filter((m) => keys.includes(m.key)).map((m) => ({
+    value: m.key,
+    label: t.movies.sortOrder[m.order],
+    group: t.movies.sortGroups[m.group],
+  }));
 }

@@ -4,12 +4,13 @@ import { createClient } from "./supabase/server";
 import { animeCover, animeTitle, animeYear, browseAnime, type AnimeSeason, type AnimeSort } from "./anilist";
 import type { ExternalPoster } from "@/components/external-posters";
 import type { Item } from "./types";
+import { periodStart } from "./browse";
 
 // Animes e mangás lidos da cópia do AniList no banco do Orbi (sem limite de requisições nem teto de 5 mil).
 // Enquanto a cópia não existe (migração não aplicada ou importação não feita), cai na API do AniList.
 
 export type CatalogKind = "anime" | "manga";
-export type CatalogSort = "week" | "popular" | "top" | "top-asc" | "release" | "release-old" | "title" | "title-desc";
+export type CatalogSort = "week" | "month" | "year" | "popular" | "top" | "top-asc" | "release" | "release-old" | "title" | "title-desc";
 
 export type CatalogQuery = {
   kind: CatalogKind;
@@ -52,6 +53,8 @@ export const toPoster = (i: Pick<Item, "id" | "external_id" | "title" | "year" |
 // Ordenações das listagens → ordenação do AniList (quando ainda não há cópia no banco).
 const API_SORT: Record<CatalogSort, AnimeSort> = {
   week: "TRENDING_DESC",
+  month: "POPULARITY_DESC",
+  year: "POPULARITY_DESC",
   popular: "POPULARITY_DESC",
   top: "SCORE_DESC",
   "top-asc": "SCORE",
@@ -68,6 +71,7 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
       page: q.page,
       perPage: q.perPage,
       sort: API_SORT[q.sort],
+      startFrom: periodStart(q.sort),
       search: q.q?.trim(),
       genre: q.genre,
       decade: q.decade,
@@ -96,6 +100,10 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
     // "Em alta": o que está saindo agora, do mais popular para o menos.
     case "week":
       query = query.eq("status", "RELEASING").order("tmdb_votes", desc);
+      break;
+    case "month":
+    case "year":
+      query = query.gte("release_date", periodStart(q.sort)!).order("tmdb_votes", desc);
       break;
     case "popular":
       query = query.order("tmdb_votes", desc);

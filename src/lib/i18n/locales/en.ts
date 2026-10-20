@@ -110,8 +110,8 @@ export const en: Dictionary = {
   movies: {
     tabs: { watched: "Watched", watching: "Watching", watchlist: "Watchlist", liked: "Liked", reviews: "Reviews", lists: "Lists" },
     sort: { week: "Popular this week", release: "Release date (newest)", releaseOld: "Release date (oldest)", recent: "Recently added", recentOld: "Earliest added", yours: "Highest rated by you", top: "Highest rated", popular: "Popularity", titleAz: "Title (A–Z)", titleZa: "Title (Z–A)", runtimeShort: "Shortest first", runtimeLong: "Longest first" },
-    sortGroups: { name: "Name", added: "When added", release: "Release date", average: "Average rating", yours: "Your rating", length: "Length" },
-    sortOrder: { newest: "Newest first", earliest: "Earliest first", highest: "Highest first", lowest: "Lowest first", az: "A–Z", za: "Z–A", shortest: "Shortest first", longest: "Longest first" },
+    sortGroups: { popularity: "Popularity", name: "Name", added: "When added", release: "Release date", average: "Average rating", yours: "Your rating", length: "Length" },
+    sortOrder: { thisWeek: "This week", thisMonth: "This month", thisYear: "This year", allTime: "All time", newest: "Newest first", earliest: "Earliest first", highest: "Highest first", lowest: "Lowest first", az: "A–Z", za: "Z–A", shortest: "Shortest first", longest: "Longest first" },
     filters: { decade: "Decade", genre: "Genre", rating: "Rating", sortBy: "Sort by", any: "Any", noRating: "No rating", search: "Filter by title…", clear: "Clear filters" },
     page: (n: number, total: number) => `Page ${n} of ${total}`,
     prev: "Previous",

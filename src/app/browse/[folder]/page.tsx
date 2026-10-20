@@ -8,7 +8,7 @@ import { ExternalPosters, type ExternalPoster } from "@/components/external-post
 import { BROWSE_PAGE_SIZE, BROWSE_SORTS, browseMovies, type BrowseSort } from "@/lib/browse";
 import { browseCatalog, CATALOG_GENRES } from "@/lib/anime-db";
 import { browseBooks } from "@/lib/openlibrary";
-import { mostPlayedGames, searchGames } from "@/lib/steam";
+import { browseGames } from "@/lib/steam";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { sortOptions } from "@/lib/sort-options";
 import { getDict, getViewer } from "@/lib/session";
@@ -25,8 +25,8 @@ const SLUGS: Record<string, MediaKind> = {
   games: "game",
   books: "book",
 };
-// "Ver tudo" abre pelos mais bem avaliados; a fileira de populares da Home manda sort=week.
-const DEFAULT_SORT: BrowseSort = "top";
+// "Ver tudo" abre em Popularidade · De todos os tempos; a fileira de populares da Home manda sort=week.
+const DEFAULT_SORT: BrowseSort = "popular";
 
 export default function BrowsePage(props: PageProps<"/browse/[folder]">) {
   return (
@@ -58,9 +58,10 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
     list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
     total = found.total;
   } else if (kind === "game") {
-    // Jogos: a loja da Steam não tem um catálogo inteiro aberto; sem texto, os mais jogados agora.
-    list = (q?.trim() ? await searchGames(q.trim(), BROWSE_PAGE_SIZE) : await mostPlayedGames(BROWSE_PAGE_SIZE)).map((g) => ({ ...g }));
-    total = list.length;
+    // Jogos: a busca da loja da Steam (o catálogo inteiro, com paginação e ordenação).
+    const found = await browseGames({ page, perPage: BROWSE_PAGE_SIZE, sort, q });
+    list = found.list;
+    total = found.total;
   } else if (kind === "anime" || kind === "manga") {
     const found = await browseCatalog({
       kind,

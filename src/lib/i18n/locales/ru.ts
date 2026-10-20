@@ -118,8 +118,8 @@ export const ru: Dictionary = {
   movies: {
     tabs: { watched: "Просмотрено", watching: "Смотрю", watchlist: "Хочу посмотреть", liked: "Понравилось", reviews: "Рецензии", lists: "Списки" },
     sort: { week: "Популярное на этой неделе", release: "Дата выхода (сначала новые)", releaseOld: "Дата выхода (сначала старые)", recent: "Недавно добавленные", recentOld: "Давно добавленные", yours: "По вашей оценке", top: "По рейтингу", popular: "По популярности", titleAz: "Название (А–Я)", titleZa: "Название (Я–А)", runtimeShort: "Сначала короткие", runtimeLong: "Сначала длинные" },
-    sortGroups: { name: "Название", added: "Когда добавлено", release: "Дата выхода", average: "Средняя оценка", yours: "Ваша оценка", length: "Длительность" },
-    sortOrder: { newest: "Сначала новые", earliest: "Сначала старые", highest: "Сначала высокие", lowest: "Сначала низкие", az: "А–Я", za: "Я–А", shortest: "Сначала короткие", longest: "Сначала длинные" },
+    sortGroups: { popularity: "Популярность", name: "Название", added: "Когда добавлено", release: "Дата выхода", average: "Средняя оценка", yours: "Ваша оценка", length: "Длительность" },
+    sortOrder: { thisWeek: "За неделю", thisMonth: "За месяц", thisYear: "За год", allTime: "За всё время", newest: "Сначала новые", earliest: "Сначала старые", highest: "Сначала высокие", lowest: "Сначала низкие", az: "А–Я", za: "Я–А", shortest: "Сначала короткие", longest: "Сначала длинные" },
     filters: { decade: "Десятилетие", genre: "Жанр", rating: "Оценка", sortBy: "Сортировка", any: "Любой", noRating: "Без оценки", search: "Фильтр по названию…", clear: "Сбросить фильтры" },
     page: (n: number, total: number) => `Страница ${n} из ${total}`,
     prev: "Назад",

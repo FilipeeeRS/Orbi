@@ -4,7 +4,7 @@ import { isAnime, searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear
 
 // "Ver tudo" da Home: qualquer filme ou série que existe, direto do TMDB (não só o catálogo do Orbi).
 
-export const BROWSE_SORTS = ["week", "popular", "top", "top-asc", "release", "release-old", "title", "title-desc"] as const;
+export const BROWSE_SORTS = ["week", "month", "year", "popular", "top", "top-asc", "release", "release-old", "title", "title-desc"] as const;
 export type BrowseSort = (typeof BROWSE_SORTS)[number];
 
 export type BrowseFilters = { decade?: number; genre?: number; q?: string };
@@ -12,8 +12,12 @@ export type BrowseFilters = { decade?: number; genre?: number; q?: string };
 export const BROWSE_PAGE_SIZE = 40; // 2 páginas do TMDB por página do Orbi
 const TMDB_MAX_PAGES = 500; // limite da própria API
 
+// Popularidade: "em alta" na semana; no mês e no ano, os mais populares entre os lançados no período;
+// de todos os tempos, os mais votados.
 const DISCOVER_SORT: Record<Exclude<BrowseSort, "week">, string> = {
-  popular: "popularity.desc",
+  month: "popularity.desc",
+  year: "popularity.desc",
+  popular: "vote_count.desc",
   top: "vote_average.desc",
   "top-asc": "vote_average.asc",
   release: "primary_release_date.desc",
@@ -57,10 +61,10 @@ export async function browseMovies(
               {
                 sort_by: tmdbSort(sort === "week" ? "popular" : sort),
                 with_genres: filters.genre,
-                [`${date}.gte`]: filters.decade ? `${filters.decade}-01-01` : undefined,
+                [`${date}.gte`]: filters.decade ? `${filters.decade}-01-01` : periodStart(sort),
                 [`${date}.lte`]: filters.decade
                   ? `${filters.decade + 9}-12-31`
-                  : sort === "release"
+                  : sort === "release" || sort === "month" || sort === "year"
                     ? new Date().toISOString().slice(0, 10)
                     : undefined,
                 // Sem um mínimo de votos, "mais bem avaliados" fica cheio de filmes com 1 voto 10/10.
@@ -111,4 +115,12 @@ function sortLocally(list: TmdbMovie[], sort: BrowseSort) {
     default:
       return by.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
   }
+}
+
+// Início do período dos rankings "este mês" (últimos 30 dias) e "este ano" (desde 1º de janeiro).
+export function periodStart(sort: string): string | undefined {
+  const now = new Date();
+  if (sort === "month") return new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
+  if (sort === "year") return `${now.getFullYear()}-01-01`;
+  return undefined;
 }

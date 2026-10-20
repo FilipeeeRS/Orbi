@@ -19,7 +19,7 @@ import { ReviewComments } from "@/components/review-comments";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, MEDIA_KINDS, type Item, type MediaKind, type Profile } from "@/lib/types";
 
-// "Ver tudo": o catálogo da pasta (melhores primeiro; a fileira de populares abre em "Populares esta semana").
+// "Ver tudo": o catálogo da pasta (populares de todos os tempos; a fileira de populares abre em "Esta semana").
 const BROWSE_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", book: "books", anime: "anime", manga: "manga", game: "games", music: "music" };
 
 type Tab = "news" | MediaKind;

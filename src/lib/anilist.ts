@@ -119,6 +119,7 @@ export type AnimeQuery = {
   season?: AnimeSeason;
   seasonYear?: number;
   decade?: number; // 1990 = anos 90
+  startFrom?: string; // "2026-09-20": só o que estreou a partir dessa data
   showAdult?: boolean;
 };
 
@@ -155,7 +156,7 @@ async function fetchAnimePage(q: AnimeQuery): Promise<{ list: AnimeCard[]; total
         genre: q.genre || undefined,
         season: q.season,
         seasonYear: q.seasonYear,
-        from: q.decade ? q.decade * 10000 : undefined,
+        from: q.startFrom ? Number(q.startFrom.replace(/-/g, "")) : q.decade ? q.decade * 10000 : undefined,
         to: q.decade ? (q.decade + 10) * 10000 : undefined,
         isAdult: q.showAdult ? undefined : false,
       },

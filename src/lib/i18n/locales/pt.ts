@@ -108,8 +108,8 @@ export const pt = {
   movies: {
     tabs: { watched: "Vistos", watching: "Assistindo", watchlist: "Watchlist", liked: "Curtidos", reviews: "Reviews", lists: "Listas" },
     sort: { week: "Populares esta semana", release: "Lançamento (mais novos)", releaseOld: "Lançamento (mais antigos)", recent: "Adicionados recentemente", recentOld: "Adicionados há mais tempo", yours: "Mais bem avaliados por você", top: "Mais bem avaliados", popular: "Popularidade", titleAz: "Título (A–Z)", titleZa: "Título (Z–A)", runtimeShort: "Duração (mais curtos)", runtimeLong: "Duração (mais longos)" },
-    sortGroups: { name: "Nome", added: "Quando adicionou", release: "Lançamento", average: "Nota média", yours: "Sua nota", length: "Duração" },
-    sortOrder: { newest: "Mais novos primeiro", earliest: "Mais antigos primeiro", highest: "Maiores primeiro", lowest: "Menores primeiro", az: "A–Z", za: "Z–A", shortest: "Mais curtos primeiro", longest: "Mais longos primeiro" },
+    sortGroups: { popularity: "Popularidade", name: "Nome", added: "Quando adicionou", release: "Lançamento", average: "Nota média", yours: "Sua nota", length: "Duração" },
+    sortOrder: { thisWeek: "Esta semana", thisMonth: "Este mês", thisYear: "Este ano", allTime: "De todos os tempos", newest: "Mais novos primeiro", earliest: "Mais antigos primeiro", highest: "Maiores primeiro", lowest: "Menores primeiro", az: "A–Z", za: "Z–A", shortest: "Mais curtos primeiro", longest: "Mais longos primeiro" },
     filters: { decade: "Década", genre: "Gênero", rating: "Nota", sortBy: "Ordenar por", any: "Qualquer", noRating: "Sem nota", search: "Filtrar por título…", clear: "Limpar filtros" },
     page: (n: number, total: number) => `Página ${n} de ${total}`,
     prev: "Anterior",
