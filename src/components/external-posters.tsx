@@ -7,7 +7,7 @@ import type { MediaKind, Profile } from "@/lib/types";
 
 // Pôster de uma obra que vem de fora (TMDB ou AniList) e talvez ainda não esteja no catálogo.
 export type ExternalPoster = {
-  id: number; // id na fonte (TMDB ou AniList)
+  id: number | string; // id na fonte (TMDB, AniList, Steam; livro: "OL45804W" da Open Library)
   itemId?: string; // já no catálogo (lido do banco): dispensa a consulta
   title: string;
   year: number | null;
@@ -15,11 +15,13 @@ export type ExternalPoster = {
   label?: string; // linha extra embaixo (ex.: "Sequência")
 };
 
-const SOURCE: Partial<Record<MediaKind, { source: string; type: "movie" | "tv" | "anime" | "manga" }>> = {
+const SOURCE: Partial<Record<MediaKind, { source: string; type: "movie" | "tv" | "anime" | "manga" | "book" | "game" }>> = {
   movie: { source: "tmdb", type: "movie" },
   series: { source: "tmdb", type: "tv" },
   anime: { source: "anilist", type: "anime" },
   manga: { source: "anilist", type: "manga" },
+  book: { source: "openlibrary", type: "book" },
+  game: { source: "steam", type: "game" },
 };
 
 // Grade (ou uma linha só) de pôsteres de fora, com os atalhos ✓ ▶ ♥ 🕐 para quem está logado:
@@ -31,14 +33,14 @@ export async function ExternalPosters({
   layout = "grid",
   eager = 0,
 }: {
-  kind: "movie" | "series" | "anime" | "manga";
+  kind: "movie" | "series" | "anime" | "manga" | "book" | "game";
   list: ExternalPoster[];
   viewer: Pick<Profile, "id"> | null;
   layout?: "grid" | "row"; // row = uma linha de 6 (3 no celular)
   eager?: number; // quantos pôsteres carregam na hora
 }) {
   const { source, type } = SOURCE[kind]!;
-  const itemIds = new Map<number, string>();
+  const itemIds = new Map<number | string, string>();
   let states: Awaited<ReturnType<typeof getViewerStates>> = new Map();
   for (const m of list) if (m.itemId) itemIds.set(m.id, m.itemId);
   const missing = list.filter((m) => !m.itemId);
@@ -50,7 +52,8 @@ export async function ExternalPosters({
       .eq("kind", kind)
       .eq("source", source)
       .in("external_id", missing.map((m) => String(m.id)));
-    for (const row of data ?? []) itemIds.set(Number(row.external_id), row.id);
+    // O id na fonte volta como texto do banco: número em tudo menos livro.
+    for (const row of data ?? []) itemIds.set(kind === "book" ? row.external_id : Number(row.external_id), row.id);
   }
   if (viewer && itemIds.size) states = await getViewerStates(viewer.id, [...itemIds.values()]);
 

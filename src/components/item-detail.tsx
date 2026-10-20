@@ -49,13 +49,6 @@ export function ItemDetail({
   children?: React.ReactNode; // seções entre a ficha e as reviews (temporadas, episódios)
 }) {
   const hasOriginal = !!item.original_title && item.original_title !== title;
-  const tmdbRating =
-    item.tmdb_rating != null ? (
-      <span>
-        <span className="text-star">★</span> {item.tmdb_rating.toFixed(1)}
-        <span className="text-xs"> / 10 {t.movie.onSource(item.source === "anilist" ? "AniList" : "TMDB")}</span>
-      </span>
-    ) : null;
 
   return (
     <div className="mx-auto max-w-[58rem] space-y-10">
@@ -93,9 +86,8 @@ export function ItemDetail({
                 <path d="M12 2.5l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.5l-6 3.3 1.3-6.7-5-4.6 6.8-.8z" />
               </svg>
             </p>
-            {/* Nota do TMDB e, à direita dela, o título original (quando é diferente) */}
+            {/* Título original (quando é diferente) */}
             <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-muted">
-              {tmdbRating}
               {hasOriginal && <span className="italic">{item.original_title}</span>}
             </p>
             <p className="text-end text-xs text-muted">{t.movie.onSource("Orbi")}</p>

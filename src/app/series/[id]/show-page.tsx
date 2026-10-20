@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getShowByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats } from "@/lib/queries";
+import { getItemStats, withSourceStats } from "@/lib/queries";
 import { getSeriesEpisodes, getSeriesInfo, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { SeriesEpisodes, type SeasonView } from "./series-episodes";
 import { Recommendations } from "@/components/recommendations";
@@ -51,6 +51,9 @@ export async function ShowPageContent({ id }: { id: string }) {
   const seasons = info ? await getSeasonViews(id, item.id, info.seasons.map((s) => s.number), viewer?.id ?? null, locale) : [];
   const title = itemTitle(item, locale);
 
+  // Números da fonte somados aos do Orbi (TMDB: quem votou conta como quem assistiu); a nota mistura as duas.
+  const shown = withSourceStats(stats, item, { watched: item.tmdb_votes ?? 0 });
+
   return (
     <ItemDetail
       item={item}
@@ -59,7 +62,7 @@ export async function ShowPageContent({ id }: { id: string }) {
       posterUrl={posterUrl}
       backdropUrl={backdropUrl}
       hideAdult={!!item.is_adult_rated && !viewer?.show_adult}
-      stats={stats}
+      stats={shown}
       t={t}
       editor={
         viewer ? (
@@ -108,7 +111,7 @@ export async function ShowPageContent({ id }: { id: string }) {
       side={
         <>
           <div className="flex items-center justify-between gap-3">
-            <ItemStats stats={stats} t={t} locale={locale} />
+            <ItemStats stats={shown} t={t} locale={locale} />
             {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
           </div>
           {/* Trocar pôster/fundo: só em séries que a pessoa já viu (igual aos filmes) */}

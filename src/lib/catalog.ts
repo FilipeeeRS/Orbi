@@ -15,6 +15,8 @@ import {
 import { LOCALES, TMDB_LANGUAGES } from "./i18n/dictionaries";
 import type { Item } from "./types";
 import { getAnime } from "./anilist";
+import { getBook } from "./openlibrary";
+import { getGame } from "./steam";
 import { toRow } from "./anilist-sync";
 
 // Garante que o filme do TMDB exista no catálogo (tabela items) e o devolve.
@@ -251,6 +253,81 @@ export const ensureManga = (id: number) => ensureAniList("manga", id);
 export const getAniListByRouteId = cache(async (kind: "anime" | "manga", id: string): Promise<Item | null> => {
   const anilistId = Number(id);
   return Number.isInteger(anilistId) && anilistId > 0 ? ensureAniList(kind, anilistId) : null;
+});
+
+// ---- Livros (Open Library) e jogos (Steam) ----
+
+// Procura no catálogo; se não estiver, monta a linha com `load` e salva.
+async function ensureExternal(
+  kind: "book" | "game",
+  source: string,
+  externalId: string,
+  load: () => Promise<Record<string, unknown> | null>,
+): Promise<Item | null> {
+  const admin = createAdminClient();
+  const { data: existing } = await admin
+    .from("items")
+    .select("*")
+    .eq("kind", kind)
+    .eq("source", source)
+    .eq("external_id", externalId)
+    .maybeSingle();
+  if (existing) return existing as Item;
+  const row = await load();
+  if (!row) return null;
+  const { data, error } = await admin
+    .from("items")
+    .upsert({ kind, source, external_id: externalId, genre_ids: [], translations: {}, ...row }, { onConflict: "kind,source,external_id" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as Item;
+}
+
+// Livro da Open Library ("OL45804W"). Nota da fonte (0..5) vira 0..10, como as outras.
+export const ensureBook = (workId: string) =>
+  ensureExternal("book", "openlibrary", workId, async () => {
+    const book = await getBook(workId);
+    if (!book) return null;
+    return {
+      title: book.title,
+      original_title: book.authors.join(", ") || null, // autores aparecem embaixo do título
+      year: book.year,
+      overview: book.description,
+      poster_url: book.cover,
+      backdrop_url: null,
+      tmdb_rating: book.rating != null ? Math.round(book.rating * 20) / 10 : null,
+      tmdb_votes: book.ratings,
+      is_adult_rated: false,
+      runtime: book.pages, // páginas (para ordenar por "duração")
+      release_date: book.year ? `${book.year}-01-01` : null,
+    };
+  });
+
+// Jogo da Steam (appid). Nota do Metacritic (0..100) vira 0..10.
+export const ensureGame = (appId: number) =>
+  ensureExternal("game", "steam", String(appId), async () => {
+    const game = await getGame(appId);
+    if (!game) return null;
+    return {
+      title: game.title,
+      original_title: null,
+      year: game.year,
+      overview: game.description,
+      poster_url: game.poster,
+      backdrop_url: game.header,
+      tmdb_rating: game.metacritic != null ? game.metacritic / 10 : null,
+      tmdb_votes: game.recommendations,
+      is_adult_rated: false,
+      runtime: null,
+      release_date: null,
+    };
+  });
+
+export const getBookByRouteId = cache(async (id: string) => (/^OL\d+W$/.test(id) ? ensureBook(id) : null));
+export const getGameByRouteId = cache(async (id: string) => {
+  const appId = Number(id);
+  return Number.isInteger(appId) && appId > 0 ? ensureGame(appId) : null;
 });
 
 // Uma tradução por idioma do Orbi, preferindo a região padrão (pt-BR, zh-CN...).

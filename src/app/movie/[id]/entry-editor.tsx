@@ -30,6 +30,7 @@ export function EntryEditor({
   initial,
   series = false,
   progress = false,
+  verb,
 }: {
   itemId: string;
   userId: string;
@@ -38,6 +39,7 @@ export function EntryEditor({
   // Série: no "Assistindo", temporada/episódio onde parou. "episode": só o episódio (anime);
   // "chapter": só o capítulo (mangá, que também troca Assistir/Assistindo por Ler/Lendo).
   progress?: boolean | "episode" | "chapter";
+  verb?: "play"; // jogo: "Jogar / Jogado / Jogando"
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -61,7 +63,8 @@ export function EntryEditor({
   const watched = entry?.status === "watched";
   const onWatchlist = entry?.status === "watchlist";
   const watching = entry?.status === "watching";
-  const reading = progress === "chapter"; // mangá: "Ler / Lido / Lendo" e "Parei no capítulo"
+  const reading = progress === "chapter"; // mangá e livro: "Ler / Lido / Lendo" e "Parei no capítulo"
+  const playing = verb === "play"; // jogo: "Jogar / Jogado / Jogando"
   const [stoppedAt, setStoppedAt] = useState({
     season: initial?.current_season ?? null,
     episode: initial?.current_episode ?? null,
@@ -296,7 +299,17 @@ export function EntryEditor({
             icon={ICONS.check}
             removeLabel={t.movie.removeShort}
           >
-            {reading ? (watched ? t.manga.readDone : t.manga.read) : watched ? t.movie.watched : t.movie.watch}
+            {playing
+              ? watched
+                ? t.game.played
+                : t.game.play
+              : reading
+                ? watched
+                  ? t.manga.readDone
+                  : t.manga.read
+                : watched
+                  ? t.movie.watched
+                  : t.movie.watch}
           </Toggle>
           {series && !watched && (
             <Toggle
@@ -307,7 +320,7 @@ export function EntryEditor({
               icon={ICONS.play}
               removeLabel={t.movie.removeShort}
             >
-              {reading ? t.manga.reading : t.movies.tabs.watching}
+              {playing ? t.game.playing : reading ? t.manga.reading : t.movies.tabs.watching}
             </Toggle>
           )}
           <Toggle

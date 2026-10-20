@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "./supabase/server";
-import { ensureAnime, ensureMovie, ensureSeries } from "./catalog";
+import { ensureAnime, ensureBook, ensureGame, ensureMovie, ensureSeries } from "./catalog";
+import { trendingBooks } from "./openlibrary";
+import { mostPlayedGames } from "./steam";
 import { browseAnime, seasonOf } from "./anilist";
 import { seasonItems } from "./anime-db";
 import { isAnime, tmdbTrendingWeek } from "./tmdb";
@@ -46,6 +48,16 @@ export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[
     if (fromDb) return fromDb;
     const { list } = await browseAnime({ page: 1, perPage: limit, sort: "POPULARITY_DESC", season, seasonYear: year });
     const items = await Promise.all(list.map((a) => ensureAnime(a.id).catch(() => null)));
+    return items.filter((i): i is Item => !!i);
+  }
+  if (kind === "book") {
+    const books = (await trendingBooks("weekly", limit * 2)).filter((b) => b.cover).slice(0, limit);
+    const items = await Promise.all(books.map((b) => ensureBook(b.id).catch(() => null)));
+    return items.filter((i): i is Item => !!i);
+  }
+  if (kind === "game") {
+    const games = await mostPlayedGames(limit);
+    const items = await Promise.all(games.map((g) => ensureGame(g.id).catch(() => null)));
     return items.filter((i): i is Item => !!i);
   }
   if (kind === "movie" || kind === "series") {

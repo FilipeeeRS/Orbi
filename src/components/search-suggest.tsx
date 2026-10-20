@@ -83,7 +83,11 @@ export function SearchSuggest({
     }
   }
 
-  const typeLabel = { movie: t.search.typeMovie, series: t.search.typeSeries, anime: t.search.typeAnime, manga: t.search.typeManga, person: t.search.typePerson };
+  const typeLabel = { movie: t.search.typeMovie, series: t.search.typeSeries, anime: t.search.typeAnime, manga: t.search.typeManga,
+    book: t.search.typeBook,
+    game: t.search.typeGame,
+    person: t.search.typePerson,
+  };
   const lg = size === "lg";
 
   return (

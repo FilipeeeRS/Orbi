@@ -9,6 +9,8 @@ import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
 import { ExternalPosters } from "@/components/external-posters";
 import { searchCatalog } from "@/lib/anime-db";
+import { searchBooks } from "@/lib/openlibrary";
+import { searchGames } from "@/lib/steam";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { adultMovieIds } from "@/lib/catalog";
 import {
@@ -24,7 +26,7 @@ import {
 
 export const metadata: Metadata = { title: "Busca" };
 
-const SEARCH_TABS = ["all", "movie", "series", "anime", "manga"] as const;
+const SEARCH_TABS = ["all", "movie", "series", "book", "anime", "manga", "game"] as const;
 type SearchTab = (typeof SEARCH_TABS)[number];
 
 // Ordenações possíveis com o que a busca do TMDB devolve (não há duração nem nota sua aqui).
@@ -53,15 +55,15 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
   const tab: SearchTab =
     params.type === "anime"
       ? "anime"
-      : params.type === "manga"
-        ? "manga"
+      : params.type === "manga" || params.type === "book" || params.type === "game"
+        ? params.type
         : series
           ? "series"
           : params.type === "movie" || fromInfo
             ? "movie"
             : "all";
   if (tab === "all") return <AllResults q={q} />;
-  if (tab === "anime" || tab === "manga") return <CatalogResults q={q} kind={tab} />;
+  if (tab === "anime" || tab === "manga" || tab === "book" || tab === "game") return <CatalogResults q={q} kind={tab} />;
 
   // Vindo da ficha: obras de uma pessoa, de um gênero, estúdio, emissora ou país.
   const person = Number(params.person) || null;
@@ -199,12 +201,19 @@ function SearchTabs({
   );
 }
 
-// Abas Animes e Mangás: busca no catálogo do AniList (cada temporada aparece separada, como no MyAnimeList),
+// Busca de um tipo que não vem do TMDB: animes e mangás (catálogo do AniList), livros (Open Library), jogos (Steam).
+async function searchKind(q: string, kind: "anime" | "manga" | "book" | "game", limit: number, showAdult: boolean) {
+  if (kind === "book") return (await searchBooks(q, limit)).list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
+  if (kind === "game") return searchGames(q, limit);
+  return searchCatalog(q, kind, limit, showAdult);
+}
+
+// Abas Livros, Animes, Mangás e Jogos: busca na fonte de cada tipo (cada temporada aparece separada, como no MyAnimeList),
 // tolerante a erro de digitação quando a cópia já está no banco.
-async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" }) {
+async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" | "book" | "game" }) {
   const [{ t }, viewer] = await Promise.all([getDict(), getViewer()]);
   const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ q, ...(to === "all" ? {} : { type: to }) })}`;
-  const list = q ? await searchCatalog(q, kind, 50, !!viewer?.show_adult) : [];
+  const list = q ? await searchKind(q, kind, 50, !!viewer?.show_adult) : [];
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
@@ -235,11 +244,13 @@ async function AllResults({ q }: { q: string }) {
   if (!q) return <div className="space-y-6">{header}<p className="text-muted">{t.search.prompt}</p></div>;
 
   const showAdult = !!viewer?.show_adult;
-  const [movies, shows, animes, mangas] = await Promise.all([
+  const [movies, shows, books, animes, mangas, games] = await Promise.all([
     searchMoviesPages(q, language, 1, "movie"),
     searchMoviesPages(q, language, 1, "tv"),
-    searchCatalog(q, "anime", 3, showAdult),
-    searchCatalog(q, "manga", 3, showAdult),
+    searchKind(q, "book", 3, showAdult),
+    searchKind(q, "anime", 3, showAdult),
+    searchKind(q, "manga", 3, showAdult),
+    searchKind(q, "game", 3, showAdult),
   ]);
   const adult = showAdult ? null : await adultMovieIds(movies.slice(0, 6).map((m) => m.id));
   const card = (m: { id: number; title: string; release_date?: string; poster_path: string | null }) => ({
@@ -251,8 +262,10 @@ async function AllResults({ q }: { q: string }) {
   const groups = [
     { kind: "movie" as const, list: movies.filter((m) => !adult?.has(m.id)).slice(0, 3).map(card) },
     { kind: "series" as const, list: shows.filter((m) => !isAnime(m)).slice(0, 3).map(card) },
+    { kind: "book" as const, list: books },
     { kind: "anime" as const, list: animes },
     { kind: "manga" as const, list: mangas },
+    { kind: "game" as const, list: games },
   ].filter((g) => g.list.length);
 
   return (

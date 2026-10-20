@@ -7,6 +7,8 @@ import { FolderIcon } from "@/components/folder-icon";
 import { ExternalPosters, type ExternalPoster } from "@/components/external-posters";
 import { BROWSE_PAGE_SIZE, BROWSE_SORTS, browseMovies, type BrowseSort } from "@/lib/browse";
 import { browseCatalog, CATALOG_GENRES } from "@/lib/anime-db";
+import { browseBooks } from "@/lib/openlibrary";
+import { mostPlayedGames, searchGames } from "@/lib/steam";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { sortOptions } from "@/lib/sort-options";
 import { getDict, getViewer } from "@/lib/session";
@@ -50,8 +52,16 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
   let list: ExternalPoster[] = [];
   let total = 0;
   let genres: { value: string; label: string }[] = [];
-  const browsable = kind === "movie" || kind === "series" || kind === "anime" || kind === "manga";
-  if (kind === "anime" || kind === "manga") {
+  const browsable = kind !== "music";
+  if (kind === "book") {
+    const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort, q, decade });
+    list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
+    total = found.total;
+  } else if (kind === "game") {
+    // Jogos: a loja da Steam não tem um catálogo inteiro aberto; sem texto, os mais jogados agora.
+    list = (q?.trim() ? await searchGames(q.trim(), BROWSE_PAGE_SIZE) : await mostPlayedGames(BROWSE_PAGE_SIZE)).map((g) => ({ ...g }));
+    total = list.length;
+  } else if (kind === "anime" || kind === "manga") {
     const found = await browseCatalog({
       kind,
       page,
@@ -113,7 +123,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
       </div>
 
       {list.length && browsable ? (
-        <ExternalPosters kind={kind} list={list} viewer={viewer} eager={8} />
+        <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "book" | "game"} list={list} viewer={viewer} eager={8} />
       ) : (
         <p className="text-sm text-muted">{t.profile.empty}</p>
       )}

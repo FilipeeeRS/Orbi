@@ -27,9 +27,15 @@ export function Poster({ item, locale, rating, liked, showMeta = true, eager, vi
           <PosterImage url={item.poster_url} title={title} eager={eager} hoverRing={!viewer} />
         </Link>
         {viewer && (
-          <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind === "series" || item.kind === "anime" || item.kind === "manga"} badge={badge} />
+          <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind !== "movie" && item.kind !== "music"} badge={badge} />
         )}
       </div>
+      {/* Anime e mangá: muitas capas não têm o nome escrito, então ele vai embaixo (como no AniList) */}
+      {(item.kind === "anime" || item.kind === "manga") && (
+        <Link href={itemHref(item)} className="mt-1 line-clamp-2 block text-xs">
+          {title} {item.year && <span className="text-muted">{item.year}</span>}
+        </Link>
+      )}
       {showMeta && (rating || liked) ? (
         <div className="mt-1 flex items-center gap-1 text-xs">
           <StarsDisplay rating={rating ?? null} />

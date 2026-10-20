@@ -8,6 +8,8 @@ import { ExternalPosters, type ExternalPoster } from "@/components/external-post
 import { getFriendsActivity, getPopularItems, getPopularReviews, getViewerShelf } from "@/lib/home";
 import { browseMovies } from "@/lib/browse";
 import { browseCatalog } from "@/lib/anime-db";
+import { browseBooks } from "@/lib/openlibrary";
+import { mostPlayedGames } from "@/lib/steam";
 import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
 import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
@@ -212,7 +214,7 @@ async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer:
 
       <Section title={t.folders.allOf(t.folders[kind])} more={{ href: browse, label: t.profile.all }}>
         {sample.length ? (
-          <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga"} list={sample} viewer={viewer} layout="row" />
+          <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "book" | "game"} list={sample} viewer={viewer} layout="row" />
         ) : (
           <ItemRow items={[]} kind={kind} locale={locale} viewerFor={viewerFor} />
         )}
@@ -221,8 +223,8 @@ async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer:
   );
 }
 
-// Amostra de "Todos os ...": os mais bem avaliados (filmes e séries, TMDB) ou os mais populares de
-// sempre (animes e mangás, AniList). Pastas sem fonte de dados ficam vazias.
+// Amostra de "Todos os ...": os mais bem avaliados (filmes e séries, TMDB; livros, Open Library), os mais
+// populares de sempre (animes e mangás, AniList) ou mais jogados (jogos, Steam). Músicas ainda sem fonte.
 async function catalogSample(kind: MediaKind, locale: Locale, showAdult: boolean): Promise<ExternalPoster[]> {
   if (kind === "movie" || kind === "series") {
     const { movies } = await browseMovies({}, "top", 1, {
@@ -235,6 +237,11 @@ async function catalogSample(kind: MediaKind, locale: Locale, showAdult: boolean
   if (kind === "anime" || kind === "manga") {
     return (await browseCatalog({ kind, page: 1, perPage: 6, sort: "popular", showAdult })).list;
   }
+  if (kind === "book") {
+    const { list } = await browseBooks({ page: 1, perPage: 6, sort: "top" });
+    return list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
+  }
+  if (kind === "game") return (await mostPlayedGames(12)).slice(6);
   return [];
 }
 

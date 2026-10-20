@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getAniListByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats } from "@/lib/queries";
+import { getItemStats, withSourceStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { itemOverview, itemTitle, type Entry } from "@/lib/types";
 import { dictionaries, type Dictionary } from "@/lib/i18n/dictionaries";
@@ -70,6 +70,13 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
       : undefined;
   const sequelWhen = sequel ? whenLabel(sequel, t, locale) : null;
 
+  // Números da fonte somados aos do Orbi (AniList: completos, planejados e favoritos); a nota mistura as duas.
+  const shown = withSourceStats(stats, item, {
+    watched: media?.stats?.statusDistribution.find((s) => s.status === "COMPLETED")?.amount,
+    watchlist: media?.stats?.statusDistribution.find((s) => s.status === "PLANNING")?.amount,
+    liked: media?.favourites ?? undefined,
+  });
+
   return (
     <ItemDetail
       item={item}
@@ -78,7 +85,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
       posterUrl={item.poster_url}
       backdropUrl={item.backdrop_url}
       hideAdult={!!item.is_adult_rated && !viewer?.show_adult}
-      stats={stats}
+      stats={shown}
       t={t}
       editor={
         viewer ? (
@@ -129,7 +136,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
       }
       side={
         <div className="flex items-center justify-between gap-3">
-          <ItemStats stats={stats} t={t} locale={locale} />
+          <ItemStats stats={shown} t={t} locale={locale} />
           {media?.trailer?.site === "youtube" && <TrailerButton videoId={media.trailer.id} label={t.movie.trailer} />}
         </div>
       }

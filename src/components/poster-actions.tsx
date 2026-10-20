@@ -35,7 +35,7 @@ export function PosterActions({
   badge: showBadge = true,
 }: {
   itemId: string | null;
-  tmdb?: { type: "movie" | "tv" | "anime" | "manga"; id: number }; // anime/mangá: id do AniList
+  tmdb?: { type: "movie" | "tv" | "anime" | "manga" | "book" | "game"; id: number | string }; // id na fonte
   viewerId: string;
   initial: ViewerItemState | null;
   series?: boolean; // séries ganham o "Assistindo"

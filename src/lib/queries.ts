@@ -206,6 +206,29 @@ export async function getItemReviews(itemId: string) {
 }
 
 // Números da obra no Orbi: quantos viram, curtiram, querem ver e a média das notas.
+export type SourceCounts = { watched?: number; liked?: number; watchlist?: number };
+
+// Números da página de uma obra: os da fonte (TMDB, AniList, Open Library, Steam) somados aos do Orbi,
+// para não começar tudo em zero. A nota é a da fonte (0..10 → 0..5) misturada com as notas do Orbi,
+// cada lado pesando pela quantidade de votos: com milhares de votos na fonte, uma nota nova mexe pouco.
+export function withSourceStats(
+  stats: Awaited<ReturnType<typeof getItemStats>>,
+  item: { tmdb_rating: number | null; tmdb_votes: number | null },
+  counts: SourceCounts = {},
+) {
+  const sourceRating = item.tmdb_rating != null && item.tmdb_rating > 0 ? item.tmdb_rating / 2 : null;
+  const sourceVotes = sourceRating != null ? Math.max(1, item.tmdb_votes ?? 0) : 0;
+  const orbiSum = (stats.average ?? 0) * stats.ratings;
+  const totalVotes = sourceVotes + stats.ratings;
+  return {
+    watched: stats.watched + (counts.watched ?? 0),
+    likes: stats.likes + (counts.liked ?? 0),
+    watchlist: stats.watchlist + (counts.watchlist ?? 0),
+    average: totalVotes ? ((sourceRating ?? 0) * sourceVotes + orbiSum) / totalVotes : null,
+    ratings: totalVotes,
+  };
+}
+
 export async function getItemStats(itemId: string) {
   const supabase = await createClient();
   const count = () => supabase.from("entries").select("id", { count: "exact", head: true }).eq("item_id", itemId);

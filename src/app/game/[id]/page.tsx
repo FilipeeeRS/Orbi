@@ -1,0 +1,101 @@
+import { Suspense } from "react";
+import Loading from "../../loading";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getGameByRouteId } from "@/lib/catalog";
+import { getGame } from "@/lib/steam";
+import { getDict, getViewer } from "@/lib/session";
+import { getItemStats, withSourceStats } from "@/lib/queries";
+import { createClient } from "@/lib/supabase/server";
+import { itemTitle, type Entry } from "@/lib/types";
+import { MovieInfo } from "../../movie/[id]/movie-info";
+import { EntryEditor } from "../../movie/[id]/entry-editor";
+import { ExternalLink, ItemDetail, ItemStats, ReviewsSection, SignInToLog } from "@/components/item-detail";
+
+export async function generateMetadata({ params }: PageProps<"/game/[id]">): Promise<Metadata> {
+  const item = await getGameByRouteId((await params).id);
+  return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
+}
+
+// Jogo (dados da loja da Steam): mesma página dos filmes, com desenvolvedora, plataformas e gêneros.
+export default function GamePage(props: PageProps<"/game/[id]">) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <GameContent {...props} />
+    </Suspense>
+  );
+}
+
+async function GameContent({ params }: PageProps<"/game/[id]">) {
+  const { id } = await params;
+  const [item, viewer, { t, locale }] = await Promise.all([getGameByRouteId(id), getViewer(), getDict()]);
+  if (!item) notFound();
+
+  const supabase = await createClient();
+  const [stats, game, entry] = await Promise.all([
+    getItemStats(item.id),
+    getGame(Number(id), locale),
+    viewer
+      ? supabase
+          .from("entries")
+          .select("*")
+          .eq("user_id", viewer.id)
+          .eq("item_id", item.id)
+          .maybeSingle()
+          .then((r) => r.data as Entry | null)
+      : null,
+  ]);
+
+  // Números da fonte somados aos do Orbi (Steam: quem recomendou conta como quem jogou); a nota mistura as duas.
+  const shown = withSourceStats(stats, item, { watched: item.tmdb_votes ?? 0 });
+
+  return (
+    <ItemDetail
+      item={item}
+      title={itemTitle(item, locale)}
+      // Resumo no idioma da pessoa (a loja traduz), senão o salvo no catálogo.
+      overview={game?.description ?? item.overview}
+      posterUrl={item.poster_url}
+      backdropUrl={game?.header ?? item.backdrop_url}
+      hideAdult={false}
+      stats={shown}
+      t={t}
+      editor={
+        viewer ? (
+          <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} series verb="play" />
+        ) : (
+          <SignInToLog href={`/game/${id}`} label={t.game.signInToLog} />
+        )
+      }
+      details={
+        game && (
+          <div className="space-y-4 pt-4">
+            <MovieInfo
+              info={{
+                cast: [],
+                crew: [],
+                details: [
+                  { label: t.game.developers, values: game.developers.map((name) => ({ name })) },
+                  { label: t.game.publishers, values: game.publishers.map((name) => ({ name })) },
+                  { label: t.game.platforms, values: game.platforms.map((name) => ({ name })) },
+                ].filter((row) => row.values.length),
+                genres: game.genres.map((name) => ({ name })),
+                releases: [],
+                watch: null,
+              }}
+            />
+            <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
+              {game.releaseDate && <span>{t.game.released(game.releaseDate)}</span>}
+              {game.metacritic != null && <span>Metacritic {game.metacritic}</span>}
+              <span>{t.info.moreAt}</span>
+              <ExternalLink href={`https://store.steampowered.com/app/${id}`}>Steam</ExternalLink>
+            </p>
+          </div>
+        )
+      }
+      side={<ItemStats stats={shown} t={t} locale={locale} />}
+    >
+      <ReviewsSection itemId={item.id} viewerId={viewer?.id ?? null} t={t} locale={locale} />
+    </ItemDetail>
+  );
+}

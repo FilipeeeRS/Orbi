@@ -93,6 +93,9 @@ export function itemOverview(item: Pick<Item, "overview" | "translations">, loca
 export function itemHref(item: Pick<Item, "id" | "source" | "external_id"> & { kind?: ItemKind }) {
   if (item.kind === "series") return `/series/${item.external_id}`;
   if (item.kind === "anime") return `/anime/${item.external_id}`;
+  if (item.kind === "manga") return `/manga/${item.external_id}`;
+  if (item.kind === "book") return `/book/${item.external_id}`;
+  if (item.kind === "game") return `/game/${item.external_id}`;
   if (item.kind === "season") {
     const [show, season] = (item.external_id ?? "").split("/");
     return `/series/${show}/season/${season}`;

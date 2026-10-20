@@ -45,7 +45,7 @@ async function SeasonContent({ searchParams }: PageProps<"/anime/season">) {
       }),
     ),
   );
-  const seen = new Set<number>();
+  const seen = new Set<number | string>();
   const list = pages.flatMap((p) => p.list).filter((a) => !seen.has(a.id) && seen.add(a.id));
 
   const label = (s: { season: AnimeSeason; year: number }) => `${t.anime.seasons[s.season]} ${s.year}`;

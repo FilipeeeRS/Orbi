@@ -29,6 +29,8 @@ export type AnimeCard = {
 
 export type AnimeMedia = AnimeCard & {
   idMal: number | null;
+  favourites: number | null;
+  stats: { statusDistribution: { status: string; amount: number }[] } | null;
   type: "ANIME" | "MANGA";
   chapters: number | null;
   volumes: number | null;
@@ -85,6 +87,7 @@ export async function getAnime(id: number, type: "ANIME" | "MANGA" = "ANIME"): P
     const data = await anilist<{ Media: AnimeMedia }>(
       `query ($id: Int, $type: MediaType) { Media(id: $id, type: $type) {
         ${CARD} idMal type chapters volumes updatedAt description(asHtml: false) bannerImage duration status source synonyms
+        favourites stats { statusDistribution { status amount } }
         endDate { year month day }
         nextAiringEpisode { episode airingAt }
         trailer { id site }

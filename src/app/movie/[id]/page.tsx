@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats } from "@/lib/queries";
+import { getItemStats, withSourceStats } from "@/lib/queries";
 import { getMovieInfo, tmdbLanguage } from "@/lib/tmdb";
 import { MovieInfo } from "./movie-info";
 import { createClient } from "@/lib/supabase/server";
@@ -63,6 +63,9 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   const backdropUrl = art?.backdrop ?? item.backdrop_url;
   const title = itemTitle(item, locale);
 
+  // Números da fonte somados aos do Orbi (TMDB: quem votou conta como quem assistiu); a nota mistura as duas.
+  const shown = withSourceStats(stats, item, { watched: item.tmdb_votes ?? 0 });
+
   return (
     <ItemDetail
       item={item}
@@ -72,7 +75,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       backdropUrl={backdropUrl}
       // Filme 18 anos para quem não ativou o conteúdo +18: imagens borradas e aviso.
       hideAdult={!!item.is_adult_rated && !viewer?.show_adult}
-      stats={stats}
+      stats={shown}
       t={t}
       editor={
         viewer ? (
@@ -102,7 +105,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       side={
         <>
           <div className="flex items-center justify-between gap-3">
-            <ItemStats stats={stats} t={t} locale={locale} />
+            <ItemStats stats={shown} t={t} locale={locale} />
             {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
           </div>
           {/* Trocar pôster/fundo: só em filmes que a pessoa já viu */}

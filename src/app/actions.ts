@@ -9,7 +9,7 @@ import { getDict, getViewer, LOCALE_COOKIE } from "@/lib/session";
 import { itemTitle, type Item } from "@/lib/types";
 import { isLocale } from "@/lib/i18n/dictionaries";
 import { isAvatarRing } from "@/lib/avatar-ring";
-import { ensureAnime, ensureManga, ensureMovie, ensureSeason, ensureSeries } from "@/lib/catalog";
+import { ensureAnime, ensureBook, ensureGame, ensureManga, ensureMovie, ensureSeason, ensureSeries } from "@/lib/catalog";
 
 export async function setLocale(locale: string) {
   if (!isLocale(locale)) return;
@@ -186,8 +186,15 @@ export async function saveFavorites(itemIds: string[]): Promise<{ ok: boolean }>
 
 // Atalhos do pôster em listas de fora (filme/série do TMDB, anime do AniList) que talvez ainda não
 // estejam no catálogo: cria e devolve o id.
-export async function ensureTmdbItemId(type: "movie" | "tv" | "anime" | "manga", id: number): Promise<string | null> {
-  if (!(await getViewer()) || !Number.isInteger(id)) return null;
+export async function ensureTmdbItemId(
+  type: "movie" | "tv" | "anime" | "manga" | "book" | "game",
+  id: number | string,
+): Promise<string | null> {
+  if (!(await getViewer())) return null;
+  // Livro: id da Open Library ("OL45804W"); o resto: número.
+  if (type === "book") return typeof id === "string" ? ((await ensureBook(id))?.id ?? null) : null;
+  if (typeof id !== "number" || !Number.isInteger(id)) return null;
+  if (type === "game") return (await ensureGame(id))?.id ?? null;
   const ensure = type === "manga" ? ensureManga : type === "anime" ? ensureAnime : type === "tv" ? ensureSeries : ensureMovie;
   return (await ensure(id))?.id ?? null;
 }
