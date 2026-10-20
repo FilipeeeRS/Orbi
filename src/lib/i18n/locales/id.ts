@@ -84,6 +84,7 @@ export const id: Dictionary = {
     recent: "Aktivitas terbaru",
     folders: "Folder",
     friends: "Teman",
+    noFriends: "Belum ada teman.",
     addFriend: "Tambah teman",
     isFriend: "Teman",
     removeFriend: "Hapus teman",

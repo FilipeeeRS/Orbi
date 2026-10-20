@@ -84,6 +84,7 @@ export const ar: Dictionary = {
     recent: "النشاط الأخير",
     folders: "المجلدات",
     friends: "الأصدقاء",
+    noFriends: "لا يوجد أصدقاء بعد.",
     addFriend: "إضافة صديق",
     isFriend: "صديق",
     removeFriend: "إزالة الصديق",

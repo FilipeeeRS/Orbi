@@ -84,6 +84,7 @@ export const hi: Dictionary = {
     recent: "हाल की गतिविधि",
     folders: "फ़ोल्डर",
     friends: "दोस्त",
+    noFriends: "अभी कोई दोस्त नहीं।",
     addFriend: "दोस्त जोड़ें",
     isFriend: "दोस्त",
     removeFriend: "दोस्त हटाएँ",

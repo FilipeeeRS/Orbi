@@ -84,6 +84,7 @@ export const ur: Dictionary = {
     recent: "حالیہ سرگرمی",
     folders: "فولڈرز",
     friends: "دوست",
+    noFriends: "ابھی کوئی دوست نہیں۔",
     addFriend: "دوست شامل کریں",
     isFriend: "دوست",
     removeFriend: "دوست ہٹائیں",

@@ -82,6 +82,7 @@ export const pt = {
     recent: "Atividade recente",
     folders: "Pastas",
     friends: "Amigos",
+    noFriends: "Nenhum amigo ainda.",
     addFriend: "Adicionar amigo",
     isFriend: "Amigo",
     removeFriend: "Remover amigo",

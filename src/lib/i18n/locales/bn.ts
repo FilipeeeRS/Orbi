@@ -84,6 +84,7 @@ export const bn: Dictionary = {
     recent: "সাম্প্রতিক কার্যকলাপ",
     folders: "ফোল্ডার",
     friends: "বন্ধু",
+    noFriends: "এখনো কোনো বন্ধু নেই।",
     addFriend: "বন্ধু যোগ করুন",
     isFriend: "বন্ধু",
     removeFriend: "বন্ধু সরান",

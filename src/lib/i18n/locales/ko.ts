@@ -84,6 +84,7 @@ export const ko: Dictionary = {
     recent: "최근 활동",
     folders: "폴더",
     friends: "친구",
+    noFriends: "아직 친구가 없어요.",
     addFriend: "친구 추가",
     isFriend: "친구",
     removeFriend: "친구 삭제",

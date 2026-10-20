@@ -213,23 +213,32 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
               </section>
             )}
 
-            {friends.count > 0 && (
-              <section id="friends" className="scroll-mt-24">
-                <SectionTitle more={friends.count.toLocaleString()}>{t.profile.friends}</SectionTitle>
-                <div className="flex flex-wrap gap-2">
+            {/* Amigos (quem o perfil segue), sempre no fim; sem ninguém, um aviso */}
+            <section id="friends" className="scroll-mt-24">
+              <SectionTitle more={friends.count ? friends.count.toLocaleString() : undefined}>{t.profile.friends}</SectionTitle>
+              {friends.count > 0 ? (
+                <ul className="flex flex-wrap gap-4">
                   {friends.list.map((f) => (
-                    <Link
-                      key={f.id}
-                      href={`/u/${f.username}`}
-                      title={f.display_name || f.username}
-                      className="rounded-full ring-2 ring-transparent transition hover:ring-accent"
-                    >
-                      <Avatar profile={f} size={44} />
-                    </Link>
+                    <li key={f.id}>
+                      <Link
+                        href={`/u/${f.username}`}
+                        title={f.display_name || f.username}
+                        className="group flex w-16 flex-col items-center gap-1.5 text-center"
+                      >
+                        <span className="rounded-full ring-2 ring-transparent transition group-hover:ring-accent">
+                          <Avatar profile={f} size={48} />
+                        </span>
+                        <span className="w-full truncate text-xs text-muted group-hover:text-fg">
+                          {f.display_name || f.username}
+                        </span>
+                      </Link>
+                    </li>
                   ))}
-                </div>
-              </section>
-            )}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted">{t.profile.noFriends}</p>
+              )}
+            </section>
           </div>
 
           <aside className="space-y-10">

@@ -84,6 +84,7 @@ export const de: Dictionary = {
     recent: "Letzte Aktivität",
     folders: "Ordner",
     friends: "Freunde",
+    noFriends: "Noch keine Freunde.",
     addFriend: "Als Freund hinzufügen",
     isFriend: "Freund",
     removeFriend: "Freund entfernen",

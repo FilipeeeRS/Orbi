@@ -92,6 +92,7 @@ export const ru: Dictionary = {
     recent: "Недавняя активность",
     folders: "Папки",
     friends: "Друзья",
+    noFriends: "Пока нет друзей.",
     addFriend: "Добавить в друзья",
     isFriend: "В друзьях",
     removeFriend: "Удалить из друзей",

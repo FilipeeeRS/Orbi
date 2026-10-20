@@ -84,6 +84,7 @@ export const tr: Dictionary = {
     recent: "Son etkinlik",
     folders: "Klasörler",
     friends: "Arkadaşlar",
+    noFriends: "Henüz arkadaş yok.",
     addFriend: "Arkadaş ekle",
     isFriend: "Arkadaş",
     removeFriend: "Arkadaşlıktan çıkar",

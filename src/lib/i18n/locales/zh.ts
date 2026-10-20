@@ -84,6 +84,7 @@ export const zh: Dictionary = {
     recent: "最近动态",
     folders: "文件夹",
     friends: "好友",
+    noFriends: "还没有好友。",
     addFriend: "添加好友",
     isFriend: "好友",
     removeFriend: "移除好友",

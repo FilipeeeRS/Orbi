@@ -84,6 +84,7 @@ export const ja: Dictionary = {
     recent: "最近のアクティビティ",
     folders: "フォルダ",
     friends: "フレンド",
+    noFriends: "まだフレンドがいません。",
     addFriend: "フレンドに追加",
     isFriend: "フレンド",
     removeFriend: "フレンドから削除",
