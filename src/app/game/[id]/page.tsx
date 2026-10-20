@@ -3,7 +3,7 @@ import Loading from "../../loading";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getGameByRouteId } from "@/lib/catalog";
-import { getGame, getGameReviews } from "@/lib/steam";
+import { genreTag, getGame, getGameReviews } from "@/lib/steam";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { getDict, getViewer } from "@/lib/session";
 import { getItemStats, withSourceStats } from "@/lib/queries";
@@ -88,12 +88,28 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
               info={{
                 cast: [],
                 crew: [],
+                // Cada nome abre "Todos os jogos" filtrado por ele.
                 details: [
-                  { label: t.game.developers, values: game.developers.map((name) => ({ name })) },
-                  { label: t.game.publishers, values: game.publishers.map((name) => ({ name })) },
-                  { label: t.game.platforms, values: game.platforms.map((name) => ({ name })) },
+                  {
+                    label: t.game.developers,
+                    values: game.developers.map((name) => ({ name, href: gamesBy({ developer: name, label: name }) })),
+                  },
+                  {
+                    label: t.game.publishers,
+                    values: game.publishers.map((name) => ({ name, href: gamesBy({ publisher: name, label: name }) })),
+                  },
+                  {
+                    label: t.game.platforms,
+                    values: game.platforms.map((p) => ({
+                      name: p.name,
+                      href: gamesBy({ os: p.key === "windows" ? "win" : p.key, label: p.name }),
+                    })),
+                  },
                 ].filter((row) => row.values.length),
-                genres: game.genres.map((name) => ({ name })),
+                genres: game.genres.map((g) => {
+                  const tag = genreTag(g.id);
+                  return { name: g.name, href: tag ? gamesBy({ tag: String(tag), label: g.name }) : undefined };
+                }),
                 releases: [],
                 watch: null,
               }}
@@ -113,3 +129,5 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
     </ItemDetail>
   );
 }
+
+const gamesBy = (params: Record<string, string>) => `/browse/games?${new URLSearchParams(params)}`;

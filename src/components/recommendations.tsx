@@ -33,6 +33,7 @@ export async function Recommendations({
     title: m.title,
     year: releaseYear(m),
     poster: tmdbImage(m.poster_path, "w342"),
+    rating: m.vote_average ? m.vote_average / 2 : null,
   }));
   if (!posters.length) return null;
   return (

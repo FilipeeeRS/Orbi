@@ -9,7 +9,7 @@ import { getFriendsActivity, getPopularItems, getPopularReviews, getViewerShelf 
 import { browseMovies } from "@/lib/browse";
 import { browseCatalog } from "@/lib/anime-db";
 import { browseBooks } from "@/lib/openlibrary";
-import { mostPlayedGames } from "@/lib/steam";
+import { browseGames } from "@/lib/steam";
 import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
 import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
@@ -101,7 +101,7 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
           <Row>
             {friends.map((e) => (
               <div key={e.id} className="space-y-1.5">
-                <Poster item={e.items} locale={locale} showMeta={false} showTitle viewer={viewerFor(e.item_id)} />
+                <Poster item={e.items} locale={locale} showMeta={false} viewer={viewerFor(e.item_id)} />
                 <Link
                   href={`/u/${e.profiles.username}`}
                   className="flex items-center gap-1.5 text-xs text-muted hover:text-fg"
@@ -240,16 +240,16 @@ async function catalogSample(kind: MediaKind, locale: Locale, showAdult: boolean
       showAdult,
       type: kind === "series" ? "tv" : "movie",
     });
-    return movies.slice(0, 6).map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342") }));
+    return movies.slice(0, 6).map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), rating: m.vote_average ? m.vote_average / 2 : null }));
   }
   if (kind === "anime" || kind === "manga") {
     return (await browseCatalog({ kind, page: 1, perPage: 6, sort: "popular", showAdult })).list;
   }
   if (kind === "book") {
     const { list } = await browseBooks({ page: 1, perPage: 6, sort: "top" });
-    return list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
+    return list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
   }
-  if (kind === "game") return (await mostPlayedGames(12)).slice(6);
+  if (kind === "game") return (await browseGames({ page: 1, perPage: 6, sort: "popular" })).list;
   return [];
 }
 
@@ -267,7 +267,7 @@ function ItemRow({
   return (
     <Row>
       {items.map((item, i) => (
-        <Poster key={item.id} item={item} locale={locale} showMeta={false} showTitle eager={i < 6} viewer={viewerFor(item.id)} />
+        <Poster key={item.id} item={item} locale={locale} showMeta={false} eager={i < 6} viewer={viewerFor(item.id)} />
       ))}
       {Array.from({ length: Math.max(0, 6 - items.length) }, (_, i) => (
         <div

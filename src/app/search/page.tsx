@@ -211,7 +211,7 @@ function SearchTabs({
 
 // Busca de um tipo que não vem do TMDB: animes e mangás (catálogo do AniList), livros (Open Library), jogos (Steam).
 async function searchKind(q: string, kind: "anime" | "manga" | "book" | "game", limit: number, showAdult: boolean) {
-  if (kind === "book") return (await searchBooks(q, limit)).list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
+  if (kind === "book") return (await searchBooks(q, limit)).list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
   if (kind === "game") return searchGames(q, limit);
   return searchCatalog(q, kind, limit, showAdult);
 }
@@ -261,11 +261,12 @@ async function AllResults({ q }: { q: string }) {
     searchKind(q, "game", 6, showAdult),
   ]);
   const adult = showAdult ? null : await adultMovieIds(movies.slice(0, 6).map((m) => m.id));
-  const card = (m: { id: number; title: string; release_date?: string; poster_path: string | null }) => ({
+  const card = (m: { id: number; title: string; release_date?: string; poster_path: string | null; vote_average?: number }) => ({
     id: m.id,
     title: m.title,
     year: releaseYear(m),
     poster: tmdbImage(m.poster_path, "w342"),
+    rating: m.vote_average ? m.vote_average / 2 : null,
   });
   const groups = [
     { kind: "movie" as const, list: movies.filter((m) => !adult?.has(m.id)).slice(0, 6).map(card) },
@@ -308,7 +309,7 @@ async function AniListPersonResults({ q, kind, id }: { q: string; kind: "anistaf
       kind: k,
       list: works[k]
         .filter((a) => !a.isAdult || !!viewer?.show_adult)
-        .map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) })),
+        .map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null })),
     }))
     .filter((g) => g.list.length);
   return (

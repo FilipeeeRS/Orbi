@@ -14,8 +14,8 @@ export type Game = GameCard & {
   header: string | null; // imagem horizontal (fundo da página)
   developers: string[];
   publishers: string[];
-  genres: string[];
-  platforms: string[];
+  genres: { id: string; name: string }[];
+  platforms: { key: string; name: string }[];
   releaseDate: string | null; // texto da loja ("25 fev. 2017")
   comingSoon: boolean;
   metacritic: number | null; // 0..100
@@ -32,7 +32,7 @@ type AppDetails = {
   background_raw?: string;
   developers?: string[];
   publishers?: string[];
-  genres?: { description: string }[];
+  genres?: { id: string; description: string }[];
   platforms?: Record<string, boolean>;
   release_date?: { coming_soon: boolean; date: string };
   metacritic?: { score: number };
@@ -48,9 +48,13 @@ export async function gamePoster(id: number): Promise<string | null> {
   const vertical = `${ASSETS}/${id}/library_600x900.jpg`;
   try {
     const res = await fetch(vertical, { method: "HEAD" });
-    return res.ok ? vertical : `${ASSETS}/${id}/header.jpg`;
+    if (res.ok) return vertical;
+  } catch {}
+  // Jogos novos guardam as imagens num endereço com código: usa a capa que a própria loja informa.
+  try {
+    return (await fetchDetails(id, "english"))?.header_image ?? null;
   } catch {
-    return `${ASSETS}/${id}/header.jpg`;
+    return null;
   }
 }
 
@@ -95,10 +99,10 @@ export async function getGame(id: number, locale = "en"): Promise<Game | null> {
     header: app.background_raw ?? app.header_image ?? null,
     developers: app.developers ?? [],
     publishers: app.publishers ?? [],
-    genres: (app.genres ?? []).map((g) => g.description),
+    genres: (app.genres ?? []).map((g) => ({ id: g.id, name: g.description })),
     platforms: Object.entries(app.platforms ?? {})
       .filter(([, on]) => on)
-      .map(([name]) => ({ windows: "Windows", mac: "macOS", linux: "Linux" })[name] ?? name),
+      .map(([key]) => ({ key, name: ({ windows: "Windows", mac: "macOS", linux: "Linux" } as Record<string, string>)[key] ?? key })),
     releaseDate: app.release_date?.date || null,
     comingSoon: !!app.release_date?.coming_soon,
     metacritic: app.metacritic?.score ?? null,
@@ -198,9 +202,26 @@ const STORE_SORT: Record<string, string> = {
   "title-desc": "sort_by=Name_DESC",
 };
 
-export async function browseGames(opts: { page: number; perPage: number; sort: string; q?: string }) {
+// Gênero da loja (id do appdetails) → tag da busca da loja.
+const GENRE_TAG: Record<string, number> = {
+  "1": 19, "25": 21, "4": 597, "23": 492, "3": 122, "28": 599, "2": 9, "18": 701, "9": 699, "29": 128, "37": 113, "70": 493,
+};
+export const genreTag = (genreId: string) => GENRE_TAG[genreId] ?? null;
+
+export type GameFilters = { developer?: string; publisher?: string; tag?: number; os?: string };
+
+export async function browseGames(opts: { page: number; perPage: number; sort: string; q?: string } & GameFilters) {
+  const filters = [
+    opts.developer && `developer=${encodeURIComponent(opts.developer)}`,
+    opts.publisher && `publisher=${encodeURIComponent(opts.publisher)}`,
+    opts.tag && `tags=${opts.tag}`,
+    opts.os && ["win", "mac", "linux"].includes(opts.os) && `os=${opts.os}`,
+  ]
+    .filter(Boolean)
+    .join("&");
+  const order = [STORE_SORT[opts.sort] ?? STORE_SORT.top, filters].filter(Boolean).join("&");
   try {
-    return await fetchStorePage(opts.page, opts.perPage, STORE_SORT[opts.sort] ?? STORE_SORT.top, opts.q?.trim() ?? "");
+    return await fetchStorePage(opts.page, opts.perPage, order, opts.q?.trim() ?? "");
   } catch {
     return { list: [] as GameCard[], total: 0 };
   }

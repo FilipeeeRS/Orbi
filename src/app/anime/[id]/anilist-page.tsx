@@ -50,7 +50,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
         id: e.node.id,
         title: animeTitle(e.node),
         year: animeYear(e.node),
-        poster: animeCover(e.node),
+        poster: animeCover(e.node), rating: e.node.averageScore ? e.node.averageScore / 20 : null,
         label: t.anime.relations[e.relationType] ?? e.relationType,
       }));
   const relatedAnime = relatedOf("ANIME");
@@ -59,7 +59,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
     .map((n) => n.mediaRecommendation)
     .filter((m): m is NonNullable<typeof m> => !!m && (!m.isAdult || !!viewer?.show_adult))
     .slice(0, 6)
-    .map((m) => ({ id: m.id, title: animeTitle(m), year: animeYear(m), poster: animeCover(m) }));
+    .map((m) => ({ id: m.id, title: animeTitle(m), year: animeYear(m), poster: animeCover(m), rating: m.averageScore ? m.averageScore / 20 : null }));
 
   // Anime que já terminou: a próxima temporada anunciada (sequência ainda não lançada), se houver.
   const sequel =

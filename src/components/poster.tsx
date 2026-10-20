@@ -1,24 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
-import { StarsDisplay } from "./stars";
 import { PosterActions, type ViewerItemState } from "./poster-actions";
 import { itemHref, itemTitle, type Item } from "@/lib/types";
-import type { Locale } from "@/lib/i18n/dictionaries";
+import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 
 type Props = {
   item: Item;
   locale: Locale;
   rating?: number | null;
   liked?: boolean;
-  showMeta?: boolean;
+  showMeta?: boolean; // true (perfil): nota e like de quem registrou; false: nota geral da obra
   eager?: boolean;
   // Quem está logado: habilita os atalhos de "visto" e "curtir" ao passar o mouse.
   viewer?: { id: string; state: ViewerItemState | null } | null;
   badge?: boolean; // selo do status no canto do pôster (false no perfil e nas listas do usuário)
-  showTitle?: boolean; // título e ano embaixo (telas de descobrir: Home, Ver tudo, busca...)
 };
 
-export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer, badge = true, showTitle = false }: Props) {
+export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer, badge = true }: Props) {
   const title = itemTitle(item, locale);
   return (
     <div className="group">
@@ -31,19 +29,15 @@ export function Poster({ item, locale, rating, liked, showMeta = true, eager, vi
           <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind !== "movie" && item.kind !== "music"} badge={badge} />
         )}
       </div>
-      {/* Regra única: nas telas de descobrir, título e ano embaixo de todos (muitas capas, como as de
-          anime, não têm o nome escrito); no perfil, só estrelas e coração (o nome fica no tooltip). */}
-      {showTitle && (
-        <Link href={itemHref(item)} className="mt-1 line-clamp-2 block text-xs">
-          {title} {item.year && <span className="text-muted">{item.year}</span>}
-        </Link>
-      )}
-      {showMeta && (rating || liked) ? (
-        <div className="mt-1 flex items-center gap-1 text-xs">
-          <StarsDisplay rating={rating ?? null} />
-          {liked && <span className="text-like">♥</span>}
-        </div>
-      ) : null}
+      <PosterCaption
+        href={itemHref(item)}
+        title={title}
+        year={item.year}
+        // No perfil: a nota de quem registrou (1..10 → 0,5..5). Fora dele: a nota geral da obra (fonte, 0..10 → 0..5).
+        rating={showMeta && rating ? rating / 2 : !showMeta && item.tmdb_rating ? item.tmdb_rating / 2 : null}
+        liked={showMeta && liked}
+        lang={dictionaries[locale].htmlLang}
+      />
     </div>
   );
 }
@@ -86,4 +80,41 @@ export function PosterImage({
 
 export function PosterGrid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">{children}</div>;
+}
+
+// Embaixo de todo pôster do site: nome e ano à esquerda; à direita, na mesma linha, a nota em número com
+// estrela (3,5 ★) e o coração de curtido. Muitas capas (anime, mangá) não têm o nome escrito.
+export function PosterCaption({
+  href,
+  title,
+  year,
+  rating,
+  liked,
+  lang,
+}: {
+  href: string;
+  title: string;
+  year: number | null;
+  rating?: number | null; // 0..5
+  liked?: boolean;
+  lang?: string;
+}) {
+  return (
+    <div className="mt-1 flex items-start justify-between gap-1.5 text-xs">
+      <Link href={href} className="line-clamp-2 min-w-0">
+        {title} {year && <span className="text-muted">{year}</span>}
+      </Link>
+      {(rating || liked) && (
+        <span className="flex shrink-0 items-center gap-1 tabular-nums text-muted">
+          {rating ? (
+            <>
+              {rating.toLocaleString(lang, { maximumFractionDigits: 1 })}
+              <span className="text-star">★</span>
+            </>
+          ) : null}
+          {liked && <span className="text-like">♥</span>}
+        </span>
+      )}
+    </div>
+  );
 }

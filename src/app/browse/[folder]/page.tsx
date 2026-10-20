@@ -55,11 +55,20 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
   const browsable = kind !== "music";
   if (kind === "book") {
     const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort, q, decade });
-    list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover }));
+    list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
     total = found.total;
   } else if (kind === "game") {
     // Jogos: a busca da loja da Steam (o catálogo inteiro, com paginação e ordenação).
-    const found = await browseGames({ page, perPage: BROWSE_PAGE_SIZE, sort, q });
+    const found = await browseGames({
+      page,
+      perPage: BROWSE_PAGE_SIZE,
+      sort,
+      q,
+      developer: typeof query.developer === "string" ? query.developer : undefined,
+      publisher: typeof query.publisher === "string" ? query.publisher : undefined,
+      tag: Number(query.tag) || undefined,
+      os: typeof query.os === "string" ? query.os : undefined,
+    });
     list = found.list;
     total = found.total;
   } else if (kind === "anime" || kind === "manga") {
@@ -86,7 +95,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
       }),
       getMovieGenres(language, type),
     ]);
-    list = found.movies.map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342") }));
+    list = found.movies.map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), rating: m.vote_average ? m.vote_average / 2 : null }));
     total = found.total;
     genres = tmdbGenres.map((g) => ({ value: String(g.id), label: g.name }));
   }
@@ -109,6 +118,8 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
         <h1 className="font-display flex items-center gap-2 pb-2 text-2xl font-extrabold">
           <FolderIcon kind={kind} className="size-6 text-accent" />
           {t.folders.allOf(t.folders[kind])}
+          {/* Filtro vindo da ficha de um jogo (desenvolvedora, distribuidora, gênero, plataforma) */}
+          {typeof query.label === "string" && <span className="font-sans text-base font-semibold text-accent">· {query.label}</span>}
           <span className="font-sans text-sm font-normal text-muted">{count}</span>
         </h1>
         {browsable && (

@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { PosterImage, PosterGrid } from "@/components/poster";
+import { PosterCaption, PosterImage, PosterGrid } from "@/components/poster";
+import { getDict } from "@/lib/session";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 import { PosterActions } from "@/components/poster-actions";
 import { getViewerStates } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +15,7 @@ export type ExternalPoster = {
   year: number | null;
   poster: string | null; // URL completa
   label?: string; // linha extra embaixo (ex.: "Sequência")
+  rating?: number | null; // nota geral 0..5 (da fonte)
 };
 
 const SOURCE: Partial<Record<MediaKind, { source: string; type: "movie" | "tv" | "anime" | "manga" | "book" | "game" }>> = {
@@ -40,6 +43,7 @@ export async function ExternalPosters({
   eager?: number; // quantos pôsteres carregam na hora
 }) {
   const { source, type } = SOURCE[kind]!;
+  const lang = dictionaries[(await getDict()).locale].htmlLang;
   const itemIds = new Map<number | string, string>();
   let states: Awaited<ReturnType<typeof getViewerStates>> = new Map();
   for (const m of list) if (m.itemId) itemIds.set(m.id, m.itemId);
@@ -76,9 +80,7 @@ export async function ExternalPosters({
             />
           )}
         </div>
-        <Link href={href} className="mt-1 line-clamp-2 block text-xs">
-          {m.title} {m.year && <span className="text-muted">{m.year}</span>}
-        </Link>
+        <PosterCaption href={href} title={m.title} year={m.year} rating={m.rating} lang={lang} />
         {m.label && <p className="text-[11px] text-muted">{m.label}</p>}
       </div>
     );
