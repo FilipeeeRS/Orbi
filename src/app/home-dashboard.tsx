@@ -102,7 +102,7 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
     <div className="space-y-12">
       {/* Logado: as últimas notificações (lançamentos da watchlist, seguidores, curtidas, novidades do Orbi) */}
       {viewer ? (
-        <Section title={t.notifications.title} more={{ href: "/notifications", label: t.notifications.seeAll }}>
+        <Section title={t.notifications.title} more={{ href: "/notifications", label: t.profile.all }}>
           {notifications.length ? (
             <ul className="divide-y divide-border ps-4">
               {notifications.map((n) => (
