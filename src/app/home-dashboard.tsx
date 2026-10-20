@@ -10,11 +10,11 @@ import { ReviewAttachments } from "@/components/review-attachments";
 import { TranslatableText } from "@/components/translatable-text";
 import { ReviewComments } from "@/components/review-comments";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
-import { itemHref, itemTitle, type MediaKind, type Profile } from "@/lib/types";
+import { itemHref, itemTitle, MEDIA_KINDS, type MediaKind, type Profile } from "@/lib/types";
 
-const KINDS: MediaKind[] = ["movie", "series", "music", "game", "book"];
+const KINDS = MEDIA_KINDS;
 // "Ver tudo" de cada fileira abre o catálogo da pasta já ordenado por "Populares esta semana".
-const BROWSE_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
+const BROWSE_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", book: "books", anime: "anime", manga: "manga", game: "games", music: "music" };
 
 // Tela inicial: boas-vindas, amigos, populares da semana e reviews.
 // Visitante (viewer null) vê só populares e reviews; marcar ou curtir leva para o login.
@@ -80,8 +80,9 @@ export async function HomeDashboard({ viewer, t, locale }: { viewer: Profile | n
       {popular.map(({ kind, items }) => (
         <Section
           key={kind}
-          title={t.home.popular(t.folders[kind])}
-          more={{ href: `/browse/${BROWSE_PATHS[kind]}`, label: t.profile.all }}
+          // Animes: os da temporada atual, e o "Ver tudo" abre a página da temporada.
+          title={kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind])}
+          more={{ href: kind === "anime" ? "/anime/season" : `/browse/${BROWSE_PATHS[kind]}`, label: t.profile.all }}
         >
           <Row>
             {items.map((item, i) => (

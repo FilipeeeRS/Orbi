@@ -8,6 +8,8 @@ import { FolderView } from "../folder-view";
 const FOLDER_SLUGS: Record<string, FolderKind> = {
   all: "all",
   series: "series",
+  anime: "anime",
+  manga: "manga",
   music: "music",
   games: "game",
   books: "book",

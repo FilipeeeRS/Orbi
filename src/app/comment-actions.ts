@@ -1,6 +1,8 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getViewer } from "@/lib/session";
 import type { Profile } from "@/lib/types";
 
@@ -82,4 +84,29 @@ export async function deleteReviewComment(id: string): Promise<{ mode: "soft" | 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("delete_review_comment", { comment_id: id });
   return { mode: error ? null : ((data as "soft" | "hard" | null) ?? null) };
+}
+
+// Apaga a review do dono: some o texto e os anexos (nota, like e "assistido" continuam) e, junto,
+// todos os comentários e curtidas da review. As curtidas são de outras pessoas, por isso o admin.
+export async function deleteReview(entryId: string): Promise<{ ok: boolean }> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false };
+  const supabase = await createClient();
+  const { data: entry } = await supabase.from("entries").select("id").eq("id", entryId).eq("user_id", viewer.id).maybeSingle();
+  if (!entry) return { ok: false };
+
+  const admin = createAdminClient();
+  const [comments, likes] = await Promise.all([
+    admin.from("review_comments").delete().eq("entry_id", entryId),
+    admin.from("review_likes").delete().eq("entry_id", entryId),
+  ]);
+  if (comments.error || likes.error) return { ok: false };
+  const { error } = await supabase
+    .from("entries")
+    .update({ review: null, attachments: [] })
+    .eq("id", entryId)
+    .eq("user_id", viewer.id);
+  if (error) return { ok: false };
+  refresh();
+  return { ok: true };
 }

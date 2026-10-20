@@ -21,7 +21,7 @@ export type Notification = {
 };
 
 const ACTOR = "username, display_name, avatar_url, avatar_ring";
-const ITEM = "id, title, translations, source, external_id, year";
+const ITEM = "id, kind, title, translations, source, external_id, year";
 
 export async function getNotificationsSeenAt(): Promise<string | null> {
   return (await cookies()).get(NOTIFICATIONS_SEEN_COOKIE)?.value ?? null;

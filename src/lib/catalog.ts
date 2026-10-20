@@ -1,9 +1,21 @@
 import "server-only";
 import { cache } from "react";
 import { createAdminClient } from "./supabase/admin";
-import { getMovieWithTranslations, hasAdultRating, isAdultRatedMovie, releaseYear, tmdbImage, TmdbNotFound, type TmdbTranslation } from "./tmdb";
+import {
+  getMovieWithTranslations,
+  getSeasonWithTranslations,
+  getShowWithTranslations,
+  hasAdultRating,
+  isAdultRatedMovie,
+  releaseYear,
+  tmdbImage,
+  TmdbNotFound,
+  type TmdbTranslation,
+} from "./tmdb";
 import { LOCALES, TMDB_LANGUAGES } from "./i18n/dictionaries";
 import type { Item } from "./types";
+import { getAnime } from "./anilist";
+import { toRow } from "./anilist-sync";
 
 // Garante que o filme do TMDB exista no catálogo (tabela items) e o devolve.
 export async function ensureMovie(tmdbId: number): Promise<Item | null> {
@@ -72,6 +84,168 @@ export const getMovieByRouteId = cache(async (id: string): Promise<Item | null> 
   }
   const tmdbId = Number(id);
   return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureMovie(tmdbId) : null;
+});
+
+// ---- Séries e temporadas ----
+
+// Garante que a série do TMDB exista no catálogo e a devolve. (Animes vêm do AniList: ensureAnime.)
+export async function ensureSeries(tmdbId: number): Promise<Item | null> {
+  const admin = createAdminClient();
+  const externalId = String(tmdbId);
+  const { data: existing } = await admin
+    .from("items")
+    .select("*")
+    .eq("kind", "series")
+    .eq("source", "tmdb")
+    .eq("external_id", externalId)
+    .maybeSingle();
+  if (existing) return existing as Item;
+
+  let show;
+  try {
+    show = await getShowWithTranslations(tmdbId);
+  } catch (e) {
+    if (e instanceof TmdbNotFound) return null;
+    throw e;
+  }
+
+  const { data, error } = await admin
+    .from("items")
+    .upsert(
+      {
+        kind: "series",
+        source: "tmdb",
+        external_id: externalId,
+        title: show.title,
+        original_title: show.original_title,
+        year: releaseYear(show),
+        overview: show.overview || null,
+        poster_url: tmdbImage(show.poster_path, "w500"),
+        backdrop_url: tmdbImage(show.backdrop_path, "w1280"),
+        translations: pickTranslations(show.translations.translations, show.title),
+        tmdb_rating: show.vote_count ? Math.round((show.vote_average ?? 0) * 10) / 10 : null,
+        tmdb_votes: show.vote_count ?? 0,
+        is_adult_rated: !!show.adult,
+        genre_ids: (show.genres ?? []).map((g) => g.id),
+        runtime: show.episode_run_time?.[0] || null,
+        release_date: show.release_date || null,
+      },
+      { onConflict: "kind,source,external_id" },
+    )
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as Item;
+}
+
+// Temporada como item próprio (external_id "série/número"), presa à série pelo parent_id.
+// O título leva o nome da série ("Breaking Bad: Season 2"), em cada idioma.
+export async function ensureSeason(showTmdbId: number, seasonNumber: number): Promise<{ series: Item; season: Item } | null> {
+  const series = await ensureSeries(showTmdbId);
+  if (!series) return null;
+  const admin = createAdminClient();
+  const externalId = `${showTmdbId}/${seasonNumber}`;
+  const { data: existing } = await admin
+    .from("items")
+    .select("*")
+    .eq("kind", "season")
+    .eq("source", "tmdb")
+    .eq("external_id", externalId)
+    .maybeSingle();
+  if (existing) return { series, season: existing as Item };
+
+  let season;
+  try {
+    season = await getSeasonWithTranslations(showTmdbId, seasonNumber);
+  } catch (e) {
+    if (e instanceof TmdbNotFound) return null;
+    throw e;
+  }
+
+  // Nome da temporada em cada idioma, com o nome da série na frente.
+  const seasonNames = pickTranslations(season.translations, season.name);
+  const translations: Item["translations"] = {};
+  for (const locale of LOCALES) {
+    if (locale === "en") continue;
+    const showTitle = series.translations?.[locale]?.title ?? series.title;
+    const seasonName = seasonNames[locale]?.title ?? season.name;
+    const overview = seasonNames[locale]?.overview;
+    translations[locale] = { title: `${showTitle}: ${seasonName}`, ...(overview ? { overview } : {}) };
+  }
+
+  const { data, error } = await admin
+    .from("items")
+    .upsert(
+      {
+        kind: "season",
+        source: "tmdb",
+        external_id: externalId,
+        parent_id: series.id,
+        season_number: seasonNumber,
+        episode_count: season.episodes?.length ?? null,
+        title: `${series.title}: ${season.name}`,
+        original_title: null,
+        year: season.air_date ? Number(season.air_date.slice(0, 4)) || null : null,
+        overview: season.overview || null,
+        poster_url: tmdbImage(season.poster_path, "w500") ?? series.poster_url,
+        backdrop_url: series.backdrop_url,
+        translations,
+        is_adult_rated: series.is_adult_rated,
+        genre_ids: series.genre_ids,
+        runtime: series.runtime,
+        release_date: season.air_date || null,
+      },
+      { onConflict: "kind,source,external_id" },
+    )
+    .select("*")
+    .single();
+  if (error) throw error;
+  return { series, season: data as Item };
+}
+
+export const getShowByRouteId = cache(async (id: string): Promise<Item | null> => {
+  const tmdbId = Number(id);
+  return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureSeries(tmdbId) : null;
+});
+
+export const getSeasonByRoute = cache(async (id: string, season: string) => {
+  const tmdbId = Number(id);
+  const n = Number(season);
+  return Number.isInteger(tmdbId) && tmdbId > 0 && Number.isInteger(n) && n >= 0 ? ensureSeason(tmdbId, n) : null;
+});
+
+// ---- Animes e mangás (AniList) ----
+
+// Garante que o anime (uma temporada) ou o mangá exista no catálogo e o devolve. Normalmente ele já
+// veio pela sincronização; se não (ex.: lançou hoje), busca no AniList e salva na hora.
+export async function ensureAniList(kind: "anime" | "manga", anilistId: number): Promise<Item | null> {
+  const admin = createAdminClient();
+  const { data: existing } = await admin
+    .from("items")
+    .select("*")
+    .eq("kind", kind)
+    .eq("source", "anilist")
+    .eq("external_id", String(anilistId))
+    .maybeSingle();
+  if (existing) return existing as Item;
+
+  const media = await getAnime(anilistId, kind === "anime" ? "ANIME" : "MANGA");
+  if (!media) return null;
+  const { data, error } = await admin
+    .from("items")
+    .upsert(toRow(media, media.type), { onConflict: "kind,source,external_id" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as Item;
+}
+
+export const ensureAnime = (id: number) => ensureAniList("anime", id);
+export const ensureManga = (id: number) => ensureAniList("manga", id);
+
+export const getAniListByRouteId = cache(async (kind: "anime" | "manga", id: string): Promise<Item | null> => {
+  const anilistId = Number(id);
+  return Number.isInteger(anilistId) && anilistId > 0 ? ensureAniList(kind, anilistId) : null;
 });
 
 // Uma tradução por idioma do Orbi, preferindo a região padrão (pt-BR, zh-CN...).

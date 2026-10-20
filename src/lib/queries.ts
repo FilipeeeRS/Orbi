@@ -19,14 +19,19 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
     supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", kind);
   const list = () => supabase.from("entries").select(ENTRY_WITH_ITEM).eq("user_id", userId).eq("items.kind", kind);
 
-  const otherKinds = (["series", "music", "game", "book"] as const).filter((k) => k !== kind);
+  const otherKinds = (["series", "book", "anime", "manga", "game", "music"] as const).filter((k) => k !== kind);
   const countKind = (k: MediaKind) =>
     supabase.from("entries").select("id, items!inner(kind)", { count: "exact", head: true }).eq("user_id", userId).eq("items.kind", k);
 
   const [watched, watchlist, recent, favorites, watchlistPreview, recentReviews, ...rest] = await Promise.all([
     count().eq("status", "watched"),
     count().eq("status", "watchlist"),
-    list()
+    // Atividade recente: filmes e séries juntos
+    supabase
+      .from("entries")
+      .select(ENTRY_WITH_ITEM)
+      .eq("user_id", userId)
+      .in("items.kind", ["movie", "series"])
       .eq("status", "watched")
       .order("watched_on", { ascending: false, nullsFirst: false })
       .order("updated_at", { ascending: false })
@@ -70,13 +75,15 @@ export async function getProfileOverview(userId: string, kind: MediaKind = "movi
   };
 }
 
-export const TABS = ["watched", "liked", "watchlist", "reviews", "lists"] as const;
+// "watching" (Assistindo) só aparece na pasta de séries.
+export const TABS = ["watched", "watching", "liked", "watchlist", "reviews", "lists"] as const;
 export type Tab = (typeof TABS)[number];
-// Ordenações das pastas (valor da URL). "release" é a padrão.
+// Ordenações das pastas (valor da URL). "recent" (adicionados por último) é a padrão.
 export const SORTS = [
+  "recent",
+  "recent-old",
   "release",
   "release-old",
-  "recent",
   "yours",
   "top",
   "popular",
@@ -86,22 +93,8 @@ export const SORTS = [
   "runtime-desc",
 ] as const;
 export type Sort = (typeof SORTS)[number];
-export const DEFAULT_SORT: Sort = "release";
+export const DEFAULT_SORT: Sort = "recent";
 
-// Rótulo de cada ordenação no dicionário (movies.sort).
-export const SORT_LABEL = {
-  week: "week",
-  release: "release",
-  "release-old": "releaseOld",
-  recent: "recent",
-  yours: "yours",
-  top: "top",
-  popular: "popular",
-  title: "titleAz",
-  "title-desc": "titleZa",
-  runtime: "runtimeShort",
-  "runtime-desc": "runtimeLong",
-} as const satisfies Record<Sort | "week", string>;
 
 export type ListFilters = {
   decade?: number; // 1990 = anos 90
@@ -126,9 +119,11 @@ export async function listEntries(
   if (tab === "lists") return { entries: [] as EntryWithItem[], total: 0 };
   const supabase = await createClient();
   let query = supabase.from("entries").select(ENTRY_WITH_ITEM, { count: "exact" }).eq("user_id", userId);
-  if (kind !== "all") query = query.eq("items.kind", kind);
+  // "Tudo" não lista temporadas soltas: elas aparecem dentro da página da série.
+  query = kind === "all" ? query.neq("items.kind", "season") : query.eq("items.kind", kind);
 
   if (tab === "watchlist") query = query.eq("status", "watchlist");
+  else if (tab === "watching") query = query.eq("status", "watching");
   else if (tab === "liked") query = query.eq("liked", true);
   else if (tab === "reviews") query = query.not("review", "is", null);
   else query = query.eq("status", "watched");
@@ -179,9 +174,12 @@ export async function listEntries(
       query = query.order("items(runtime)", desc);
       break;
   }
-  if (tab === "watchlist") query = query.order("created_at", { ascending: false });
-  else query = query.order("watched_on", desc);
-  query = query.order("updated_at", { ascending: false });
+  // Desempate (e as ordens "recent"/"recent-old"): quando entrou na pasta. Vistos pela data em que viu;
+  // watchlist pela data em que foi adicionado; assistindo pela última mudança.
+  const newest = sort !== "recent-old";
+  if (tab === "watchlist") query = query.order("created_at", { ascending: !newest });
+  else if (tab !== "watching") query = query.order("watched_on", { ascending: !newest, nullsFirst: false });
+  query = query.order("updated_at", { ascending: !newest });
 
   const from = (page - 1) * PAGE_SIZE;
   const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
@@ -250,31 +248,9 @@ export async function isFollowing(followerId: string, followeeId: string) {
   return (count ?? 0) > 0;
 }
 
-const DEFAULT_FOLDER_ORDER: MediaKind[] = ["movie", "series", "music", "game", "book"];
-
-// Pastas do usuário ordenadas pela que recebeu um item por último; sem itens, vale a ordem padrão.
-export const getFolderOrder = cache(async (userId: string): Promise<MediaKind[]> => {
-  const supabase = await createClient();
-  const latest = await Promise.all(
-    DEFAULT_FOLDER_ORDER.map((kind) =>
-      supabase
-        .from("entries")
-        .select("created_at, items!inner(kind)")
-        .eq("user_id", userId)
-        .eq("items.kind", kind)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .then((r) => (r.data?.[0]?.created_at as string | undefined) ?? ""),
-    ),
-  );
-  return DEFAULT_FOLDER_ORDER.map((kind, i) => ({ kind, at: latest[i], i }))
-    .sort((a, b) => b.at.localeCompare(a.at) || a.i - b.i)
-    .map((f) => f.kind);
-});
-
 // Estado do usuário logado para uma lista de itens (atalhos ✓/♥ nos pôsteres).
 export async function getViewerStates(viewerId: string, itemIds: string[]) {
-  const states = new Map<string, { watched: boolean; liked: boolean; watchlist: boolean; hasDetails: boolean }>();
+  const states = new Map<string, { watched: boolean; liked: boolean; watchlist: boolean; watching: boolean; hasDetails: boolean }>();
   if (!itemIds.length) return states;
   const supabase = await createClient();
   const { data } = await supabase
@@ -287,6 +263,7 @@ export async function getViewerStates(viewerId: string, itemIds: string[]) {
       watched: e.status === "watched",
       liked: e.liked,
       watchlist: e.status === "watchlist",
+      watching: e.status === "watching",
       hasDetails: e.rating !== null || e.review !== null,
     });
   }

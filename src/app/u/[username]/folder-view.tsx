@@ -9,7 +9,6 @@ import {
   getViewerStates,
   listEntries,
   PAGE_SIZE,
-  SORT_LABEL,
   SORTS,
   TABS,
   type ListFilters,
@@ -17,6 +16,7 @@ import {
   type Tab,
 } from "@/lib/queries";
 import { getMovieGenres, tmdbLanguage } from "@/lib/tmdb";
+import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
 import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
 import { ReviewAttachments } from "@/components/review-attachments";
@@ -52,7 +52,11 @@ export async function FolderView({
 
   const [{ entries, total }, genres] = await Promise.all([
     listEntries(profile.id, tab, sort, page, kind, filters, locale, viewer?.id ?? null),
-    kind === "movie" || kind === "all" ? getMovieGenres(tmdbLanguage(locale)) : Promise.resolve([]),
+    kind === "movie" || kind === "all"
+      ? getMovieGenres(tmdbLanguage(locale))
+      : kind === "series"
+        ? getMovieGenres(tmdbLanguage(locale), "tv")
+        : Promise.resolve([]),
   ]);
   const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
   // Aba Listas: as listas personalizadas do perfil (de todas as pastas)
@@ -73,9 +77,10 @@ export async function FolderView({
     return s.size ? `${base}?${s}` : base;
   };
   const lang = dictionaries[locale].htmlLang;
-  // Algumas ordenações não fazem sentido na watchlist (sem nota sua, sem data em que viu).
-  const sortOptions = SORTS.filter((key) => !(tab === "watchlist" && (key === "yours" || key === "recent"))).map(
-    (key) => ({ value: key, label: t.movies.sort[SORT_LABEL[key]] }),
+  // "Mais bem avaliados por você" não faz sentido na watchlist (ainda não tem nota sua).
+  const sorts = sortOptions(
+    SORTS.filter((key) => !(tab === "watchlist" && key === "yours")),
+    t,
   );
 
   return (
@@ -100,7 +105,7 @@ export async function FolderView({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
-          {TABS.map((key) => (
+          {TABS.filter((key) => key !== "watching" || kind === "series" || kind === "anime").map((key) => (
             <Link
               key={key}
               href={href({ tab: key })}
@@ -116,7 +121,7 @@ export async function FolderView({
           <FilterBar
             labels={t.movies.filters}
             defaultSort={DEFAULT_SORT}
-            sorts={sortOptions}
+            sorts={sorts}
             decades={Array.from({ length: 13 }, (_, i) => 2020 - i * 10).map((d) => ({
               value: String(d),
               label: `${d}s`,
@@ -164,7 +169,7 @@ export async function FolderView({
       ) : (
         <PosterGrid>
           {entries.map((e, i) => (
-            <Poster
+            <Poster badge={false}
               key={e.id}
               item={e.items}
               locale={locale}

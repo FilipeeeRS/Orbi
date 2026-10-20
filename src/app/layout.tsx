@@ -48,7 +48,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
     <I18nProvider locale={locale}>
       <Header viewer={viewer} t={t} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
-      <SiteFooter t={t} />
+      <SiteFooter t={t} username={viewer?.username ?? null} />
     </I18nProvider>
   );
 }

@@ -77,7 +77,7 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
         <PosterGrid>
           {items.map((item, i) => (
             <div key={item.id} className="space-y-1">
-              <Poster item={item} locale={locale} showMeta={false} eager={i < 8} viewer={viewer ? { id: viewer.id, state: states?.get(item.id) ?? null } : null} />
+              <Poster badge={false} item={item} locale={locale} showMeta={false} eager={i < 8} viewer={viewer ? { id: viewer.id, state: states?.get(item.id) ?? null } : null} />
               <p className="text-center text-xs text-muted tabular-nums">{i + 1}</p>
             </div>
           ))}

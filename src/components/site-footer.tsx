@@ -51,21 +51,65 @@ const SOCIAL = [
   },
 ];
 
-// Rodapé: links e redes em cima; créditos, idioma e tema embaixo.
-export function SiteFooter({ t }: { t: Dictionary }) {
+// Rodapé: colunas com as páginas do site e as redes; embaixo, créditos, idioma e tema.
+// Sem login, os links da conta levam para o login (e voltam para a página escolhida).
+export function SiteFooter({ t, username }: { t: Dictionary; username: string | null }) {
+  const account = (href: string) => (username ? href : `/login?next=${encodeURIComponent(href)}`);
+  const columns: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
+    {
+      title: t.footer.explore,
+      links: [
+        { label: t.nav.home, href: "/home" },
+        { label: t.folders.movie, href: "/browse/movies" },
+        { label: t.folders.series, href: "/browse/series" },
+        { label: t.footer.search, href: "/search" },
+      ],
+    },
+    {
+      title: t.footer.account,
+      links: [
+        username ? { label: t.nav.profile, href: `/u/${username}` } : { label: t.nav.signIn, href: "/login" },
+        { label: t.nav.notifications, href: account("/notifications") },
+        { label: t.nav.import, href: account("/import") },
+        { label: t.nav.settings, href: account("/settings") },
+      ],
+    },
+    {
+      title: "Orbi",
+      links: [
+        { label: t.footer.about, href: "/about" },
+        { label: t.footer.sourceCode, href: GITHUB_URL, external: true },
+      ],
+    },
+  ];
+
   return (
     <footer className="mt-8 border-t border-border bg-surface">
-      <div className="mx-auto max-w-6xl space-y-4 px-4 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
-            <Link href="/about" className="text-muted hover:text-fg">
-              {t.footer.about}
-            </Link>
-            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="text-muted hover:text-fg">
-              {t.footer.sourceCode}
-            </a>
-          </nav>
-          <ul className="flex items-center gap-4">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-10">
+        <div className="flex flex-wrap justify-between gap-x-10 gap-y-8">
+          <div className="grid flex-1 grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-3 sm:max-w-2xl">
+            {columns.map((col) => (
+              <nav key={col.title} aria-label={col.title}>
+                <h2 className="mb-3 text-xs font-semibold tracking-widest text-muted uppercase">{col.title}</h2>
+                <ul className="space-y-2 text-sm">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      {link.external ? (
+                        <a href={link.href} target="_blank" rel="noreferrer" className="text-fg/80 hover:text-fg">
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link href={link.href} className="text-fg/80 hover:text-fg">
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+          </div>
+          <ul className="flex items-start gap-4">
             {SOCIAL.map((s) => (
               <li key={s.name}>
                 <a
@@ -85,7 +129,7 @@ export function SiteFooter({ t }: { t: Dictionary }) {
           </ul>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-muted">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted">
           <p className="max-w-xl">
             © {new Date().getFullYear()} Orbi.{" "}
             <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer" className="underline-offset-2 hover:text-fg hover:underline">

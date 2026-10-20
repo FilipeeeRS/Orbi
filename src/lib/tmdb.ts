@@ -19,7 +19,32 @@ export type TmdbMovie = {
   genres?: { id: number; name: string }[];
   genre_ids?: number[];
   popularity?: number;
+  origin_country?: string[];
+  original_language?: string;
 };
+
+// Anime = animação japonesa (gênero 16 do TMDB + Japão). Fica fora da pasta de séries.
+export const isAnime = (m: Pick<TmdbMovie, "genre_ids" | "origin_country" | "original_language">) =>
+  (m.genre_ids ?? []).includes(16) && (m.origin_country?.includes("JP") || m.original_language === "ja");
+
+// Filmes e séries usam os mesmos endpoints do TMDB, trocando "movie" por "tv".
+export type TmdbType = "movie" | "tv";
+
+// Série do TMDB nos mesmos campos de filme (name → title, first_air_date → release_date),
+// para busca, "Ver tudo" e filtros funcionarem igual para os dois.
+type TmdbShowResult = Omit<TmdbMovie, "title" | "original_title" | "release_date"> & {
+  name: string;
+  original_name: string;
+  first_air_date?: string;
+};
+const asMovie = (show: TmdbShowResult): TmdbMovie => ({
+  ...show,
+  title: show.name,
+  original_title: show.original_name,
+  release_date: show.first_air_date,
+});
+const normalize = (type: TmdbType, list: (TmdbMovie | TmdbShowResult)[]): TmdbMovie[] =>
+  type === "tv" ? (list as TmdbShowResult[]).map(asMovie) : (list as TmdbMovie[]);
 
 export const tmdbLanguage = (locale: Locale) => TMDB_LANGUAGES[locale];
 
@@ -53,9 +78,11 @@ async function tmdb<T>(path: string, params: Record<string, string | number | un
 export class TmdbNotFound extends Error {}
 
 // Busca por título em várias páginas de uma vez (para os filtros da busca terem material).
-export async function searchMoviesPages(query: string, language: string, pages = 3) {
+export async function searchMoviesPages(query: string, language: string, pages = 3, type: TmdbType = "movie") {
   const results = await Promise.all(
-    Array.from({ length: pages }, (_, i) => searchMovies(query, { language, page: i + 1 }).catch(() => [])),
+    Array.from({ length: pages }, (_, i) =>
+      (type === "tv" ? searchShows(query, language, i + 1) : searchMovies(query, { language, page: i + 1 })).catch(() => []),
+    ),
   );
   const seen = new Set<number>();
   return results.flat().filter((m) => !seen.has(m.id) && seen.add(m.id));
@@ -74,6 +101,11 @@ export async function searchMovies(
     include_adult: "false",
   });
   return data.results;
+}
+
+async function searchShows(query: string, language: string, page: number) {
+  const data = await tmdb<{ results: TmdbShowResult[] }>("/search/tv", { query, language, page, include_adult: "false" });
+  return normalize("tv", data.results);
 }
 
 export type TmdbTranslation = {
@@ -96,6 +128,7 @@ export const releaseYear = (m: Pick<TmdbMovie, "release_date">) =>
 // ---- Ficha completa do filme (elenco, equipe, detalhes, lançamentos) ----
 
 export const CREW_ROLES = [
+  "creator", // só séries
   "director",
   "producers",
   "writers",
@@ -216,6 +249,28 @@ export async function getMovieInfo(tmdbId: string, language: string): Promise<Mo
     if (pick) certifications[iso_3166_1] = pick.certification.trim();
   }
 
+  const { trailer, watch } = videosAndWatch(m, language);
+
+  return {
+    runtime: m.runtime || null,
+    certifications,
+    trailer,
+    watch,
+    imdbId: m.imdb_id || null,
+    genres: m.genres.map(({ id, name }) => ({ id, name })),
+    studios: m.production_companies.map(({ id, name }) => ({ id, name })),
+    countries: m.production_countries.map((c) => c.iso_3166_1),
+    originalLanguage: m.original_language,
+    cast: [...m.credits.cast]
+      .sort((a, b) => a.order - b.order)
+      .map(({ id, name, character }) => ({ id, name, character })),
+    crew,
+    releases,
+  };
+}
+
+// Trailer e "onde assistir" (mesmo formato em filmes e séries).
+function videosAndWatch(m: Pick<TmdbFullMovie, "videos" | "watch/providers">, language: string) {
   // Trailer do YouTube: no idioma da pessoa primeiro, oficial antes de não oficial.
   const lang = language.slice(0, 2);
   const trailers = (m.videos?.results ?? []).filter((v) => v.site === "YouTube" && v.type === "Trailer");
@@ -235,23 +290,279 @@ export async function getMovieInfo(tmdbId: string, language: string): Promise<Mo
     }
     watch[country] = options;
   }
+  return { trailer, watch };
+}
+
+// ---- Séries: catálogo, ficha, temporadas e episódios ----
+
+type TmdbTvTranslation = { iso_639_1: string; iso_3166_1: string; data: { name?: string; overview?: string } };
+// Traduções de série/temporada usam "name"; o catálogo espera "title", como nos filmes.
+const asMovieTranslations = (list: TmdbTvTranslation[]): TmdbTranslation[] =>
+  list.map((t) => ({ ...t, data: { title: t.data.name, overview: t.data.overview } }));
+
+export type TmdbShow = TmdbMovie & {
+  adult?: boolean;
+  episode_run_time?: number[];
+  translations: { translations: TmdbTranslation[] };
+};
+
+// Detalhes da série em inglês + traduções, já no formato de filme.
+export async function getShowWithTranslations(id: number | string): Promise<TmdbShow> {
+  const show = await tmdb<
+    TmdbShowResult & { adult?: boolean; episode_run_time?: number[]; genres?: Named[]; translations: { translations: TmdbTvTranslation[] } }
+  >(`/tv/${id}`, { language: "en-US", append_to_response: "translations" });
+  return { ...asMovie(show), adult: show.adult, episode_run_time: show.episode_run_time, translations: { translations: asMovieTranslations(show.translations.translations) } };
+}
+
+export type TmdbEpisode = {
+  id: number;
+  episode_number: number;
+  name: string;
+  overview: string;
+  air_date: string | null;
+  runtime: number | null;
+  still_path: string | null;
+  vote_average: number;
+  vote_count?: number;
+};
+
+export type TmdbSeason = {
+  id: number;
+  name: string;
+  overview: string;
+  air_date: string | null;
+  poster_path: string | null;
+  season_number: number;
+  episodes?: TmdbEpisode[];
+};
+
+export async function getSeasonWithTranslations(showId: number | string, season: number) {
+  const data = await tmdb<TmdbSeason & { translations: { translations: TmdbTvTranslation[] } }>(
+    `/tv/${showId}/season/${season}`,
+    { language: "en-US", append_to_response: "translations" },
+  );
+  return { ...data, translations: asMovieTranslations(data.translations.translations) };
+}
+
+// Episódios de uma temporada no idioma da pessoa.
+export async function getSeasonEpisodes(showId: string, season: number, language: string) {
+  "use cache";
+  cacheLife("days");
+  try {
+    const data = await tmdb<TmdbSeason>(`/tv/${showId}/season/${season}`, { language });
+    return { name: data.name, overview: data.overview, airDate: data.air_date, episodes: data.episodes ?? [] };
+  } catch (e) {
+    if (e instanceof TmdbNotFound) return null;
+    throw e;
+  }
+}
+
+export type SeasonSummary = {
+  number: number;
+  name: string;
+  episodes: number;
+  airDate: string | null;
+  poster: string | null; // caminho do TMDB
+};
+
+export type SeriesInfo = MovieInfo & {
+  networks: Named[];
+  seasons: SeasonSummary[];
+  // Próximo episódio com data marcada (null em série encerrada ou sem data)
+  nextAir: { season: number; episode: number; date: string } | null;
+};
+
+type TmdbFullShow = Pick<TmdbFullMovie, "videos" | "watch/providers"> & {
+  episode_run_time: number[];
+  original_language: string | null;
+  genres: Named[];
+  production_companies: Named[];
+  networks: Named[];
+  origin_country: string[];
+  created_by: Named[];
+  seasons: { season_number: number; name: string; episode_count: number; air_date: string | null; poster_path: string | null }[];
+  aggregate_credits: {
+    cast: { id: number; name: string; order: number; roles: { character: string }[] }[];
+    crew: { id: number; name: string; jobs: { job: string }[] }[];
+  };
+  content_ratings: { results: { iso_3166_1: string; rating: string }[] };
+  external_ids: { imdb_id: string | null };
+  status: string | null;
+  next_episode_to_air: { air_date: string | null; season_number: number; episode_number: number } | null;
+};
+
+export async function getSeriesInfo(tmdbId: string, language: string): Promise<SeriesInfo | null> {
+  "use cache";
+  cacheLife("days");
+
+  let m: TmdbFullShow;
+  try {
+    m = await tmdb<TmdbFullShow>(`/tv/${tmdbId}`, {
+      language,
+      append_to_response: "aggregate_credits,content_ratings,videos,watch/providers,external_ids",
+      include_video_language: `${language.slice(0, 2)},en,null`,
+    });
+  } catch (e) {
+    if (e instanceof TmdbNotFound) return null;
+    throw e;
+  }
+
+  const crew: MovieInfo["crew"] = {};
+  if (m.created_by.length) crew.creator = m.created_by.map(({ id, name }) => ({ id, name }));
+  for (const person of m.aggregate_credits.crew) {
+    for (const { job } of person.jobs) {
+      const role = JOB_TO_ROLE[job];
+      if (!role) continue;
+      const list = (crew[role] ??= []);
+      if (!list.some((p) => p.id === person.id)) list.push({ id: person.id, name: person.name });
+    }
+  }
+
+  const certifications: Record<string, string> = {};
+  for (const r of m.content_ratings.results) if (r.rating.trim()) certifications[r.iso_3166_1] = r.rating.trim();
+
+  const { trailer, watch } = videosAndWatch(m, language);
 
   return {
-    runtime: m.runtime || null,
+    runtime: m.episode_run_time[0] || null,
     certifications,
     trailer,
     watch,
-    imdbId: m.imdb_id || null,
+    imdbId: m.external_ids.imdb_id || null,
     genres: m.genres.map(({ id, name }) => ({ id, name })),
     studios: m.production_companies.map(({ id, name }) => ({ id, name })),
-    countries: m.production_countries.map((c) => c.iso_3166_1),
+    networks: m.networks.map(({ id, name }) => ({ id, name })),
+    countries: m.origin_country,
     originalLanguage: m.original_language,
-    cast: [...m.credits.cast]
+    cast: [...m.aggregate_credits.cast]
       .sort((a, b) => a.order - b.order)
-      .map(({ id, name, character }) => ({ id, name, character })),
+      .map(({ id, name, roles }) => ({ id, name, character: roles[0]?.character ?? "" })),
     crew,
-    releases,
+    releases: [],
+    nextAir:
+      m.next_episode_to_air?.air_date && m.status !== "Ended" && m.status !== "Canceled"
+        ? {
+            season: m.next_episode_to_air.season_number,
+            episode: m.next_episode_to_air.episode_number,
+            date: m.next_episode_to_air.air_date,
+          }
+        : null,
+    // Especiais (temporada 0) vão para o fim da lista.
+    seasons: m.seasons
+      .map((s) => ({ number: s.season_number, name: s.name, episodes: s.episode_count, airDate: s.air_date, poster: s.poster_path }))
+      .sort((a, b) => (a.number || 1e6) - (b.number || 1e6)),
   };
+}
+
+// Todas as temporadas com os episódios (no idioma da pessoa), para as abas da série:
+// tabela de notas (média do TMDB) e lista de episódios. Até 20 temporadas por chamada (limite do append_to_response).
+export type SeasonEpisodes = {
+  season: number;
+  name: string;
+  episodes: (TmdbEpisode & { rating: number | null })[];
+};
+
+export async function getSeriesEpisodes(tmdbId: string, seasons: number[], language: string): Promise<SeasonEpisodes[]> {
+  "use cache";
+  cacheLife("days");
+  const chunks: number[][] = [];
+  for (let i = 0; i < seasons.length; i += 20) chunks.push(seasons.slice(i, i + 20));
+  try {
+    const pages = await Promise.all(
+      chunks.map((chunk) =>
+        tmdb<Record<string, TmdbSeason | undefined>>(`/tv/${tmdbId}`, {
+          language,
+          append_to_response: chunk.map((n) => `season/${n}`).join(","),
+        }),
+      ),
+    );
+    return seasons.map((season, i) => {
+      const data = pages[Math.floor(i / 20)][`season/${season}`];
+      return {
+        season,
+        name: data?.name ?? "",
+        episodes: (data?.episodes ?? []).map((e) => ({
+          ...e,
+          // Sem votos (ou ainda não lançado) não tem nota.
+          rating: e.vote_count ? Math.round(e.vote_average * 10) / 10 : null,
+        })),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+// "Recomendações" no fim da página: o que o TMDB recomenda para quem gostou da obra;
+// com pouca coisa, completa com as parecidas (mesmos gêneros e palavras-chave).
+export async function getRecommendations(type: TmdbType, tmdbId: string, language: string): Promise<TmdbMovie[]> {
+  "use cache";
+  cacheLife("days");
+  const fetchList = (kind: "recommendations" | "similar") =>
+    tmdb<{ results: (TmdbMovie | TmdbShowResult)[] }>(`/${type}/${tmdbId}/${kind}`, { language })
+      .then((r) => normalize(type, r.results))
+      .catch(() => [] as TmdbMovie[]);
+  const recommended = await fetchList("recommendations");
+  const list = recommended.length >= 12 ? recommended : [...recommended, ...(await fetchList("similar"))];
+  const seen = new Set<number>();
+  return list.filter((m) => m.poster_path && !seen.has(m.id) && seen.add(m.id));
+}
+
+// ---- Sugestões da busca (enquanto a pessoa digita) ----
+
+export type TmdbMultiResult = {
+  id: number;
+  media_type: "movie" | "tv" | "person";
+  title?: string; // filmes
+  name?: string; // séries e pessoas
+  original_title?: string;
+  original_name?: string;
+  release_date?: string;
+  first_air_date?: string;
+  poster_path?: string | null;
+  profile_path?: string | null;
+  popularity?: number;
+  genre_ids?: number[];
+  origin_country?: string[];
+  original_language?: string;
+  known_for_department?: string;
+};
+
+// Filmes, séries e pessoas de uma vez (primeira página), no idioma da pessoa.
+export async function searchMulti(query: string, language: string): Promise<TmdbMultiResult[]> {
+  "use cache";
+  cacheLife("hours");
+  try {
+    const data = await tmdb<{ results: TmdbMultiResult[] }>("/search/multi", { query, language, include_adult: "false" });
+    return data.results.filter((r) => r.media_type === "movie" || r.media_type === "tv" || r.media_type === "person");
+  } catch {
+    return [];
+  }
+}
+
+// Índice dos filmes e séries mais populares e mais bem avaliados (~2 mil títulos), para a busca
+// achar o título mesmo com erro de digitação. Montado uma vez por semana em cada idioma.
+export async function getPopularIndex(language: string): Promise<TmdbMultiResult[]> {
+  "use cache";
+  cacheLife("weeks");
+  const lists: [string, "movie" | "tv", number][] = [
+    ["/movie/popular", "movie", 25],
+    ["/movie/top_rated", "movie", 15],
+    ["/tv/popular", "tv", 15],
+    ["/tv/top_rated", "tv", 15],
+  ];
+  const requests = lists.flatMap(([path, type, pages]) =>
+    Array.from({ length: pages }, (_, i) => () =>
+      tmdb<{ results: TmdbMultiResult[] }>(path, { language, page: i + 1 })
+        .then((r) => r.results.map((m) => ({ ...m, media_type: type })))
+        .catch(() => [] as TmdbMultiResult[]),
+    ),
+  );
+  const out: TmdbMultiResult[] = [];
+  // Em lotes, para não estourar o limite de requisições do TMDB.
+  for (let i = 0; i < requests.length; i += 10) out.push(...(await Promise.all(requests.slice(i, i + 10).map((r) => r()))).flat());
+  const seen = new Set<string>();
+  return out.filter((m) => !seen.has(`${m.media_type}-${m.id}`) && seen.add(`${m.media_type}-${m.id}`));
 }
 
 // ---- Classificação indicativa 18 anos ----
@@ -293,11 +604,11 @@ export async function isAdultRatedMovie(tmdbId: number): Promise<boolean | null>
 }
 
 // Lista de gêneros de filme do TMDB no idioma pedido (para o filtro das pastas).
-export async function getMovieGenres(language: string): Promise<{ id: number; name: string }[]> {
+export async function getMovieGenres(language: string, type: TmdbType = "movie"): Promise<{ id: number; name: string }[]> {
   "use cache";
   cacheLife("weeks");
   try {
-    const data = await tmdb<{ genres: { id: number; name: string }[] }>("/genre/movie/list", { language });
+    const data = await tmdb<{ genres: { id: number; name: string }[] }>(`/genre/${type}/list`, { language });
     return data.genres;
   } catch {
     return [];
@@ -306,16 +617,16 @@ export async function getMovieGenres(language: string): Promise<{ id: number; na
 
 // ---- Navegar pela ficha: filmes de uma pessoa, de um gênero, estúdio ou país ----
 
-type PersonCredits = { cast: (TmdbMovie & { popularity?: number })[]; crew: (TmdbMovie & { popularity?: number })[] };
+type PersonCredits = { cast: (TmdbMovie | TmdbShowResult)[]; crew: (TmdbMovie | TmdbShowResult)[] };
 
-// Todos os filmes em que a pessoa atuou ou trabalhou, dos mais populares para os menos.
-export async function getPersonMovies(personId: number, language: string): Promise<TmdbMovie[]> {
+// Todos os filmes (ou séries) em que a pessoa atuou ou trabalhou, dos mais populares para os menos.
+export async function getPersonMovies(personId: number, language: string, type: TmdbType = "movie"): Promise<TmdbMovie[]> {
   "use cache";
   cacheLife("days");
   try {
-    const credits = await tmdb<PersonCredits>(`/person/${personId}/movie_credits`, { language });
-    const byId = new Map<number, TmdbMovie & { popularity?: number }>();
-    for (const m of [...credits.crew, ...credits.cast]) if (!byId.has(m.id)) byId.set(m.id, m);
+    const credits = await tmdb<PersonCredits>(`/person/${personId}/${type}_credits`, { language });
+    const byId = new Map<number, TmdbMovie>();
+    for (const m of normalize(type, [...credits.crew, ...credits.cast])) if (!byId.has(m.id)) byId.set(m.id, m);
     return [...byId.values()].sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).slice(0, 60);
   } catch {
     return [];
@@ -323,26 +634,28 @@ export async function getPersonMovies(personId: number, language: string): Promi
 }
 
 export async function discoverMovies(
-  filter: { genre?: number; company?: number; country?: string },
+  filter: { genre?: number; company?: number; network?: number; country?: string },
   language: string,
+  type: TmdbType = "movie",
 ): Promise<TmdbMovie[]> {
   "use cache";
   cacheLife("days");
   try {
     const pages = await Promise.all(
       [1, 2, 3].map((page) =>
-        tmdb<{ results: TmdbMovie[] }>("/discover/movie", {
+        tmdb<{ results: (TmdbMovie | TmdbShowResult)[] }>(`/discover/${type}`, {
           language,
           page,
           sort_by: "popularity.desc",
           include_adult: "false",
           with_genres: filter.genre,
           with_companies: filter.company,
+          with_networks: filter.network,
           with_origin_country: filter.country,
         }),
       ),
     );
-    return pages.flatMap((p) => p.results);
+    return pages.flatMap((p) => normalize(type, p.results));
   } catch {
     return [];
   }
@@ -352,11 +665,12 @@ export async function discoverMovies(
 
 type TmdbPage = { results: TmdbMovie[]; total_results: number; total_pages: number };
 
-export async function tmdbTrendingWeek(page: number, language: string): Promise<TmdbPage> {
+export async function tmdbTrendingWeek(page: number, language: string, type: TmdbType = "movie"): Promise<TmdbPage> {
   "use cache";
   cacheLife("hours");
   try {
-    return await tmdb<TmdbPage>("/trending/movie/week", { page, language });
+    const data = await tmdb<TmdbPage>(`/trending/${type}/week`, { page, language });
+    return { ...data, results: normalize(type, data.results) };
   } catch {
     return { results: [], total_results: 0, total_pages: 0 };
   }
@@ -366,11 +680,13 @@ export async function tmdbDiscover(
   params: Record<string, string | number | undefined>,
   page: number,
   language: string,
+  type: TmdbType = "movie",
 ): Promise<TmdbPage> {
   "use cache";
   cacheLife("hours");
   try {
-    return await tmdb<TmdbPage>("/discover/movie", { ...params, page, language, include_adult: "false" });
+    const data = await tmdb<TmdbPage>(`/discover/${type}`, { ...params, page, language, include_adult: "false" });
+    return { ...data, results: normalize(type, data.results) };
   } catch {
     return { results: [], total_results: 0, total_pages: 0 };
   }
@@ -380,12 +696,16 @@ export async function tmdbDiscover(
 
 type TmdbImage = { file_path: string; iso_639_1: string | null; vote_average: number; vote_count: number };
 
-// Pôsteres e fundos do filme, os do idioma da pessoa primeiro, depois os mais votados. Só caminhos ("/abc.jpg").
-export async function getMovieImages(tmdbId: number, language: string): Promise<{ posters: string[]; backdrops: string[] }> {
+// Pôsteres e fundos do filme (ou série), os do idioma da pessoa primeiro, depois os mais votados. Só caminhos ("/abc.jpg").
+export async function getMovieImages(
+  tmdbId: number,
+  language: string,
+  type: TmdbType = "movie",
+): Promise<{ posters: string[]; backdrops: string[] }> {
   "use cache";
   cacheLife("days");
   const lang = language.slice(0, 2);
-  const data = await tmdb<{ posters: TmdbImage[]; backdrops: TmdbImage[] }>(`/movie/${tmdbId}/images`, {
+  const data = await tmdb<{ posters: TmdbImage[]; backdrops: TmdbImage[] }>(`/${type}/${tmdbId}/images`, {
     include_image_language: `${lang},en,null`,
   });
   const rank = (list: TmdbImage[], preferLang: string | null) =>

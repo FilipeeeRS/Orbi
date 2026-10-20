@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "./logo";
 import { UserMenu } from "./user-menu";
 import { SearchBox } from "./search-box";
-import type { MediaKind, Profile } from "@/lib/types";
+import { MEDIA_KINDS, type MediaKind, type Profile } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { countUnreadNotifications } from "@/lib/notifications";
 import { Avatar } from "./avatar";
@@ -10,10 +10,10 @@ import { Avatar } from "./avatar";
 // Avatar mora em ./avatar (componentes do navegador importam de lá; este arquivo busca notificações no servidor).
 export { Avatar };
 
-const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", music: "music", game: "games", book: "books" };
+const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "series", book: "books", anime: "anime", manga: "manga", game: "games", music: "music" };
 
 // No menu as pastas ficam sempre nesta ordem (no perfil elas seguem a última adição).
-const MENU_FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
+const MENU_FOLDERS = MEDIA_KINDS;
 
 export async function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary }) {
   const unread = viewer ? await countUnreadNotifications(viewer.id) : 0;
@@ -21,7 +21,7 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
     <header className="sticky top-0 z-20 border-b border-border bg-bg">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <Logo slogan={t.slogan} />
-        <SearchBox placeholder={t.nav.search} />
+        <SearchBox placeholder={t.nav.search} hideOnLanding={!viewer} />
         {viewer ? (
           <UserMenu
             avatar={<Avatar profile={viewer} size={30} ring={viewer.avatar_ring} />}

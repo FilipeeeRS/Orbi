@@ -9,6 +9,7 @@ import { getDict, getViewer, LOCALE_COOKIE } from "@/lib/session";
 import { itemTitle, type Item } from "@/lib/types";
 import { isLocale } from "@/lib/i18n/dictionaries";
 import { isAvatarRing } from "@/lib/avatar-ring";
+import { ensureAnime, ensureManga, ensureMovie, ensureSeason, ensureSeries } from "@/lib/catalog";
 
 export async function setLocale(locale: string) {
   if (!isLocale(locale)) return;
@@ -181,4 +182,18 @@ export async function saveFavorites(itemIds: string[]): Promise<{ ok: boolean }>
   // Limpa o cache de navegação para o perfil e as configurações mostrarem a lista nova.
   if (!error) refresh();
   return { ok: !error };
+}
+
+// Atalhos do pôster em listas de fora (filme/série do TMDB, anime do AniList) que talvez ainda não
+// estejam no catálogo: cria e devolve o id.
+export async function ensureTmdbItemId(type: "movie" | "tv" | "anime" | "manga", id: number): Promise<string | null> {
+  if (!(await getViewer()) || !Number.isInteger(id)) return null;
+  const ensure = type === "manga" ? ensureManga : type === "anime" ? ensureAnime : type === "tv" ? ensureSeries : ensureMovie;
+  return (await ensure(id))?.id ?? null;
+}
+
+// Episódios marcados na página da série: a temporada vira item no catálogo no primeiro clique.
+export async function ensureSeasonId(showTmdbId: number, season: number): Promise<string | null> {
+  if (!(await getViewer()) || !Number.isInteger(showTmdbId) || !Number.isInteger(season)) return null;
+  return (await ensureSeason(showTmdbId, season))?.season.id ?? null;
 }

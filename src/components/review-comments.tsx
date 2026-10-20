@@ -12,6 +12,7 @@ import {
   listReviewComments,
   setCommentLike,
   type ReviewComment,
+  deleteReview,
 } from "@/app/comment-actions";
 
 // Conversa de uma review, estilo Twitter: 💬 com o número abre os comentários embaixo da review.
@@ -30,6 +31,13 @@ export function ReviewComments({
   actions?: React.ReactNode; // ao lado do 💬 (ex.: o ♥ da review)
 }) {
   const { t } = useI18n();
+  const [removing, startRemoving] = useTransition();
+  function removeReview() {
+    if (!confirm(t.comments.confirmDeleteReview)) return;
+    startRemoving(async () => {
+      await deleteReview(entryId);
+    });
+  }
   const [open, setOpen] = useState(false);
   const [comments, setComments] = useState<ReviewComment[] | null>(null);
   const [count, setCount] = useState(initialCount);
@@ -96,6 +104,21 @@ export function ReviewComments({
           {count > 0 && <span className="tabular-nums">{count}</span>}
         </button>
         {actions}
+        {/* Dono da review: apagar a review (e a conversa inteira dela) */}
+        {viewerId && viewerId === reviewOwnerId && (
+          <button
+            type="button"
+            onClick={removeReview}
+            disabled={removing}
+            aria-label={t.comments.deleteReview}
+            title={t.comments.deleteReview}
+            className="text-muted transition hover:text-danger disabled:opacity-50"
+          >
+            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {open && (

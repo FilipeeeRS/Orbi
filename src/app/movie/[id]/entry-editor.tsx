@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useLayoutEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
@@ -28,10 +28,16 @@ export function EntryEditor({
   itemId,
   userId,
   initial,
+  series = false,
+  progress = false,
 }: {
   itemId: string;
   userId: string;
   initial: Entry | null;
+  series?: boolean; // séries e temporadas ganham o status "Assistindo"
+  // Série: no "Assistindo", temporada/episódio onde parou. "episode": só o episódio (anime);
+  // "chapter": só o capítulo (mangá, que também troca Assistir/Assistindo por Ler/Lendo).
+  progress?: boolean | "episode" | "chapter";
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -42,15 +48,53 @@ export function EntryEditor({
   const [uploading, setUploading] = useState(false);
   const [attachError, setAttachError] = useState<string | null>(null);
   const [hover, setHover] = useState<number | null>(null);
-  // Filme já assistido abre recolhido (só ações e estrelas); a seta mostra review, data e salvar.
-  const [expanded, setExpanded] = useState(initial?.status !== "watched");
+  // Sempre abre recolhido (só ações e estrelas); a seta ou uma mudança de status mostra review, data e salvar.
+  const [expanded, setExpanded] = useState(false);
+  // O Next mantém a página escondida (Activity) ao sair e a mostra de novo ao voltar, com o estado antigo.
+  // Ao esconder, recolhe de novo, para voltar sempre fechado.
+  useLayoutEffect(() => {
+    return () => setExpanded(false);
+  }, []);
   const [error, setError] = useState(false);
   const [pending, start] = useTransition();
 
   const watched = entry?.status === "watched";
   const onWatchlist = entry?.status === "watchlist";
+  const watching = entry?.status === "watching";
+  const reading = progress === "chapter"; // mangá: "Ler / Lido / Lendo" e "Parei no capítulo"
+  const [stoppedAt, setStoppedAt] = useState({
+    season: initial?.current_season ?? null,
+    episode: initial?.current_episode ?? null,
+  });
+
+  // Dados novos do servidor (ex.: episódios marcados na lista mudaram o status ou o "Parei em"):
+  // atualiza status e "Parei em" sem remontar o editor (que fecharia a caixa aberta).
+  const [syncedAt, setSyncedAt] = useState(initial?.updated_at);
+  if (initial?.updated_at !== syncedAt) {
+    setSyncedAt(initial?.updated_at);
+    setEntry(initial);
+    setStoppedAt({ season: initial?.current_season ?? null, episode: initial?.current_episode ?? null });
+  }
+
+  // "Parei em": salva só essas duas colunas, sem mexer no resto da entrada.
+  function saveStoppedAt(field: "season" | "episode", raw: string) {
+    const value = raw === "" ? null : Math.max(0, Math.min(999, Math.floor(Number(raw)) || 0));
+    if (value === stoppedAt[field]) return;
+    const next = { ...stoppedAt, [field]: value };
+    setStoppedAt(next);
+    start(async () => {
+      const { error } = await createClient()
+        .from("entries")
+        .update({ current_season: next.season, current_episode: next.episode })
+        .eq("user_id", userId)
+        .eq("item_id", itemId);
+      if (error) setError(true);
+    });
+  }
 
   function persist(next: Draft | null, previous: Draft | null, onSaved?: () => void) {
+    // Mudou o status (assistido, assistindo, watchlist; like e nota também marcam assistido): abre o editor.
+    if (next && next.status !== previous?.status) setExpanded(true);
     setEntry(next);
     setError(false);
     start(async () => {
@@ -113,6 +157,15 @@ export function EntryEditor({
     setWatchedOn("");
     setAttachments([]);
     persist(null, entry);
+  }
+
+  function toggleWatching() {
+    persist(
+      watching
+        ? null
+        : { status: "watching", rating: null, liked: false, review: null, watched_on: null, attachments: [] },
+      entry,
+    );
   }
 
   function toggleWatchlist() {
@@ -185,11 +238,36 @@ export function EntryEditor({
     setUploading(false);
   }
 
+  // "Parei em Temporada [ ] Episódio [ ]" (série em Assistindo). Salva ao sair do campo ou com Enter.
+  const stoppedAtFields = (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+      <span className="text-muted">{t.series.stoppedAt}</span>
+      {(progress === "episode" || reading ? (["episode"] as const) : (["season", "episode"] as const)).map((field) => (
+        <label key={field} className="flex items-center gap-1.5">
+          <span className="text-muted">
+            {field === "season" ? t.series.seasonLabel : reading ? t.manga.chapter : t.series.episodeLabel}
+          </span>
+          <input
+            key={stoppedAt[field] ?? ""}
+            type="number"
+            min={0}
+            max={999}
+            inputMode="numeric"
+            defaultValue={stoppedAt[field] ?? ""}
+            onBlur={(e) => saveStoppedAt(field, e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+            className="w-14 rounded-lg border border-border bg-bg px-2 py-1.5 text-center tabular-nums outline-none focus:border-accent"
+          />
+        </label>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-4 rounded-xl border border-border bg-surface/80 p-4">
       {/* Linha única: ações à esquerda, estrelas à direita (clicar na nota atual limpa) */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 sm:flex-nowrap">
+        <div className="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
@@ -218,7 +296,29 @@ export function EntryEditor({
             icon={ICONS.check}
             removeLabel={t.movie.removeShort}
           >
-            {watched ? t.movie.watched : t.movie.watch}
+            {reading ? (watched ? t.manga.readDone : t.manga.read) : watched ? t.movie.watched : t.movie.watch}
+          </Toggle>
+          {series && !watched && (
+            <Toggle
+              on={watching}
+              onClick={toggleWatching}
+              disabled={pending}
+              tone="plain"
+              icon={ICONS.play}
+              removeLabel={t.movie.removeShort}
+            >
+              {reading ? t.manga.reading : t.movies.tabs.watching}
+            </Toggle>
+          )}
+          <Toggle
+            on={!!entry?.liked}
+            onClick={() => persist(asWatched({ liked: !entry?.liked }), entry)}
+            disabled={pending}
+            tone="like"
+            icon={entry?.liked ? ICONS.heartFilled : ICONS.heart}
+            removeLabel={t.movie.removeShort}
+          >
+            {entry?.liked ? t.movie.liked : t.movie.like}
           </Toggle>
           {!watched && (
             <Toggle
@@ -232,16 +332,6 @@ export function EntryEditor({
               {t.movies.tabs.watchlist}
             </Toggle>
           )}
-          <Toggle
-            on={!!entry?.liked}
-            onClick={() => persist(asWatched({ liked: !entry?.liked }), entry)}
-            disabled={pending}
-            tone="like"
-            icon={entry?.liked ? ICONS.heartFilled : ICONS.heart}
-            removeLabel={t.movie.removeShort}
-          >
-            {entry?.liked ? t.movie.liked : t.movie.like}
-          </Toggle>
         </div>
 
         <div
@@ -333,16 +423,21 @@ export function EntryEditor({
           )}
 
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <label className="text-xs text-muted">
-              <span className="mb-1 block">{t.movie.watchedOn}</span>
-              <input
-                type="date"
-                value={watchedOn}
-                max={today()}
-                onChange={(e) => setWatchedOn(e.target.value)}
-                className="rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent"
-              />
-            </label>
+            {/* Em Assistindo a data não vale (ainda não terminou): no lugar dela, onde parou */}
+            {progress && watching ? (
+              stoppedAtFields
+            ) : (
+              <label className="text-xs text-muted">
+                <span className="mb-1 block">{t.movie.watchedOn}</span>
+                <input
+                  type="date"
+                  value={watchedOn}
+                  max={today()}
+                  onChange={(e) => setWatchedOn(e.target.value)}
+                  className="rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent"
+                />
+              </label>
+            )}
             {/* Anexar (imagens, GIFs, PDF, Word e vídeos curtos) ao lado da data; some ao chegar no limite */}
             {attachments.length < MAX_ATTACHMENTS && (
               <label
@@ -390,6 +485,12 @@ export function EntryEditor({
 
 // Mesmos ícones usados nos números do filme e nos atalhos dos pôsteres.
 const ICONS = {
+  play: (
+    <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M10 8.5v7l5.5-3.5z" fill="currentColor" />
+    </svg>
+  ),
   check: (
     <svg
       viewBox="0 0 24 24"
@@ -459,7 +560,7 @@ function Toggle({
     <button
       type="button"
       {...props}
-      className={`group flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition disabled:opacity-60 ${
+      className={`group flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition disabled:opacity-60 ${
         on ? `${active} bg-surface-2` : "border-border text-muted hover:text-fg"
       }`}
     >

@@ -2,10 +2,15 @@ import type { Locale } from "./i18n/dictionaries";
 import type { AvatarRing } from "./avatar-ring";
 import type { Attachment } from "./attachments";
 
-export type MediaKind = "movie" | "series" | "music" | "game" | "book";
+export type MediaKind = "movie" | "series" | "book" | "anime" | "manga" | "game" | "music";
+// Ordem das pastas em todo o site (menu, perfil, Home).
+export const MEDIA_KINDS: MediaKind[] = ["movie", "series", "book", "anime", "manga", "game", "music"];
 // "all" = pasta que junta todas as outras
 export type FolderKind = MediaKind | "all";
-export type EntryStatus = "watched" | "watchlist";
+// No catálogo, cada temporada de série também é um item (com nota e review próprias).
+export type ItemKind = MediaKind | "season";
+// "watching" só existe em séries e temporadas.
+export type EntryStatus = "watched" | "watchlist" | "watching";
 
 export type Profile = {
   id: string;
@@ -28,7 +33,7 @@ export type Profile = {
 
 export type Item = {
   id: string;
-  kind: MediaKind;
+  kind: ItemKind;
   source: string;
   external_id: string | null;
   title: string;
@@ -44,6 +49,18 @@ export type Item = {
   genre_ids: number[];
   runtime: number | null;
   release_date: string | null;
+  parent_id?: string | null; // temporada → série
+  season_number?: number | null;
+  episode_count?: number | null;
+  // Animes e mangás (cópia do AniList)
+  mal_id?: number | null;
+  format?: string | null;
+  status?: string | null;
+  season?: string | null;
+  season_year?: number | null;
+  genres?: string[];
+  chapters?: number | null;
+  volumes?: number | null;
   translations: Partial<Record<Locale, { title?: string; overview?: string }>>;
 };
 
@@ -57,6 +74,8 @@ export type Entry = {
   review: string | null;
   watched_on: string | null;
   attachments: Attachment[]; // anexos da review (imagens, GIFs, PDF, Word, vídeos)
+  current_season?: number | null; // "Assistindo": onde a pessoa parou (só séries)
+  current_episode?: number | null;
   updated_at: string;
 };
 
@@ -70,7 +89,13 @@ export function itemOverview(item: Pick<Item, "overview" | "translations">, loca
   return item.translations?.[locale]?.overview || item.overview;
 }
 
-// Por enquanto só existem filmes: do TMDB pelo id deles, manuais pelo nosso id.
-export function itemHref(item: Pick<Item, "id" | "source" | "external_id">) {
+// Itens do TMDB pelo id deles (temporada = "série/número"), manuais pelo nosso id.
+export function itemHref(item: Pick<Item, "id" | "source" | "external_id"> & { kind?: ItemKind }) {
+  if (item.kind === "series") return `/series/${item.external_id}`;
+  if (item.kind === "anime") return `/anime/${item.external_id}`;
+  if (item.kind === "season") {
+    const [show, season] = (item.external_id ?? "").split("/");
+    return `/series/${show}/season/${season}`;
+  }
   return `/movie/${item.source === "tmdb" ? item.external_id : item.id}`;
 }

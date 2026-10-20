@@ -8,7 +8,6 @@ import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
 import {
-  getFolderOrder,
   getFriends,
   getItemsByIds,
   getProfileByUsername,
@@ -27,7 +26,7 @@ import { TranslatableText } from "@/components/translatable-text";
 import { ReviewComments } from "@/components/review-comments";
 import { StarsDisplay } from "@/components/stars";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
-import { itemHref, itemTitle, type EntryWithItem, type FolderKind, type MediaKind } from "@/lib/types";
+import { MEDIA_KINDS, itemHref, itemTitle, type EntryWithItem, type FolderKind, type MediaKind } from "@/lib/types";
 import { ProfileHeader } from "./profile-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]">): Promise<Metadata> {
@@ -35,11 +34,13 @@ export async function generateMetadata({ params }: PageProps<"/u/[username]">): 
   return { title: profile ? profile.display_name || profile.username : undefined };
 }
 
-const FOLDERS: MediaKind[] = ["movie", "series", "music", "game", "book"];
+const FOLDERS = MEDIA_KINDS;
 const FOLDER_PATHS: Record<FolderKind, string> = {
   all: "all",
   movie: "movies",
   series: "series",
+  anime: "anime",
+  manga: "manga",
   music: "music",
   game: "games",
   book: "books",
@@ -59,11 +60,10 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   if (!profile) notFound();
 
   const isOwner = viewer?.id === profile.id;
-  const [o, friends, following, folderOrder, chosenFavorites] = await Promise.all([
+  const [o, friends, following, chosenFavorites] = await Promise.all([
     getProfileOverview(profile.id, "movie", viewer?.id ?? null),
     getFriends(profile.id),
     viewer && !isOwner ? isFollowing(viewer.id, profile.id) : false,
-    getFolderOrder(profile.id),
     getItemsByIds(profile.favorites ?? []).then((items) => (viewer ? applyArtToItems(viewer.id, items) : items)),
   ]);
   // Favoritos escolhidos em Configurações primeiro; os espaços que sobrarem (até 4)
@@ -119,7 +119,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
         }
       />
 
-      <Folders base={base} recent={o.recent} counts={folderCounts(o)} order={folderOrder} t={t} />
+      <Folders base={base} recent={o.recent} counts={folderCounts(o)} order={MEDIA_KINDS} t={t} />
 
       {o.watched + o.watchlist === 0 ? (
         <EmptyProfile isOwner={isOwner} t={t} />
@@ -133,7 +133,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                 </SectionTitle>
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
                   {favorites.map((item, i) => (
-                    <Poster
+                    <Poster badge={false}
                       key={item.id}
                       item={item}
                       locale={locale}
@@ -148,12 +148,12 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
 
             {o.recent.length > 0 && (
               <section>
-                <SectionTitle href={`${base}/movies`} more={t.profile.all}>
+                <SectionTitle href={`${base}/all`} more={t.profile.all}>
                   {t.profile.recent}
                 </SectionTitle>
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
                   {o.recent.slice(0, 4).map((e) => (
-                    <Poster
+                    <Poster badge={false}
                       key={e.id}
                       item={e.items}
                       locale={locale}
@@ -385,7 +385,8 @@ function Folders({
   return (
     <FolderCarousel>
       {kinds.map((kind) => {
-        const posters = kind === "all" || kind === "movie" ? recent.filter((e) => e.items.poster_url).slice(0, 3) : [];
+        // Capas da pasta: os vistos recentes daquele tipo ("Tudo" mistura filmes e séries).
+        const posters = recent.filter((e) => e.items.poster_url && (kind === "all" || e.items.kind === kind)).slice(0, 3);
         return counts[kind] > 0 ? (
           <Link
             key={kind}

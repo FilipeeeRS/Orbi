@@ -6,21 +6,21 @@ import { createClient } from "@/lib/supabase/server";
 import { getDict, getViewer } from "@/lib/session";
 import { getMovieImages, tmdbLanguage } from "@/lib/tmdb";
 
-// Imagens do TMDB disponíveis para o filme (só filmes do TMDB; os manuais não têm alternativas).
+// Imagens do TMDB disponíveis para o filme ou série (só os do TMDB; os manuais não têm alternativas).
 export async function listMovieImages(itemId: string): Promise<{ posters: string[]; backdrops: string[] }> {
   const supabase = await createClient();
-  const { data: item } = await supabase.from("items").select("source, external_id").eq("id", itemId).maybeSingle();
+  const { data: item } = await supabase.from("items").select("kind, source, external_id").eq("id", itemId).maybeSingle();
   if (!item || item.source !== "tmdb" || !item.external_id) return { posters: [], backdrops: [] };
   const { locale } = await getDict();
   try {
-    return await getMovieImages(Number(item.external_id), tmdbLanguage(locale));
+    return await getMovieImages(Number(item.external_id), tmdbLanguage(locale), item.kind === "series" ? "tv" : "movie");
   } catch {
     return { posters: [], backdrops: [] };
   }
 }
 
 // Grava o pôster ou o fundo escolhido (caminho do TMDB); null volta para o padrão.
-// Só para filmes que a pessoa marcou como vistos (o banco também exige isso).
+// Só para filmes e séries que a pessoa marcou como vistos (o banco também exige isso).
 export async function saveItemArt(itemId: string, kind: "poster" | "backdrop", path: string | null): Promise<{ ok: boolean }> {
   const viewer = await getViewer();
   if (!viewer || (path !== null && !ART_PATH.test(path))) return { ok: false };

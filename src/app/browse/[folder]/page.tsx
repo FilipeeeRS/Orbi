@@ -4,23 +4,37 @@ import { notFound } from "next/navigation";
 import Loading from "../../loading";
 import { FilterBar } from "@/components/filter-bar";
 import { FolderIcon } from "@/components/folder-icon";
-import { PosterGrid, PosterImage } from "@/components/poster";
+import { ExternalPosters, type ExternalPoster } from "@/components/external-posters";
 import { BROWSE_PAGE_SIZE, BROWSE_SORTS, browseMovies, type BrowseSort } from "@/lib/browse";
+import { animeCover, animeTitle, animeYear, browseAnime, getAnimeGenres, type AnimeSort } from "@/lib/anilist";
 import { dictionaries } from "@/lib/i18n/dictionaries";
-import { SORT_LABEL } from "@/lib/queries";
+import { sortOptions } from "@/lib/sort-options";
 import { getDict, getViewer } from "@/lib/session";
 import { getMovieGenres, releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import type { MediaKind } from "@/lib/types";
 
-// "Ver tudo" da Home: /browse/movies, /browse/series... com qualquer item que existe no TMDB.
+// "Ver tudo" da Home: /browse/movies, /browse/series (TMDB), /browse/anime (AniList)...
 const SLUGS: Record<string, MediaKind> = {
   movies: "movie",
   series: "series",
+  anime: "anime",
+  manga: "manga",
   music: "music",
   games: "game",
   books: "book",
 };
 const DEFAULT_SORT: BrowseSort = "week";
+
+// Ordenações das listagens → ordenação do AniList.
+const ANIME_SORT: Record<BrowseSort, AnimeSort> = {
+  week: "TRENDING_DESC",
+  popular: "POPULARITY_DESC",
+  top: "SCORE_DESC",
+  release: "START_DATE_DESC",
+  "release-old": "START_DATE",
+  title: "TITLE_ROMAJI",
+  "title-desc": "TITLE_ROMAJI_DESC",
+};
 
 export default function BrowsePage(props: PageProps<"/browse/[folder]">) {
   return (
@@ -39,24 +53,46 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
   const page = Math.max(1, Number(query.page) || 1);
   const [viewer, { t, locale }] = await Promise.all([getViewer(), getDict()]);
   const language = tmdbLanguage(locale);
+  const decade = Number(query.decade) || undefined;
+  const q = typeof query.q === "string" ? query.q : undefined;
 
-  // Por enquanto só filmes vêm do TMDB; as outras pastas entram quando tiverem fonte de dados.
-  const [{ movies, total }, genres] =
-    kind === "movie"
-      ? await Promise.all([
-          browseMovies(
-            {
-              decade: Number(query.decade) || undefined,
-              genre: Number(query.genre) || undefined,
-              q: typeof query.q === "string" ? query.q : undefined,
-            },
-            sort,
-            page,
-            { language, showAdult: !!viewer?.show_adult },
-          ),
-          getMovieGenres(language),
-        ])
-      : [{ movies: [], total: 0 }, []];
+  // Filmes e séries vêm do TMDB, animes do AniList; as outras pastas entram quando tiverem fonte de dados.
+  let list: ExternalPoster[] = [];
+  let total = 0;
+  let genres: { value: string; label: string }[] = [];
+  const browsable = kind === "movie" || kind === "series" || kind === "anime";
+  if (kind === "anime") {
+    const genre = typeof query.genre === "string" ? query.genre : undefined;
+    const [found, names] = await Promise.all([
+      browseAnime({
+        page,
+        perPage: BROWSE_PAGE_SIZE,
+        sort: ANIME_SORT[sort],
+        search: q?.trim(),
+        genre,
+        decade,
+        showAdult: !!viewer?.show_adult,
+      }),
+      getAnimeGenres(),
+    ]);
+    list = found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) }));
+    total = found.total;
+    genres = names.map((g) => ({ value: g, label: g }));
+  } else if (kind === "movie" || kind === "series") {
+    const type = kind === "series" ? "tv" : "movie";
+    const [found, tmdbGenres] = await Promise.all([
+      browseMovies({ decade, genre: Number(query.genre) || undefined, q }, sort, page, {
+        language,
+        showAdult: !!viewer?.show_adult,
+        type,
+      }),
+      getMovieGenres(language, type),
+    ]);
+    list = found.movies.map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342") }));
+    total = found.total;
+    genres = tmdbGenres.map((g) => ({ value: String(g.id), label: g.name }));
+  }
+
   const pages = Math.max(1, Math.ceil(total / BROWSE_PAGE_SIZE));
   const count = new Intl.NumberFormat(dictionaries[locale].htmlLang).format(total);
 
@@ -77,32 +113,20 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
           {t.folders.allOf(t.folders[kind])}
           <span className="font-sans text-sm font-normal text-muted">{count}</span>
         </h1>
-        {kind === "movie" && (
+        {browsable && (
           <FilterBar
             labels={t.movies.filters}
             defaultSort={DEFAULT_SORT}
-            sorts={BROWSE_SORTS.map((key) => ({ value: key, label: t.movies.sort[SORT_LABEL[key]] }))}
+            sorts={sortOptions(BROWSE_SORTS, t)}
             decades={Array.from({ length: 13 }, (_, i) => 2020 - i * 10).map((d) => ({ value: String(d), label: `${d}s` }))}
-            genres={genres.map((g) => ({ value: String(g.id), label: g.name }))}
+            genres={genres}
             ratings={[]}
           />
         )}
       </div>
 
-      {movies.length ? (
-        <PosterGrid>
-          {movies.map((m, i) => {
-            const year = releaseYear(m);
-            return (
-              <Link key={m.id} href={`/movie/${m.id}`} className="group block">
-                <PosterImage url={tmdbImage(m.poster_path, "w342")} title={m.title} eager={i < 8} />
-                <p className="mt-1 line-clamp-2 text-xs">
-                  {m.title} {year && <span className="text-muted">{year}</span>}
-                </p>
-              </Link>
-            );
-          })}
-        </PosterGrid>
+      {list.length && browsable ? (
+        <ExternalPosters kind={kind} list={list} viewer={viewer} eager={8} />
       ) : (
         <p className="text-sm text-muted">{t.profile.empty}</p>
       )}

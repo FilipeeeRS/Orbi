@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "./i18n";
+import { ensureTmdbItemId } from "@/app/actions";
 
 export type ViewerItemState = {
   watched: boolean;
   liked: boolean;
   watchlist: boolean;
+  watching?: boolean; // só séries
   hasDetails: boolean;
 };
 
@@ -16,20 +18,28 @@ const EMPTY: ViewerItemState = {
   watched: false,
   liked: false,
   watchlist: false,
+  watching: false,
   hasDetails: false,
 };
 const today = () => new Date().toLocaleDateString("sv-SE");
 
-// Atalhos sobre o pôster (✓ visto, ♥ curtir, 🕐 watchlist) e a borda de hover, que fica verde
+// Atalhos sobre o pôster (✓ visto, ▶ assistindo (séries), ♥ curtir, 🕐 watchlist) e a borda de hover, que fica verde
 // quando o usuário logado já viu o filme. Tudo usa o estado atual, então muda na hora do clique.
+// Sem itemId (filme/série do TMDB fora do catálogo), o tmdb cria o item no primeiro clique.
 export function PosterActions({
   itemId,
+  tmdb,
   viewerId,
   initial,
+  series = false,
+  badge: showBadge = true,
 }: {
-  itemId: string;
+  itemId: string | null;
+  tmdb?: { type: "movie" | "tv" | "anime" | "manga"; id: number }; // anime/mangá: id do AniList
   viewerId: string;
   initial: ViewerItemState | null;
+  series?: boolean; // séries ganham o "Assistindo"
+  badge?: boolean; // selo do status no canto (no perfil fica de fora: a pasta já diz o status)
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -37,6 +47,7 @@ export function PosterActions({
   // Desmarcar um filme com nota/review pede um segundo clique (em vez de um confirm do navegador).
   const [confirming, setConfirming] = useState(false);
   const [pending, start] = useTransition();
+  const idRef = useRef(itemId);
 
   useEffect(() => {
     if (!confirming) return;
@@ -48,6 +59,12 @@ export function PosterActions({
     const previous = state;
     setState(next);
     start(async () => {
+      const id = idRef.current ?? (tmdb ? await ensureTmdbItemId(tmdb.type, tmdb.id) : null);
+      if (!id) {
+        setState(previous);
+        return;
+      }
+      idRef.current = id;
       const supabase = createClient();
       let result;
       if (next.watched) {
@@ -55,20 +72,35 @@ export function PosterActions({
         result = await supabase.from("entries").upsert(
           {
             user_id: viewerId,
-            item_id: itemId,
+            item_id: id,
             status: "watched",
             liked: next.liked,
             ...(previous.watched ? {} : { watched_on: today() }),
           },
           { onConflict: "user_id,item_id" },
         );
+      } else if (next.watching) {
+        result = await supabase
+          .from("entries")
+          .upsert(
+            {
+              user_id: viewerId,
+              item_id: id,
+              status: "watching",
+              liked: false,
+              rating: null,
+              review: null,
+              watched_on: null,
+            },
+            { onConflict: "user_id,item_id" },
+          );
       } else if (next.watchlist) {
         result = await supabase
           .from("entries")
           .upsert(
             {
               user_id: viewerId,
-              item_id: itemId,
+              item_id: id,
               status: "watchlist",
               liked: false,
               rating: null,
@@ -82,7 +114,7 @@ export function PosterActions({
           .from("entries")
           .delete()
           .eq("user_id", viewerId)
-          .eq("item_id", itemId);
+          .eq("item_id", id);
       }
       if (result.error) {
         console.error("Orbi: não foi possível salvar", result.error);
@@ -96,21 +128,49 @@ export function PosterActions({
     if (state.watched && state.hasDetails && !confirming)
       return setConfirming(true);
     setConfirming(false);
-    save(state.watched ? EMPTY : { ...state, watched: true, watchlist: false });
+    save(state.watched ? EMPTY : { ...state, watched: true, watchlist: false, watching: false });
   }
 
   // Curtir também marca como visto, como no Letterboxd.
   const toggleLike = () =>
-    save({ ...state, watched: true, watchlist: false, liked: !state.liked });
+    save({ ...state, watched: true, watchlist: false, watching: false, liked: !state.liked });
 
   // Watchlist só vale para o que ainda não foi visto.
   const toggleWatchlist = () => save({ ...EMPTY, watchlist: !state.watchlist });
+  const toggleWatching = () => save({ ...EMPTY, watching: !state.watching });
 
   const button =
     "grid size-7 place-items-center rounded-full transition hover:bg-white/10 disabled:opacity-40";
 
+  // Selo do status atual no canto do pôster, sempre visível (sem passar o mouse): fundo escuro, ícone na cor do status.
+  const badge = state.watched
+    ? { label: t.movie.watched, className: "text-ok", icon: <path d="M5 12.5l4.5 4.5L19 7.5" strokeWidth="3.2" /> }
+    : state.watching
+      ? {
+          label: t.movies.tabs.watching,
+          className: "text-white",
+          icon: <path d="M8.5 6.5v11l9-5.5z" fill="currentColor" strokeWidth="1.5" />,
+        }
+      : state.watchlist
+        ? {
+            label: t.movies.tabs.watchlist,
+            className: "text-white",
+            icon: <path d="M12 7v5l3 2m7-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0z" strokeWidth="2.4" />,
+          }
+        : null;
+
   return (
     <>
+      {showBadge && badge && (
+        <span
+          title={badge.label}
+          className={`pointer-events-none absolute end-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-black/75 shadow-md ${badge.className}`}
+        >
+          <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-label={badge.label}>
+            {badge.icon}
+          </svg>
+        </span>
+      )}
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-0 rounded-md opacity-0 ring-2 transition group-hover:opacity-100 ${
@@ -150,6 +210,22 @@ export function PosterActions({
               />
             </svg>
           </button>
+          {/* Assistindo (só séries): também some depois de marcar como assistido */}
+          {series && !state.watched && (
+            <button
+              type="button"
+              onClick={toggleWatching}
+              disabled={pending}
+              aria-pressed={!!state.watching}
+              title={t.movies.tabs.watching}
+              className={`${button} ${state.watching ? "bg-white/15 text-white" : "text-white/70 hover:text-white"}`}
+            >
+              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M10 8.5v7l5.5-3.5z" fill="currentColor" />
+              </svg>
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleLike}

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-type Option = { value: string; label: string };
+// group: tópico do menu ("Lançamento" → "Mais novos primeiro"); sem group, a opção fica solta.
+type Option = { value: string; label: string; group?: string };
 
 export type FilterBarProps = {
   labels: {
@@ -151,7 +152,11 @@ function Dropdown({
           selected && !showValue ? "text-accent" : "text-muted"
         }`}
       >
-        {showValue && selected ? `${label}: ${selected.label}` : selected ? selected.label : label}
+        {showValue && selected
+          ? `${label}: ${selected.group ? `${selected.group} · ${selected.label}` : selected.label}`
+          : selected
+            ? selected.label
+            : label}
         <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden>
           <path d="M6 9l6 6 6-6" />
         </svg>
@@ -159,16 +164,23 @@ function Dropdown({
       {open && (
         // pt-1 em vez de margem: o menu fica "colado" e não fecha ao mover o mouse até ele
         <div className="absolute end-0 top-full z-30 pt-1">
-          <ul className="max-h-72 w-52 overflow-y-auto rounded-lg border border-border bg-surface py-1 text-sm normal-case shadow-xl">
+          <ul className="max-h-[28rem] w-56 overflow-y-auto rounded-lg border border-border bg-surface py-1 text-sm normal-case shadow-xl">
             {anyLabel && (
               <Item active={!value} onClick={() => pick(null)}>
                 {anyLabel}
               </Item>
             )}
-            {options.map((o) => (
-              <Item key={o.value} active={o.value === value} onClick={() => pick(o.value)}>
-                {o.label}
-              </Item>
+            {options.map((o, i) => (
+              <Fragment key={o.value}>
+                {/* Título do tópico antes da primeira opção dele */}
+                {o.group && o.group !== options[i - 1]?.group && (
+                  <li className="px-3 pt-2 pb-0.5 text-xs font-semibold text-muted">{o.group}</li>
+                )}
+                {/* Com tópicos no menu, as opções soltas (popularidade) ficam no mesmo recuo das outras */}
+                <Item active={o.value === value} onClick={() => pick(o.value)} indent={options.some((x) => x.group)}>
+                  {o.label}
+                </Item>
+              </Fragment>
             ))}
           </ul>
         </div>
@@ -177,13 +189,23 @@ function Dropdown({
   );
 }
 
-function Item({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function Item({
+  active,
+  onClick,
+  indent,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  indent?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <li>
       <button
         type="button"
         onClick={onClick}
-        className={`flex w-full items-center justify-between px-3 py-1.5 text-start hover:bg-surface-2 ${
+        className={`flex w-full items-center justify-between py-1.5 pe-3 text-start hover:bg-surface-2 ${indent ? "ps-6" : "ps-3"} ${
           active ? "font-semibold text-fg" : "text-muted"
         }`}
       >

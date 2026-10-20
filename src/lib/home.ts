@@ -1,5 +1,8 @@
 import "server-only";
 import { createClient } from "./supabase/server";
+import { ensureAnime, ensureMovie, ensureSeries } from "./catalog";
+import { browseAnime, seasonOf } from "./anilist";
+import { isAnime, tmdbTrendingWeek } from "./tmdb";
 import type { EntryWithItem, Item, MediaKind, Profile } from "./types";
 
 // Dados da tela inicial (Home) de quem está logado. Tudo respeita a RLS:
@@ -32,8 +35,26 @@ export async function getFriendsActivity(viewerId: string, limit = 6): Promise<E
   return (data ?? []) as unknown as EntryWithAuthor[];
 }
 
-// Itens mais adicionados na semana em uma pasta; completa com os mais populares de sempre.
+// Populares da semana em uma pasta. Filmes e séries: em alta no mundo todo esta semana (TMDB),
+// já que o Orbi ainda tem pouca gente. As outras pastas: os mais adicionados no Orbi na semana.
 export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[]> {
+  if (kind === "anime") {
+    // Animes da temporada atual (AniList), dos mais populares para os menos.
+    const { season, year } = seasonOf();
+    const { list } = await browseAnime({ page: 1, perPage: limit, sort: "POPULARITY_DESC", season, seasonYear: year });
+    const items = await Promise.all(list.map((a) => ensureAnime(a.id).catch(() => null)));
+    return items.filter((i): i is Item => !!i);
+  }
+  if (kind === "movie" || kind === "series") {
+    const type = kind === "series" ? "tv" : "movie";
+    const ensure = kind === "series" ? ensureSeries : ensureMovie;
+    const trending = (await tmdbTrendingWeek(1, "en-US", type)).results
+      .filter((m) => !(type === "tv" && isAnime(m)))
+      .slice(0, limit * 2); // folga para os +18 que saem
+    const items = await Promise.all(trending.map((m) => ensure(m.id).catch(() => null)));
+    return items.filter((i): i is Item => !!i && i.kind === kind && !i.is_adult_rated).slice(0, limit);
+  }
+
   const supabase = await createClient();
   const sample = (since?: string) => {
     let q = supabase.from("entries").select("item_id, items!inner(*)").eq("items.kind", kind);
@@ -53,7 +74,6 @@ export async function getPopularItems(kind: MediaKind, limit = 6): Promise<Item[
 
   const week = rank(((await sample(weekAgo())).data ?? []) as { item_id: string; items: unknown }[]);
   if (week.length >= limit) return week.slice(0, limit);
-
   const seen = new Set(week.map((i) => i.id));
   const allTime = rank(((await sample()).data ?? []) as { item_id: string; items: unknown }[]).filter(
     (i) => !seen.has(i.id),

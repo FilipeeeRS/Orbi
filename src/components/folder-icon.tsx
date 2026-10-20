@@ -21,6 +21,20 @@ const PATHS: Record<FolderKind, React.ReactNode> = {
       <path d="M8 2l4 4 4-4" />
     </>
   ),
+  // Portal torii
+  anime: (
+    <>
+      <path d="M2.5 5.5c3 .8 6 1.2 9.5 1.2s6.5-.4 9.5-1.2" />
+      <path d="M4.5 10h15M7 6.6V21M17 6.6V21M12 6.7V10" />
+    </>
+  ),
+  // Página de mangá com quadros
+  manga: (
+    <>
+      <rect x="4" y="3" width="16" height="18" rx="1.5" />
+      <path d="M4 10.5h16M13 10.5V21M10 3v7.5" />
+    </>
+  ),
   music: (
     <>
       <path d="M9 18V5l11-2v13" />

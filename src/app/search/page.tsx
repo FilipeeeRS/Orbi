@@ -4,14 +4,19 @@ import Link from "next/link";
 import Loading from "../loading";
 import { PosterGrid, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
-import { SORT_LABEL, type Sort } from "@/lib/queries";
+import { type Sort } from "@/lib/queries";
+import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
+import { ExternalPosters } from "@/components/external-posters";
+import { animeCover, animeTitle, animeYear, browseAnime } from "@/lib/anilist";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { adultMovieIds } from "@/lib/catalog";
 import {
   discoverMovies,
   getPersonMovies,
   releaseYear,
   getMovieGenres,
+  isAnime,
   searchMoviesPages,
   tmdbImage,
   tmdbLanguage,
@@ -37,26 +42,35 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
   const { t, locale } = await getDict();
   const language = tmdbLanguage(locale);
 
-  // Vindo da ficha de um filme: filmes de uma pessoa, de um gênero, estúdio ou país.
+  // Filmes, séries (TMDB) ou animes (AniList), nas abas do topo; a ficha de uma série já manda type=series.
+  const series = params.type === "series";
+  const type = series ? "tv" : "movie";
+  const tab: "movie" | "series" | "anime" = params.type === "anime" ? "anime" : series ? "series" : "movie";
+  if (tab === "anime") return <AnimeResults q={q} />;
+
+  // Vindo da ficha: obras de uma pessoa, de um gênero, estúdio, emissora ou país.
   const person = Number(params.person) || null;
   const genre = Number(params.genre) || undefined;
   const company = Number(params.company) || undefined;
+  const network = series ? Number(params.network) || undefined : undefined;
   const country = typeof params.country === "string" && /^[A-Z]{2}$/.test(params.country) ? params.country : undefined;
-  const browsing = !!(person || genre || company || country);
+  const browsing = !!(person || genre || company || network || country);
 
   if (!q && !browsing) return <p className="text-muted">{t.search.prompt}</p>;
 
   const [found, viewer] = await Promise.all([
     person
-      ? getPersonMovies(person, language)
+      ? getPersonMovies(person, language, type)
       : browsing
-        ? discoverMovies({ genre, company, country }, language)
-        : searchMoviesPages(q, language),
+        ? discoverMovies({ genre, company, network, country }, language, type)
+        : searchMoviesPages(q, language, 3, type),
     getViewer(),
   ]);
-  // Sem a opção +18 ativada (ou sem login), filmes com classificação 18 anos ficam de fora.
-  const adult = viewer?.show_adult ? null : await adultMovieIds(found.map((m) => m.id));
-  const allowed = adult ? found.filter((m) => !adult.has(m.id)) : found;
+  // Sem a opção +18 ativada (ou sem login), filmes com classificação 18 anos ficam de fora
+  // (séries +18 o próprio TMDB já tira com include_adult=false).
+  const adult = viewer?.show_adult || series ? null : await adultMovieIds(found.map((m) => m.id));
+  // Animes ficam na aba própria.
+  const allowed = found.filter((m) => !adult?.has(m.id) && !(series && isAnime(m)));
 
   // Filtros e ordenação da busca (mesma barra das pastas, sem nota e sem lupa).
   const sort = SEARCH_SORTS.includes(params.sort as SearchSort) ? (params.sort as SearchSort) : "popular";
@@ -90,17 +104,29 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
           return (b.popularity ?? 0) - (a.popularity ?? 0);
       }
     });
-  const genres = await getMovieGenres(language);
+  const genres = await getMovieGenres(language, type);
+  // Abas Filmes / Séries mantêm o que foi buscado (texto ou pessoa, gênero...).
+  const tabHref = (to: "movie" | "series" | "anime") => {
+    const next = new URLSearchParams();
+    for (const [key, value] of Object.entries(params))
+      if (typeof value === "string" && !["type", "sort", "decade", "genre", "in", "network"].includes(key)) next.set(key, value);
+    if (params.genre && !person && !company && !country) next.delete("q"); // gênero de filme não vale para série
+    if (to !== "movie") next.set("type", to);
+    return `/search?${next}`;
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
-        <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+          <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+          <SearchTabs current={tab} hrefFor={tabHref} t={t} />
+        </div>
         <FilterBar
           labels={t.movies.filters}
           defaultSort="popular"
           searchParam="in"
-          sorts={SEARCH_SORTS.map((key) => ({ value: key, label: t.movies.sort[SORT_LABEL[key]] }))}
+          sorts={sortOptions(SEARCH_SORTS, t)}
           decades={Array.from({ length: 13 }, (_, i) => 2020 - i * 10).map((d) => ({ value: String(d), label: `${d}s` }))}
           genres={genres.map((g) => ({ value: String(g.id), label: g.name }))}
           ratings={[]}
@@ -111,7 +137,7 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
           {results.map((m, i) => {
             const year = releaseYear(m);
             return (
-              <Link key={m.id} href={`/movie/${m.id}`} className="group block">
+              <Link key={m.id} href={`/${tab}/${m.id}`} className="group block">
                 <PosterImage url={tmdbImage(m.poster_path, "w342")} title={m.title} eager={i < 8} />
                 <p className="mt-1 line-clamp-2 text-xs">
                   {m.title} {year && <span className="text-muted">{year}</span>}
@@ -123,10 +149,60 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
       ) : (
         <p className="text-muted">{t.search.empty}</p>
       )}
-      {!browsing && (
+      {!browsing && !series && (
         <Link href={`/movie/new?title=${encodeURIComponent(q)}`} className="inline-block text-sm text-accent hover:underline">
           {t.manual.link}
         </Link>
+      )}
+    </div>
+  );
+}
+
+function SearchTabs({
+  current,
+  hrefFor,
+  t,
+}: {
+  current: "movie" | "series" | "anime";
+  hrefFor: (to: "movie" | "series" | "anime") => string;
+  t: Dictionary;
+}) {
+  return (
+    <nav className="flex gap-4 text-sm">
+      {(["movie", "series", "anime"] as const).map((to) => (
+        <Link
+          key={to}
+          href={hrefFor(to)}
+          className={`-mb-px border-b-2 pb-2 font-semibold ${
+            to === current ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"
+          }`}
+        >
+          {t.folders[to]}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+// Aba Animes: busca no AniList (cada temporada aparece separada, como no MyAnimeList).
+async function AnimeResults({ q }: { q: string }) {
+  const [{ t }, viewer] = await Promise.all([getDict(), getViewer()]);
+  const hrefFor = (to: "movie" | "series" | "anime") =>
+    `/search?${new URLSearchParams({ q, ...(to === "movie" ? {} : { type: to }) })}`;
+  const found = q
+    ? await browseAnime({ page: 1, perPage: 50, sort: "POPULARITY_DESC", search: q, showAdult: !!viewer?.show_adult })
+    : { list: [] };
+  const list = found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a) }));
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
+        <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+        <SearchTabs current="anime" hrefFor={hrefFor} t={t} />
+      </div>
+      {list.length ? (
+        <ExternalPosters kind="anime" list={list} viewer={viewer} eager={8} />
+      ) : (
+        <p className="text-muted">{q ? t.search.empty : t.search.prompt}</p>
       )}
     </div>
   );

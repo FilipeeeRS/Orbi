@@ -1,8 +1,8 @@
 import "server-only";
 import { adultMovieIds } from "./catalog";
-import { searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear, type TmdbMovie } from "./tmdb";
+import { isAnime, searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear, type TmdbMovie, type TmdbType } from "./tmdb";
 
-// "Ver tudo" da Home: qualquer filme que existe, direto do TMDB (não só o catálogo do Orbi).
+// "Ver tudo" da Home: qualquer filme ou série que existe, direto do TMDB (não só o catálogo do Orbi).
 
 export const BROWSE_SORTS = ["week", "popular", "top", "release", "release-old", "title", "title-desc"] as const;
 export type BrowseSort = (typeof BROWSE_SORTS)[number];
@@ -25,14 +25,19 @@ export async function browseMovies(
   filters: BrowseFilters,
   sort: BrowseSort,
   page: number,
-  opts: { language: string; showAdult: boolean },
+  opts: { language: string; showAdult: boolean; type?: TmdbType },
 ): Promise<{ movies: TmdbMovie[]; total: number }> {
+  const type = opts.type ?? "movie";
+  // Séries usam "first_air_date" e "name" onde filmes usam "primary_release_date" e "title".
+  const date = type === "tv" ? "first_air_date" : "primary_release_date";
+  const tmdbSort = (key: Exclude<BrowseSort, "week">) =>
+    type === "tv" ? DISCOVER_SORT[key].replace("primary_release_date", "first_air_date").replace("title", "name") : DISCOVER_SORT[key];
   let movies: TmdbMovie[];
   let total: number;
 
   if (filters.q?.trim()) {
     // Lupa: busca por título no TMDB; década e gênero filtram o resultado.
-    const found = await searchMoviesPages(filters.q.trim(), opts.language, 5);
+    const found = await searchMoviesPages(filters.q.trim(), opts.language, 5, type);
     const matched = found
       .filter((m) => !filters.decade || inDecade(m, filters.decade))
       .filter((m) => !filters.genre || (m.genre_ids ?? []).includes(filters.genre));
@@ -46,13 +51,13 @@ export async function browseMovies(
     const results = await Promise.all(
       tmdbPages.map((p) =>
         useTrending
-          ? tmdbTrendingWeek(p, opts.language)
+          ? tmdbTrendingWeek(p, opts.language, type)
           : tmdbDiscover(
               {
-                sort_by: DISCOVER_SORT[sort === "week" ? "popular" : sort],
+                sort_by: tmdbSort(sort === "week" ? "popular" : sort),
                 with_genres: filters.genre,
-                "primary_release_date.gte": filters.decade ? `${filters.decade}-01-01` : undefined,
-                "primary_release_date.lte": filters.decade
+                [`${date}.gte`]: filters.decade ? `${filters.decade}-01-01` : undefined,
+                [`${date}.lte`]: filters.decade
                   ? `${filters.decade + 9}-12-31`
                   : sort === "release"
                     ? new Date().toISOString().slice(0, 10)
@@ -62,14 +67,20 @@ export async function browseMovies(
               },
               p,
               opts.language,
+              type,
             ),
       ),
     );
-    movies = results.flatMap((r) => r.results);
+    // Páginas vizinhas do TMDB às vezes repetem um título (a ordem muda entre as chamadas).
+    const seen = new Set<number>();
+    movies = results.flatMap((r) => r.results).filter((m) => !seen.has(m.id) && seen.add(m.id));
     total = Math.min(results[0]?.total_results ?? 0, TMDB_MAX_PAGES * 20);
   }
 
-  if (!opts.showAdult) {
+  // Animes ficam na pasta própria (AniList), fora das séries.
+  if (type === "tv") movies = movies.filter((m) => !isAnime(m));
+  // Séries +18 já ficam de fora pelo include_adult=false do TMDB.
+  if (!opts.showAdult && type === "movie") {
     const adult = await adultMovieIds(movies.map((m) => m.id));
     movies = movies.filter((m) => !adult.has(m.id));
   }

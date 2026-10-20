@@ -14,9 +14,10 @@ type Props = {
   eager?: boolean;
   // Quem está logado: habilita os atalhos de "visto" e "curtir" ao passar o mouse.
   viewer?: { id: string; state: ViewerItemState | null } | null;
+  badge?: boolean; // selo do status no canto do pôster (false no perfil e nas listas do usuário)
 };
 
-export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer }: Props) {
+export function Poster({ item, locale, rating, liked, showMeta = true, eager, viewer, badge = true }: Props) {
   const title = itemTitle(item, locale);
   return (
     <div className="group">
@@ -25,7 +26,9 @@ export function Poster({ item, locale, rating, liked, showMeta = true, eager, vi
         <Link href={itemHref(item)} className="block" title={item.year ? `${title} (${item.year})` : title}>
           <PosterImage url={item.poster_url} title={title} eager={eager} hoverRing={!viewer} />
         </Link>
-        {viewer && <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} />}
+        {viewer && (
+          <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind === "series" || item.kind === "anime"} badge={badge} />
+        )}
       </div>
       {showMeta && (rating || liked) ? (
         <div className="mt-1 flex items-center gap-1 text-xs">
