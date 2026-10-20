@@ -231,6 +231,7 @@ export const ar: Dictionary = {
     tabs: { watched: "المقروءة", watching: "أقرأها" },
   },
   search: {
+    more: "المزيد",
     typeMovie: "فيلم",
     typeSeries: "مسلسل",
     typeAnime: "أنمي",

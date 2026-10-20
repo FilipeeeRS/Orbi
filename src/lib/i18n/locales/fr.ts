@@ -231,6 +231,7 @@ export const fr: Dictionary = {
     tabs: { watched: "Lus", watching: "En cours" },
   },
   search: {
+    more: "Voir plus",
     typeMovie: "Film",
     typeSeries: "Série",
     typeAnime: "Animé",

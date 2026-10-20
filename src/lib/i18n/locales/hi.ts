@@ -231,6 +231,7 @@ export const hi: Dictionary = {
     tabs: { watched: "पढ़े हुए", watching: "पढ़ रहे हैं" },
   },
   search: {
+    more: "और देखें",
     typeMovie: "फ़िल्म",
     typeSeries: "सीरीज़",
     typeAnime: "एनीमे",

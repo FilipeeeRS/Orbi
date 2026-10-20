@@ -24,7 +24,7 @@ import {
 
 export const metadata: Metadata = { title: "Busca" };
 
-const SEARCH_TABS = ["movie", "series", "anime", "manga"] as const;
+const SEARCH_TABS = ["all", "movie", "series", "anime", "manga"] as const;
 type SearchTab = (typeof SEARCH_TABS)[number];
 
 // Ordenações possíveis com o que a busca do TMDB devolve (não há duração nem nota sua aqui).
@@ -48,8 +48,19 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
   // Filmes, séries (TMDB), animes ou mangás (AniList), nas abas do topo; a ficha de uma série já manda type=series.
   const series = params.type === "series";
   const type = series ? "tv" : "movie";
+  // Sem tipo, a busca por texto abre em "Tudo"; vindo da ficha (pessoa, gênero...), em Filmes.
+  const fromInfo = ["person", "genre", "company", "network", "country"].some((key) => params[key]);
   const tab: SearchTab =
-    params.type === "anime" ? "anime" : params.type === "manga" ? "manga" : series ? "series" : "movie";
+    params.type === "anime"
+      ? "anime"
+      : params.type === "manga"
+        ? "manga"
+        : series
+          ? "series"
+          : params.type === "movie" || fromInfo
+            ? "movie"
+            : "all";
+  if (tab === "all") return <AllResults q={q} />;
   if (tab === "anime" || tab === "manga") return <CatalogResults q={q} kind={tab} />;
 
   // Vindo da ficha: obras de uma pessoa, de um gênero, estúdio, emissora ou país.
@@ -115,7 +126,7 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
     for (const [key, value] of Object.entries(params))
       if (typeof value === "string" && !["type", "sort", "decade", "genre", "in", "network"].includes(key)) next.set(key, value);
     if (params.genre && !person && !company && !country) next.delete("q"); // gênero de filme não vale para série
-    if (to !== "movie") next.set("type", to);
+    if (to !== "all") next.set("type", to);
     return `/search?${next}`;
   };
 
@@ -181,7 +192,7 @@ function SearchTabs({
             to === current ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"
           }`}
         >
-          {t.folders[to]}
+          {to === "all" ? t.folders.all : t.folders[to]}
         </Link>
       ))}
     </nav>
@@ -192,7 +203,7 @@ function SearchTabs({
 // tolerante a erro de digitação quando a cópia já está no banco.
 async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" }) {
   const [{ t }, viewer] = await Promise.all([getDict(), getViewer()]);
-  const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ q, ...(to === "movie" ? {} : { type: to }) })}`;
+  const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ q, ...(to === "all" ? {} : { type: to }) })}`;
   const list = q ? await searchCatalog(q, kind, 50, !!viewer?.show_adult) : [];
   return (
     <div className="space-y-6">
@@ -204,6 +215,83 @@ async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" 
         <ExternalPosters kind={kind} list={list} viewer={viewer} eager={8} />
       ) : (
         <p className="text-muted">{q ? t.search.empty : t.search.prompt}</p>
+      )}
+    </div>
+  );
+}
+
+// Aba "Tudo": um tópico por tipo (Filmes, Séries, Animes, Mangás) com os 3 primeiros resultados e
+// "Ver mais" para a aba daquele tipo. Tipos sem nenhum resultado não aparecem.
+async function AllResults({ q }: { q: string }) {
+  const [{ t, locale }, viewer] = await Promise.all([getDict(), getViewer()]);
+  const language = tmdbLanguage(locale);
+  const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ q, ...(to === "all" ? {} : { type: to }) })}`;
+  const header = (
+    <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
+      <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+      <SearchTabs current="all" hrefFor={hrefFor} t={t} />
+    </div>
+  );
+  if (!q) return <div className="space-y-6">{header}<p className="text-muted">{t.search.prompt}</p></div>;
+
+  const showAdult = !!viewer?.show_adult;
+  const [movies, shows, animes, mangas] = await Promise.all([
+    searchMoviesPages(q, language, 1, "movie"),
+    searchMoviesPages(q, language, 1, "tv"),
+    searchCatalog(q, "anime", 3, showAdult),
+    searchCatalog(q, "manga", 3, showAdult),
+  ]);
+  const adult = showAdult ? null : await adultMovieIds(movies.slice(0, 6).map((m) => m.id));
+  const card = (m: { id: number; title: string; release_date?: string; poster_path: string | null }) => ({
+    id: m.id,
+    title: m.title,
+    year: releaseYear(m),
+    poster: tmdbImage(m.poster_path, "w185"),
+  });
+  const groups = [
+    { kind: "movie" as const, list: movies.filter((m) => !adult?.has(m.id)).slice(0, 3).map(card) },
+    { kind: "series" as const, list: shows.filter((m) => !isAnime(m)).slice(0, 3).map(card) },
+    { kind: "anime" as const, list: animes },
+    { kind: "manga" as const, list: mangas },
+  ].filter((g) => g.list.length);
+
+  return (
+    <div className="space-y-8">
+      {header}
+      {groups.length ? (
+        groups.map((g) => (
+          <section key={g.kind}>
+            <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
+              <h2 className="text-xs font-semibold tracking-widest text-muted uppercase">{t.folders[g.kind]}</h2>
+              <Link href={hrefFor(g.kind)} className="text-[11px] tracking-wider text-muted uppercase hover:text-accent">
+                {t.search.more}
+              </Link>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-3">
+              {g.list.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/${g.kind}/${m.id}`}
+                    className="flex items-center gap-3 rounded-lg p-1.5 transition hover:bg-surface-2"
+                  >
+                    <span className="relative h-24 w-16 shrink-0 overflow-hidden rounded bg-surface-2">
+                      {m.poster && (
+                        // eslint-disable-next-line @next/next/no-img-element -- capa pequena direto do TMDB/AniList
+                        <img src={m.poster} alt="" className="size-full object-cover" loading="lazy" />
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="line-clamp-2 text-sm font-semibold">{m.title}</span>
+                      {m.year && <span className="text-xs text-muted">{m.year}</span>}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      ) : (
+        <p className="text-muted">{t.search.empty}</p>
       )}
     </div>
   );

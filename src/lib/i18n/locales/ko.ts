@@ -231,6 +231,7 @@ export const ko: Dictionary = {
     tabs: { watched: "읽음", watching: "읽는 중" },
   },
   search: {
+    more: "더 보기",
     typeMovie: "영화",
     typeSeries: "시리즈",
     typeAnime: "애니메이션",

@@ -231,6 +231,7 @@ export const id: Dictionary = {
     tabs: { watched: "Sudah dibaca", watching: "Sedang dibaca" },
   },
   search: {
+    more: "Lainnya",
     typeMovie: "Film",
     typeSeries: "Serial",
     typeAnime: "Anime",

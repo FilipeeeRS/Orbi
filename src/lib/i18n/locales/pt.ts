@@ -229,6 +229,7 @@ export const pt = {
     tabs: { watched: "Lidos", watching: "Lendo" },
   },
   search: {
+    more: "Ver mais",
     typeMovie: "Filme",
     typeSeries: "Série",
     typeAnime: "Anime",

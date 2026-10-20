@@ -231,6 +231,7 @@ export const bn: Dictionary = {
     tabs: { watched: "পড়া হয়েছে", watching: "পড়ছি" },
   },
   search: {
+    more: "আরও দেখুন",
     typeMovie: "সিনেমা",
     typeSeries: "সিরিজ",
     typeAnime: "অ্যানিমে",

@@ -231,6 +231,7 @@ export const ur: Dictionary = {
     tabs: { watched: "پڑھے ہوئے", watching: "پڑھ رہے ہیں" },
   },
   search: {
+    more: "مزید",
     typeMovie: "فلم",
     typeSeries: "سیریز",
     typeAnime: "اینیمی",

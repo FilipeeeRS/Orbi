@@ -239,6 +239,7 @@ export const ru: Dictionary = {
     tabs: { watched: "Прочитано", watching: "Читаю" },
   },
   search: {
+    more: "Ещё",
     typeMovie: "Фильм",
     typeSeries: "Сериал",
     typeAnime: "Аниме",

@@ -231,6 +231,7 @@ export const ja: Dictionary = {
     tabs: { watched: "読了", watching: "読書中" },
   },
   search: {
+    more: "もっと見る",
     typeMovie: "映画",
     typeSeries: "シリーズ",
     typeAnime: "アニメ",

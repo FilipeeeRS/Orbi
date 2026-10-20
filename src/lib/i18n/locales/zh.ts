@@ -231,6 +231,7 @@ export const zh: Dictionary = {
     tabs: { watched: "已读", watching: "在读" },
   },
   search: {
+    more: "更多",
     typeMovie: "电影",
     typeSeries: "剧集",
     typeAnime: "动漫",
