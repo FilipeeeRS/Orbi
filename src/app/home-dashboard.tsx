@@ -11,6 +11,8 @@ import { browseCatalog } from "@/lib/anime-db";
 import { browseBooks } from "@/lib/openlibrary";
 import { browseGames } from "@/lib/steam";
 import { getReviewCommentCounts, getReviewLikes, getViewerStates } from "@/lib/queries";
+import { getNotifications, getNotificationsSeenAt } from "@/lib/notifications";
+import { NotificationRow } from "@/components/notification-row";
 import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { ReviewLike } from "@/components/review-like";
 import { ReviewAttachments } from "@/components/review-attachments";
@@ -76,9 +78,14 @@ export async function HomeDashboard({
   );
 }
 
-// Novidades: espaço planejado para lançamentos e notificações; por enquanto, amigos e reviews populares.
+// Novidades: as últimas notificações (para quem está logado), a atividade dos amigos e as reviews populares.
 async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
-  const [friends, reviews] = await Promise.all([viewer ? getFriendsActivity(viewer.id) : [], getPopularReviews(6)]);
+  const [friends, reviews, notifications, seenAt] = await Promise.all([
+    viewer ? getFriendsActivity(viewer.id) : [],
+    getPopularReviews(6),
+    viewer ? getNotifications(viewer.id, { limit: 5 }) : [],
+    getNotificationsSeenAt(),
+  ]);
   const states = await getViewerStates(
     viewer?.id ?? "",
     viewer ? [...friends.map((e) => e.item_id), ...reviews.map((r) => r.item_id)] : [],
@@ -91,10 +98,26 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
 
   return (
     <div className="space-y-12">
-      {/* Reservado: lançamentos das suas pastas, notificações e destaques */}
-      <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-        {t.home.newsSoon}
-      </div>
+      {/* Logado: as últimas notificações (lançamentos da watchlist, seguidores, curtidas, novidades do Orbi) */}
+      {viewer ? (
+        <Section title={t.notifications.title} more={{ href: "/notifications", label: t.notifications.seeAll }}>
+          {notifications.length ? (
+            <ul className="divide-y divide-border ps-4">
+              {notifications.map((n) => (
+                <NotificationRow key={n.id} n={n} unread={!seenAt || n.created_at > seenAt} t={t} locale={locale} compact />
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+              {t.notifications.empty}
+            </p>
+          )}
+        </Section>
+      ) : (
+        <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+          {t.home.newsSoon}
+        </div>
+      )}
 
       {friends.length > 0 && (
         <Section title={t.home.newFromFriends}>

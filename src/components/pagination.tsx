@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-// Paginação das listagens: « primeira · ← anterior · Página X de Y · próxima → · última ».
+// Paginação das listagens: « primeira · Anterior · Página X de Y · Próxima · última ».
 export function Pagination({
   page,
   pages,
@@ -27,9 +27,9 @@ export function Pagination({
   return (
     <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-4 text-sm">
       {link(1, "«", t.movies.first)}
-      {link(page - 1, `← ${t.movies.prev}`, t.movies.prev)}
+      {link(page - 1, t.movies.prev, t.movies.prev)}
       <span className="text-muted">{t.movies.page(page, pages)}</span>
-      {link(page + 1, `${t.movies.next} →`, t.movies.next)}
+      {link(page + 1, t.movies.next, t.movies.next)}
       {link(pages, "»", t.movies.last)}
     </nav>
   );

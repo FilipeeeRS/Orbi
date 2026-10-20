@@ -2,22 +2,30 @@ import "server-only";
 import { cookies } from "next/headers";
 import { createClient } from "./supabase/server";
 import type { Item, Profile } from "./types";
+import { APP_UPDATES, type AppUpdate } from "./updates";
 
 // Notificações montadas a partir do que já existe (sem tabela própria):
-// curtidas e comentários nas minhas reviews, respostas aos meus comentários e novos seguidores.
+// - sociais: curtidas e comentários nas minhas reviews, respostas, curtidas em comentários, novos seguidores;
+// - lançamentos: algo da minha watchlist que estreou nos últimos 30 dias;
+// - conta: a conta entrou num aparelho/navegador novo (tabela user_devices);
+// - novidades do Orbi (lista fixa em lib/updates.ts).
 // "Lido até" fica num cookie deste navegador.
 export const NOTIFICATIONS_SEEN_COOKIE = "orbi-notifications-seen";
 
 export type NotificationActor = Pick<Profile, "username" | "display_name" | "avatar_url" | "avatar_ring">;
 type ItemRef = Pick<Item, "id" | "title" | "translations" | "source" | "external_id" | "year">;
 
+export type NotificationKind = "like" | "comment" | "reply" | "follow" | "commentLike" | "release" | "device" | "update";
+export const SOCIAL_KINDS: NotificationKind[] = ["like", "comment", "reply", "follow", "commentLike"];
+
 export type Notification = {
   id: string;
-  kind: "like" | "comment" | "reply" | "follow" | "commentLike";
-  actor: NotificationActor;
+  kind: NotificationKind;
+  actor: NotificationActor | null; // null em lançamentos, conta e novidades do Orbi
   created_at: string;
-  item: ItemRef | null; // obra da review (curtida, comentário, resposta)
-  body: string | null; // texto do comentário
+  item: ItemRef | null; // obra da review (curtida, comentário, resposta) ou que estreou
+  body: string | null; // texto do comentário, aparelho do novo acesso
+  update?: AppUpdate; // novidade do Orbi
 };
 
 const ACTOR = "username, display_name, avatar_url, avatar_ring";
@@ -41,7 +49,9 @@ export async function getNotifications(userId: string, opts: { since?: string | 
   const commentIds = (myComments.data ?? []).map((c) => c.id as string);
   const none = Promise.resolve({ data: [] as never[] });
 
-  const [likes, comments, replies, follows, commentLikes] = await Promise.all([
+  const today = new Date().toISOString().slice(0, 10);
+  const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const [likes, comments, replies, follows, commentLikes, releases, devices] = await Promise.all([
     reviewIds.length
       ? after(
           supabase
@@ -99,9 +109,34 @@ export async function getNotifications(userId: string, opts: { since?: string | 
           .order("created_at", { ascending: false })
           .limit(limit)
       : none,
+    // Da minha watchlist, o que estreou nos últimos 30 dias
+    supabase
+      .from("entries")
+      .select(`item_id, items!inner(${ITEM}, release_date)`)
+      .eq("user_id", userId)
+      .eq("status", "watchlist")
+      .gte("items.release_date", opts.since ? opts.since.slice(0, 10) : monthAgo)
+      .lte("items.release_date", today)
+      .limit(limit),
+    // Aparelhos em que a conta entrou (sem a tabela ainda, vem vazio)
+    supabase.from("user_devices").select("device_key, label, first_seen").eq("user_id", userId).order("first_seen"),
   ]);
 
   const list: Notification[] = [];
+  for (const r of (releases.data ?? []) as Record<string, unknown>[]) {
+    const item = r.items as ItemRef & { release_date: string };
+    list.push({ id: `release-${r.item_id}`, kind: "release", actor: null, created_at: `${item.release_date}T12:00:00.000Z`, item, body: null });
+  }
+  // O primeiro aparelho é o do cadastro; os seguintes são "novo acesso".
+  for (const d of ((devices.data ?? []) as { device_key: string; label: string; first_seen: string }[]).slice(1)) {
+    if (opts.since && d.first_seen <= opts.since) continue;
+    list.push({ id: `device-${d.device_key}`, kind: "device", actor: null, created_at: d.first_seen, item: null, body: d.label });
+  }
+  for (const u of APP_UPDATES) {
+    const at = `${u.date}T12:00:00.000Z`;
+    if (opts.since && at <= opts.since) continue;
+    list.push({ id: `update-${u.id}`, kind: "update", actor: null, created_at: at, item: null, body: null, update: u });
+  }
   const seenComments = new Set<string>();
   // Resposta a um comentário meu conta como "respondeu", mesmo se for na minha própria review.
   for (const r of (replies.data ?? []) as Record<string, unknown>[]) {
@@ -125,7 +160,7 @@ export async function getNotifications(userId: string, opts: { since?: string | 
   }
 
   return list
-    .filter((n) => n.actor)
+    .filter((n) => n.actor || !SOCIAL_KINDS.includes(n.kind))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, limit);
 }
