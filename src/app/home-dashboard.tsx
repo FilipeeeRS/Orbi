@@ -168,11 +168,12 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
         <Section title={t.home.popularLists}>
           <div className="grid gap-6 sm:grid-cols-3">
             {lists.map((list) => (
-              <div key={list.id} className="group min-w-0">
-                <Link href={`/u/${list.owner.username}/list/${list.id}`} className="block">
+              <div key={list.id} className="min-w-0">
+                {/* Só a fileira de pôsteres abre a lista */}
+                <Link href={`/u/${list.owner.username}/list/${list.id}`} className="group block">
                   <ListStrip posters={list.posters} />
-                  <p className="mt-2 truncate font-semibold group-hover:text-accent">{list.title}</p>
                 </Link>
+                <p className="mt-2 truncate font-semibold">{list.title}</p>
                 <div className="mt-1 flex items-center gap-3 text-xs text-muted">
                   <Link href={`/u/${list.owner.username}`} className="flex min-w-0 items-center gap-1.5 font-semibold hover:text-fg">
                     <Avatar profile={list.owner} size={18} />
@@ -180,13 +181,13 @@ async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dicti
                   </Link>
                   <span className="shrink-0">{t.lists.count(list.count)}</span>
                   <span className="flex shrink-0 items-center gap-1">
-                    <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" aria-hidden>
+                    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
                       <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
                     </svg>
                     {list.comments}
                   </span>
                   <span className="flex shrink-0 items-center gap-1">
-                    <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" aria-hidden>
+                    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
                       <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
                     </svg>
                     {list.likes}

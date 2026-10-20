@@ -72,7 +72,7 @@ async function BookContent({ params }: PageProps<"/book/[id]">) {
             <MovieInfo
               info={{
                 cast: [],
-                crew: book.authors.length ? [{ role: "original", people: book.authors.map((name) => ({ name })) }] : [],
+                crew: [],
                 details: [
                   { label: t.book.authors, values: book.authors.map((name) => ({ name, href: `/search?q=${encodeURIComponent(name)}&type=book` })) },
                   { label: t.book.publishers, values: book.publishers.map((name) => ({ name })) },
