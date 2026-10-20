@@ -120,6 +120,7 @@ export const zh: Dictionary = {
     next: "下一页",
   },
   movie: {
+    releasesOn: (d: string) => `上线日期：${d}`,
     friendsActivity: "好友动态",
     noFriendsActivity: "暂无好友动态。",
     recommendations: "推荐",

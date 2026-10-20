@@ -246,7 +246,18 @@ export async function ReviewsSection({
 }
 
 // Linha de números abaixo do pôster, no estilo do Letterboxd: ícone + número, detalhe no tooltip.
-export function ItemStats({ stats, t, locale }: { stats: ItemStatsData; t: Dictionary; locale: Locale }) {
+// Ainda não lançado: só o relógio (watchlist), sem assistidos e curtidos.
+export function ItemStats({
+  stats,
+  t,
+  locale,
+  unreleased = false,
+}: {
+  stats: ItemStatsData;
+  t: Dictionary;
+  locale: Locale;
+  unreleased?: boolean;
+}) {
   const lang = dictionaries[locale].htmlLang;
   const compact = new Intl.NumberFormat(lang, { notation: "compact" });
   const items = [
@@ -273,7 +284,7 @@ export function ItemStats({ stats, t, locale }: { stats: ItemStatsData; t: Dicti
   ];
   return (
     <ul className="flex items-center gap-4 text-sm">
-      {items.map((s) => (
+      {(unreleased ? items.slice(2) : items).map((s) => (
         <li key={s.label} title={`${s.label}: ${s.value.toLocaleString(lang)}`} className="flex items-center gap-1.5">
           <svg
             viewBox="0 0 24 24"

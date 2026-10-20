@@ -104,7 +104,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
       }),
       getMovieGenres(language, type),
     ]);
-    list = found.movies.map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), rating: m.vote_average ? m.vote_average / 2 : null }));
+    list = found.movies.map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), rating: m.vote_average ? m.vote_average / 2 : null, unreleased: !!m.release_date && m.release_date > new Date().toISOString().slice(0, 10) }));
     total = found.total;
     genres = tmdbGenres.map((g) => ({ value: String(g.id), label: g.name }));
   }

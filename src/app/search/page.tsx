@@ -266,7 +266,7 @@ async function AllResults({ q }: { q: string }) {
     title: m.title,
     year: releaseYear(m),
     poster: tmdbImage(m.poster_path, "w342"),
-    rating: m.vote_average ? m.vote_average / 2 : null,
+    rating: m.vote_average ? m.vote_average / 2 : null, unreleased: !!m.release_date && m.release_date > new Date().toISOString().slice(0, 10),
   });
   const groups = [
     { kind: "movie" as const, list: movies.filter((m) => !adult?.has(m.id)).slice(0, 6).map(card) },
@@ -309,7 +309,7 @@ async function AniListPersonResults({ q, kind, id }: { q: string; kind: "anistaf
       kind: k,
       list: works[k]
         .filter((a) => !a.isAdult || !!viewer?.show_adult)
-        .map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null })),
+        .map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null, unreleased: a.status === "NOT_YET_RELEASED" })),
     }))
     .filter((g) => g.list.length);
   return (

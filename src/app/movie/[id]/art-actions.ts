@@ -20,20 +20,12 @@ export async function listMovieImages(itemId: string): Promise<{ posters: string
 }
 
 // Grava o pôster ou o fundo escolhido (caminho do TMDB); null volta para o padrão.
-// Só para filmes e séries que a pessoa marcou como vistos (o banco também exige isso).
+// Vale para qualquer filme ou série, mesmo sem ter assistido.
 export async function saveItemArt(itemId: string, kind: "poster" | "backdrop", path: string | null): Promise<{ ok: boolean }> {
   const viewer = await getViewer();
   if (!viewer || (path !== null && !ART_PATH.test(path))) return { ok: false };
   const supabase = await createClient();
   const column = kind === "poster" ? "poster_path" : "backdrop_path";
-
-  const { count: watched } = await supabase
-    .from("entries")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", viewer.id)
-    .eq("item_id", itemId)
-    .eq("status", "watched");
-  if (!watched && path !== null) return { ok: false };
 
   const { data: current } = await supabase
     .from("item_art")

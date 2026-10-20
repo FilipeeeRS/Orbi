@@ -31,6 +31,7 @@ export function EntryEditor({
   series = false,
   progress = false,
   verb,
+  unreleased = false,
 }: {
   itemId: string;
   userId: string;
@@ -40,6 +41,7 @@ export function EntryEditor({
   // "chapter": só o capítulo (mangá, que também troca Assistir/Assistindo por Ler/Lendo).
   progress?: boolean | "episode" | "chapter";
   verb?: "play"; // jogo: "Jogar / Jogado / Jogando"
+  unreleased?: boolean; // ainda não lançado: só a watchlist
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -265,6 +267,24 @@ export function EntryEditor({
       ))}
     </div>
   );
+
+  // Ainda não lançado: só dá para pôr (ou tirar) da watchlist.
+  if (unreleased)
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-surface/80 p-4">
+        <Toggle
+          on={onWatchlist}
+          onClick={toggleWatchlist}
+          disabled={pending}
+          tone="plain"
+          icon={ICONS.clock}
+          removeLabel={t.movie.removeShort}
+        >
+          {t.movies.tabs.watchlist}
+        </Toggle>
+        {error && <span className="text-sm text-danger">{t.common.error}</span>}
+      </div>
+    );
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-surface/80 p-4">

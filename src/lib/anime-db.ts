@@ -40,10 +40,10 @@ export const mirrorReady = cache(async (kind: CatalogKind): Promise<boolean> => 
   return !error && (count ?? 0) >= READY_MIN;
 });
 
-const COLUMNS = "id, external_id, title, year, poster_url, is_adult_rated, tmdb_rating";
+const COLUMNS = "id, external_id, title, year, poster_url, is_adult_rated, tmdb_rating, status";
 
 export const toPoster = (
-  i: Pick<Item, "id" | "external_id" | "title" | "year" | "poster_url"> & { tmdb_rating?: number | null },
+  i: Pick<Item, "id" | "external_id" | "title" | "year" | "poster_url"> & { tmdb_rating?: number | null; status?: string | null },
 ): ExternalPoster => ({
   id: Number(i.external_id),
   itemId: i.id,
@@ -51,6 +51,7 @@ export const toPoster = (
   year: i.year,
   poster: i.poster_url,
   rating: i.tmdb_rating ? i.tmdb_rating / 2 : null,
+  unreleased: i.status === "NOT_YET_RELEASED",
 });
 
 // Ordenações das listagens → ordenação do AniList (quando ainda não há cópia no banco).
@@ -83,7 +84,7 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
       showAdult: q.showAdult,
     });
     return {
-      list: found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null })),
+      list: found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null, unreleased: a.status === "NOT_YET_RELEASED" })),
       total: found.total,
     };
   }
@@ -169,7 +170,7 @@ export async function searchCatalog(text: string, kind: CatalogKind, limit = 20,
       search: q,
       showAdult,
     });
-    return found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null }));
+    return found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null, unreleased: a.status === "NOT_YET_RELEASED" }));
   }
   const supabase = await createClient();
   const { data } = await supabase.rpc("search_catalog", { q, kinds: [kind], max_results: limit * 2 });

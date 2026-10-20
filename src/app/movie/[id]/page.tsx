@@ -9,6 +9,7 @@ import { getMovieInfo, tmdbLanguage } from "@/lib/tmdb";
 import { MovieInfo } from "./movie-info";
 import { createClient } from "@/lib/supabase/server";
 import { itemOverview, itemTitle, type Entry } from "@/lib/types";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 import { EntryEditor } from "./entry-editor";
 import { TrailerButton } from "./trailer-button";
 import { ArtEditor } from "./art-editor";
@@ -64,6 +65,10 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   const title = itemTitle(item, locale);
 
   // Números da fonte somados aos do Orbi (TMDB: quem votou conta como quem assistiu); a nota mistura as duas.
+  // Ainda não lançado: só dá para pôr na watchlist (sem assistido, like ou nota).
+  const today = new Date().toISOString().slice(0, 10);
+  const unreleased = !!item.release_date && item.release_date > today;
+  const canEditArt = !!viewer && item.source === "tmdb";
   const shown = withSourceStats(stats, item, { watched: item.tmdb_votes ?? 0 });
 
   return (
@@ -79,7 +84,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       t={t}
       editor={
         viewer ? (
-          <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} />
+          <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} unreleased={unreleased} />
         ) : (
           <SignInToLog href={`/movie/${id}`} label={t.movie.signInToLog} />
         )
@@ -95,6 +100,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
                   {info.runtime} min <span className="text-muted/80">({hoursAndMinutes(info.runtime)})</span>
                 </span>
               )}
+              {unreleased && item.release_date && <span>{t.movie.releasesOn(longDate(item.release_date, locale))}</span>}
               <span>{t.info.moreAt}</span>
               {info.imdbId && <ExternalLink href={`https://www.imdb.com/title/${info.imdbId}/`}>IMDb</ExternalLink>}
               <ExternalLink href={`https://www.themoviedb.org/movie/${item.external_id}`}>TMDB</ExternalLink>
@@ -104,29 +110,26 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       }
       side={
         <>
-          <ItemStats stats={shown} t={t} locale={locale} />
-          {/* Trailer numa linha própria, à direita, embaixo dos números */}
-          {info?.trailer && (
-            <div className="flex justify-end">
-              <TrailerButton videoId={info.trailer} label={t.movie.trailer} />
-            </div>
-          )}
-          {/* Trocar pôster/fundo: só em filmes que a pessoa já viu */}
-          {viewer && item.source === "tmdb" && entry?.status === "watched" && (
-            <div className="-mt-1 flex justify-end">
-              <ArtEditor
-                itemId={item.id}
-                currentPoster={posterUrl}
-                currentBackdrop={backdropUrl}
-                labels={{
-                  edit: t.movie.artEdit,
-                  poster: t.movie.artPoster,
-                  backdrop: t.movie.artBackdrop,
-                  reset: t.movie.artReset,
-                  empty: t.movie.artEmpty,
-                  hint: t.movie.artHint,
-                }}
-              />
+          <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
+          {/* Trailer e Editar imagens na mesma linha, à direita */}
+          {(info?.trailer || canEditArt) && (
+            <div className="flex items-center justify-end gap-4">
+              {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
+              {canEditArt && (
+                <ArtEditor
+                  itemId={item.id}
+                  currentPoster={posterUrl}
+                  currentBackdrop={backdropUrl}
+                  labels={{
+                    edit: t.movie.artEdit,
+                    poster: t.movie.artPoster,
+                    backdrop: t.movie.artBackdrop,
+                    reset: t.movie.artReset,
+                    empty: t.movie.artEmpty,
+                    hint: t.movie.artHint,
+                  }}
+                />
+              )}
             </div>
           )}
         </>
@@ -138,4 +141,10 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
       )}
     </ItemDetail>
   );
+}
+
+// "2026-12-18" → "18 de dez. de 2026"
+function longDate(iso: string, locale: keyof typeof dictionaries) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(dictionaries[locale].htmlLang, { day: "numeric", month: "short", year: "numeric" });
 }

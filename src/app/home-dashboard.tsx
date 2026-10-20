@@ -263,7 +263,7 @@ async function catalogSample(kind: MediaKind, locale: Locale, showAdult: boolean
       showAdult,
       type: kind === "series" ? "tv" : "movie",
     });
-    return movies.slice(0, 6).map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), rating: m.vote_average ? m.vote_average / 2 : null }));
+    return movies.slice(0, 6).map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), rating: m.vote_average ? m.vote_average / 2 : null, unreleased: !!m.release_date && m.release_date > new Date().toISOString().slice(0, 10) }));
   }
   if (kind === "anime" || kind === "manga") {
     return (await browseCatalog({ kind, page: 1, perPage: 6, sort: "popular", showAdult })).list;

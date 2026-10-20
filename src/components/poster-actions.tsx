@@ -34,6 +34,7 @@ export function PosterActions({
   viewerId,
   initial,
   series = false,
+  unreleased = false,
   badge: showBadge = true,
 }: {
   itemId: string | null;
@@ -41,6 +42,7 @@ export function PosterActions({
   viewerId: string;
   initial: ViewerItemState | null;
   series?: boolean; // séries ganham o "Assistindo"
+  unreleased?: boolean; // ainda não lançado: só o relógio (watchlist)
   badge?: boolean; // selo do status no canto (no perfil fica de fora: a pasta já diz o status)
 }) {
   const { t, locale } = useI18n();
@@ -190,6 +192,9 @@ export function PosterActions({
       />
       <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
         <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-black/75 px-2 py-1 shadow-lg backdrop-blur">
+          {/* Ainda não lançado: sem assistido, assistindo e like, só a watchlist */}
+          {!unreleased && (
+            <>
           <button
             type="button"
             onClick={toggleWatched}
@@ -256,6 +261,8 @@ export function PosterActions({
               <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
             </svg>
           </button>
+            </>
+          )}
           {/* Watchlist é só para o que ainda não foi visto: some depois de marcar como assistido */}
           {!state.watched && (
             <button

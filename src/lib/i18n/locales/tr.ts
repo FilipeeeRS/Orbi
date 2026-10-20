@@ -120,6 +120,7 @@ export const tr: Dictionary = {
     next: "Sonraki",
   },
   movie: {
+    releasesOn: (d: string) => `Çıkış: ${d}`,
     friendsActivity: "Arkadaş etkinliği",
     noFriendsActivity: "Henüz arkadaş etkinliği yok.",
     recommendations: "Öneriler",

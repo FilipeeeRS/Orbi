@@ -120,6 +120,7 @@ export const ja: Dictionary = {
     next: "次へ",
   },
   movie: {
+    releasesOn: (d: string) => `公開日：${d}`,
     friendsActivity: "フレンドのアクティビティ",
     noFriendsActivity: "まだフレンドのアクティビティはありません。",
     recommendations: "おすすめ",

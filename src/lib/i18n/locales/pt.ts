@@ -118,6 +118,7 @@ export const pt = {
     next: "Próxima",
   },
   movie: {
+    releasesOn: (d: string) => `Lançamento em ${d}`,
     friendsActivity: "Atividade dos amigos",
     noFriendsActivity: "Nenhuma atividade dos amigos ainda.",
     recommendations: "Recomendações",

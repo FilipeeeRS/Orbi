@@ -120,6 +120,7 @@ export const id: Dictionary = {
     next: "Berikutnya",
   },
   movie: {
+    releasesOn: (d: string) => `Rilis ${d}`,
     friendsActivity: "Aktivitas teman",
     noFriendsActivity: "Belum ada aktivitas teman.",
     recommendations: "Rekomendasi",

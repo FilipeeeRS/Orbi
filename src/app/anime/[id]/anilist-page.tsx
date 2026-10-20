@@ -50,7 +50,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
         id: e.node.id,
         title: animeTitle(e.node),
         year: animeYear(e.node),
-        poster: animeCover(e.node), rating: e.node.averageScore ? e.node.averageScore / 20 : null,
+        poster: animeCover(e.node), rating: e.node.averageScore ? e.node.averageScore / 20 : null, unreleased: e.node.status === "NOT_YET_RELEASED",
         label: t.anime.relations[e.relationType] ?? e.relationType,
       }));
   const relatedAnime = relatedOf("ANIME");
@@ -59,7 +59,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
     .map((n) => n.mediaRecommendation)
     .filter((m): m is NonNullable<typeof m> => !!m && (!m.isAdult || !!viewer?.show_adult))
     .slice(0, 6)
-    .map((m) => ({ id: m.id, title: animeTitle(m), year: animeYear(m), poster: animeCover(m), rating: m.averageScore ? m.averageScore / 20 : null }));
+    .map((m) => ({ id: m.id, title: animeTitle(m), year: animeYear(m), poster: animeCover(m), rating: m.averageScore ? m.averageScore / 20 : null, unreleased: m.status === "NOT_YET_RELEASED" }));
 
   // Anime que já terminou: a próxima temporada anunciada (sequência ainda não lançada), se houver.
   const sequel =
@@ -71,6 +71,8 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
   const sequelWhen = sequel ? whenLabel(sequel, t, locale) : null;
 
   // Números da fonte somados aos do Orbi (AniList: completos, planejados e favoritos); a nota mistura as duas.
+  // Ainda não lançado: só dá para pôr na watchlist.
+  const unreleased = media?.status === "NOT_YET_RELEASED";
   const shown = withSourceStats(stats, item, {
     watched: media?.stats?.statusDistribution.find((s) => s.status === "COMPLETED")?.amount,
     watchlist: media?.stats?.statusDistribution.find((s) => s.status === "PLANNING")?.amount,
@@ -89,7 +91,14 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
       t={t}
       editor={
         viewer ? (
-          <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} series progress={manga ? "chapter" : "episode"} />
+          <EntryEditor
+            itemId={item.id}
+            userId={viewer.id}
+            initial={entry}
+            series
+            progress={manga ? "chapter" : "episode"}
+            unreleased={unreleased}
+          />
         ) : (
           <SignInToLog href={`/${kind}/${id}`} label={manga ? t.manga.signInToLog : t.anime.signInToLog} />
         )
@@ -125,6 +134,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
                   </span>
                 )
               )}
+              {unreleased && whenLabel(media, t, locale) && <span>{t.movie.releasesOn(whenLabel(media, t, locale)!)}</span>}
               <span>{t.info.moreAt}</span>
               {media.idMal && (
                 <ExternalLink href={`https://myanimelist.net/${kind}/${media.idMal}`}>MyAnimeList</ExternalLink>
@@ -136,7 +146,7 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
       }
       side={
         <>
-          <ItemStats stats={shown} t={t} locale={locale} />
+          <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
           {/* Trailer numa linha própria, à direita, embaixo dos números */}
           {media?.trailer?.site === "youtube" && (
             <div className="flex justify-end">

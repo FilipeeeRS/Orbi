@@ -76,7 +76,7 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
       }
       editor={
         viewer ? (
-          <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} series verb="play" />
+          <EntryEditor itemId={item.id} userId={viewer.id} initial={entry} series verb="play" unreleased={!!game?.comingSoon} />
         ) : (
           <SignInToLog href={`/game/${id}`} label={t.game.signInToLog} />
         )
@@ -115,7 +115,9 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
               }}
             />
             <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
-              {game.releaseDate && <span>{t.game.released(game.releaseDate)}</span>}
+              {game.releaseDate && (
+                <span>{game.comingSoon ? t.movie.releasesOn(game.releaseDate) : t.game.released(game.releaseDate)}</span>
+              )}
               {game.metacritic != null && <span>Metacritic {game.metacritic}</span>}
               <span>{t.info.moreAt}</span>
               <ExternalLink href={`https://store.steampowered.com/app/${id}`}>Steam</ExternalLink>
@@ -123,7 +125,7 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
           </div>
         )
       }
-      side={<ItemStats stats={shown} t={t} locale={locale} />}
+      side={<ItemStats stats={shown} t={t} locale={locale} unreleased={!!game?.comingSoon} />}
     >
       <ReviewsSection itemId={item.id} viewerId={viewer?.id ?? null} t={t} locale={locale} />
     </ItemDetail>

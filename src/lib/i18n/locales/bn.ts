@@ -120,6 +120,7 @@ export const bn: Dictionary = {
     next: "পরের",
   },
   movie: {
+    releasesOn: (d: string) => `মুক্তি: ${d}`,
     friendsActivity: "বন্ধুদের কার্যকলাপ",
     noFriendsActivity: "এখনো বন্ধুদের কোনো কার্যকলাপ নেই।",
     recommendations: "সুপারিশ",

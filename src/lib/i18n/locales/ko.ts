@@ -120,6 +120,7 @@ export const ko: Dictionary = {
     next: "다음",
   },
   movie: {
+    releasesOn: (d: string) => `공개일: ${d}`,
     friendsActivity: "친구 활동",
     noFriendsActivity: "아직 친구 활동이 없어요.",
     recommendations: "추천",

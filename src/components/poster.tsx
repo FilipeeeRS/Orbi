@@ -23,7 +23,14 @@ export function Poster({ item, locale, eager, viewer, badge = true }: Props) {
           <PosterImage url={item.poster_url} title={title} eager={eager} hoverRing={!viewer} />
         </Link>
         {viewer && (
-          <PosterActions itemId={item.id} viewerId={viewer.id} initial={viewer.state} series={item.kind !== "movie" && item.kind !== "music"} badge={badge} />
+          <PosterActions
+            itemId={item.id}
+            viewerId={viewer.id}
+            initial={viewer.state}
+            series={item.kind !== "movie" && item.kind !== "music"}
+            badge={badge}
+            unreleased={isUnreleased(item)}
+          />
         )}
       </div>
       <PosterCaption href={itemHref(item)} title={title} year={item.year} />
@@ -80,3 +87,7 @@ export function PosterCaption({ href, title, year }: { href: string; title: stri
     </Link>
   );
 }
+
+// Ainda não lançado: data de estreia no futuro ou, em anime/mangá, situação "ainda não lançado".
+export const isUnreleased = (item: { release_date: string | null; status?: string | null }) =>
+  item.status === "NOT_YET_RELEASED" || (!!item.release_date && item.release_date > new Date().toISOString().slice(0, 10));

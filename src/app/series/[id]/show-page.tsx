@@ -52,6 +52,10 @@ export async function ShowPageContent({ id }: { id: string }) {
   const title = itemTitle(item, locale);
 
   // Números da fonte somados aos do Orbi (TMDB: quem votou conta como quem assistiu); a nota mistura as duas.
+  // Ainda não estreou: só dá para pôr na watchlist (sem assistindo, assistido, like ou nota).
+  const today = new Date().toISOString().slice(0, 10);
+  const unreleased = !!item.release_date && item.release_date > today;
+  const canEditArt = !!viewer;
   const shown = withSourceStats(stats, item, { watched: item.tmdb_votes ?? 0 });
 
   return (
@@ -72,6 +76,7 @@ export async function ShowPageContent({ id }: { id: string }) {
             initial={entry}
             series
             progress
+            unreleased={unreleased}
           />
         ) : (
           <SignInToLog href={`/series/${id}`} label={t.series.signInToLog} />
@@ -101,6 +106,7 @@ export async function ShowPageContent({ id }: { id: string }) {
               {!info.nextAir && info.nextSeason && (
                 <span>{t.series.nextSeasonOn(info.nextSeason.season, airDate(info.nextSeason.date, locale))}</span>
               )}
+              {unreleased && item.release_date && <span>{t.movie.releasesOn(airDate(item.release_date, locale))}</span>}
               <span>{t.info.moreAt}</span>
               {info.imdbId && <ExternalLink href={`https://www.imdb.com/title/${info.imdbId}/`}>IMDb</ExternalLink>}
               <ExternalLink href={`https://www.themoviedb.org/tv/${item.external_id}`}>TMDB</ExternalLink>
@@ -110,29 +116,26 @@ export async function ShowPageContent({ id }: { id: string }) {
       }
       side={
         <>
-          <ItemStats stats={shown} t={t} locale={locale} />
-          {/* Trailer numa linha própria, à direita, embaixo dos números */}
-          {info?.trailer && (
-            <div className="flex justify-end">
-              <TrailerButton videoId={info.trailer} label={t.movie.trailer} />
-            </div>
-          )}
-          {/* Trocar pôster/fundo: só em séries que a pessoa já viu (igual aos filmes) */}
-          {viewer && entry?.status === "watched" && (
-            <div className="-mt-1 flex justify-end">
-              <ArtEditor
-                itemId={item.id}
-                currentPoster={posterUrl}
-                currentBackdrop={backdropUrl}
-                labels={{
-                  edit: t.movie.artEdit,
-                  poster: t.movie.artPoster,
-                  backdrop: t.movie.artBackdrop,
-                  reset: t.movie.artReset,
-                  empty: t.movie.artEmpty,
-                  hint: t.movie.artHint,
-                }}
-              />
+          <ItemStats stats={shown} t={t} locale={locale} unreleased={unreleased} />
+          {/* Trailer e Editar imagens na mesma linha, à direita */}
+          {(info?.trailer || canEditArt) && (
+            <div className="flex items-center justify-end gap-4">
+              {info?.trailer && <TrailerButton videoId={info.trailer} label={t.movie.trailer} />}
+              {canEditArt && (
+                <ArtEditor
+                  itemId={item.id}
+                  currentPoster={posterUrl}
+                  currentBackdrop={backdropUrl}
+                  labels={{
+                    edit: t.movie.artEdit,
+                    poster: t.movie.artPoster,
+                    backdrop: t.movie.artBackdrop,
+                    reset: t.movie.artReset,
+                    empty: t.movie.artEmpty,
+                    hint: t.movie.artHint,
+                  }}
+                />
+              )}
             </div>
           )}
         </>

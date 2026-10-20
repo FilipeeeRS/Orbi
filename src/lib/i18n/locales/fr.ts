@@ -120,6 +120,7 @@ export const fr: Dictionary = {
     next: "Suivant",
   },
   movie: {
+    releasesOn: (d: string) => `Sortie le ${d}`,
     friendsActivity: "Activité des amis",
     noFriendsActivity: "Aucune activité d'amis pour l'instant.",
     recommendations: "Recommandations",

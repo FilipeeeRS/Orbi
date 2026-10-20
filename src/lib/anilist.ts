@@ -16,6 +16,7 @@ export type AnimeCard = {
   id: number;
   title: { romaji: string | null; english: string | null; native: string | null };
   format: string | null; // TV, MOVIE, OVA, ONA, SPECIAL...
+  status: string | null; // FINISHED, RELEASING, NOT_YET_RELEASED...
   episodes: number | null;
   season: AnimeSeason | null;
   seasonYear: number | null;
@@ -38,7 +39,6 @@ export type AnimeMedia = AnimeCard & {
   description: string | null;
   bannerImage: string | null;
   duration: number | null; // minutos por episódio
-  status: string | null; // FINISHED, RELEASING, NOT_YET_RELEASED...
   source: string | null; // MANGA, LIGHT_NOVEL, ORIGINAL...
   endDate: FuzzyDate;
   synonyms: string[];
@@ -54,7 +54,7 @@ export type AnimeMedia = AnimeCard & {
   recommendations: { nodes: { mediaRecommendation: AnimeCard | null }[] };
 };
 
-const CARD = `id title { romaji english native } format episodes season seasonYear startDate { year month day }
+const CARD = `id title { romaji english native } format status episodes season seasonYear startDate { year month day }
   averageScore popularity genres isAdult coverImage { extraLarge large }`;
 
 async function anilist<T>(query: string, variables: Record<string, unknown>): Promise<T> {

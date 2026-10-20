@@ -128,6 +128,7 @@ export const ru: Dictionary = {
     next: "Вперёд",
   },
   movie: {
+    releasesOn: (d: string) => `Выходит ${d}`,
     friendsActivity: "Активность друзей",
     noFriendsActivity: "Друзья пока ничего не отметили.",
     recommendations: "Рекомендации",

@@ -14,6 +14,7 @@ export type ExternalPoster = {
   poster: string | null; // URL completa
   label?: string; // linha extra embaixo (ex.: "Sequência")
   rating?: number | null; // nota geral 0..5 (da fonte)
+  unreleased?: boolean; // ainda não lançado: no hover, só a watchlist
 };
 
 const SOURCE: Partial<Record<MediaKind, { source: string; type: "movie" | "tv" | "anime" | "manga" | "book" | "game" }>> = {
@@ -74,6 +75,7 @@ export async function ExternalPosters({
               viewerId={viewer.id}
               initial={itemId ? (states.get(itemId) ?? null) : null}
               series={kind !== "movie"}
+              unreleased={m.unreleased}
             />
           )}
         </div>
