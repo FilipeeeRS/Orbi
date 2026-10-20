@@ -181,8 +181,6 @@ export async function FolderView({
               key={e.id}
               item={e.items}
               locale={locale}
-              rating={e.rating}
-              liked={e.liked}
               eager={i < 8}
               viewer={viewer ? { id: viewer.id, state: states?.get(e.item_id) ?? null } : null}
             />

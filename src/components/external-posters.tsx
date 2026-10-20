@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { PosterCaption, PosterImage, PosterGrid } from "@/components/poster";
-import { getDict } from "@/lib/session";
-import { dictionaries } from "@/lib/i18n/dictionaries";
 import { PosterActions } from "@/components/poster-actions";
 import { getViewerStates } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -43,7 +41,6 @@ export async function ExternalPosters({
   eager?: number; // quantos pôsteres carregam na hora
 }) {
   const { source, type } = SOURCE[kind]!;
-  const lang = dictionaries[(await getDict()).locale].htmlLang;
   const itemIds = new Map<number | string, string>();
   let states: Awaited<ReturnType<typeof getViewerStates>> = new Map();
   for (const m of list) if (m.itemId) itemIds.set(m.id, m.itemId);
@@ -80,7 +77,7 @@ export async function ExternalPosters({
             />
           )}
         </div>
-        <PosterCaption href={href} title={m.title} year={m.year} rating={m.rating} lang={lang} />
+        <PosterCaption href={href} title={m.title} year={m.year} />
         {m.label && <p className="text-[11px] text-muted">{m.label}</p>}
       </div>
     );

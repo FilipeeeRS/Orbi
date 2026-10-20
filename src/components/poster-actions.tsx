@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "./i18n";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 import { ensureTmdbItemId } from "@/app/actions";
 
 export type ViewerItemState = {
@@ -12,6 +13,7 @@ export type ViewerItemState = {
   watchlist: boolean;
   watching?: boolean; // só séries
   hasDetails: boolean;
+  rating?: number | null; // nota do próprio usuário, 1..10
 };
 
 const EMPTY: ViewerItemState = {
@@ -41,7 +43,8 @@ export function PosterActions({
   series?: boolean; // séries ganham o "Assistindo"
   badge?: boolean; // selo do status no canto (no perfil fica de fora: a pasta já diz o status)
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const lang = dictionaries[locale].htmlLang;
   const router = useRouter();
   const [state, setState] = useState<ViewerItemState>(initial ?? EMPTY);
   // Desmarcar um filme com nota/review pede um segundo clique (em vez de um confirm do navegador).
@@ -161,14 +164,22 @@ export function PosterActions({
 
   return (
     <>
-      {showBadge && badge && (
-        <span
-          title={badge.label}
-          className={`pointer-events-none absolute end-1.5 top-1.5 grid size-6 place-items-center rounded-md bg-black/75 shadow-md ${badge.className}`}
-        >
-          <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-label={badge.label}>
-            {badge.icon}
-          </svg>
+      {/* Canto de cima: a nota que você deu (4,5 ★) ao lado do selo do status. Sem nota sua, só o selo. */}
+      {((showBadge && badge) || (state.watched && state.rating)) && (
+        <span className="pointer-events-none absolute end-1.5 top-1.5 flex items-center gap-1">
+          {state.watched && state.rating ? (
+            <span className="flex h-6 items-center gap-0.5 rounded-md bg-black/75 px-1.5 text-[11px] font-semibold text-white tabular-nums shadow-md">
+              {(state.rating / 2).toLocaleString(lang, { maximumFractionDigits: 1 })}
+              <span className="text-star">★</span>
+            </span>
+          ) : null}
+          {showBadge && badge && (
+            <span title={badge.label} className={`grid size-6 place-items-center rounded-md bg-black/75 shadow-md ${badge.className}`}>
+              <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" aria-label={badge.label}>
+                {badge.icon}
+              </svg>
+            </span>
+          )}
         </span>
       )}
       <div

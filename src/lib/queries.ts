@@ -283,7 +283,10 @@ export async function isFollowing(followerId: string, followeeId: string) {
 
 // Estado do usuário logado para uma lista de itens (atalhos ✓/♥ nos pôsteres).
 export async function getViewerStates(viewerId: string, itemIds: string[]) {
-  const states = new Map<string, { watched: boolean; liked: boolean; watchlist: boolean; watching: boolean; hasDetails: boolean }>();
+  const states = new Map<
+    string,
+    { watched: boolean; liked: boolean; watchlist: boolean; watching: boolean; hasDetails: boolean; rating: number | null }
+  >();
   if (!itemIds.length) return states;
   const supabase = await createClient();
   const { data } = await supabase
@@ -298,6 +301,7 @@ export async function getViewerStates(viewerId: string, itemIds: string[]) {
       watchlist: e.status === "watchlist",
       watching: e.status === "watching",
       hasDetails: e.rating !== null || e.review !== null,
+      rating: e.rating, // 1..10 (meias estrelas)
     });
   }
   return states;

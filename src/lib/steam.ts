@@ -193,7 +193,7 @@ const STORE_SORT: Record<string, string> = {
   week: "filter=topsellers", // mais vendidos agora
   month: "filter=popularnew", // lançamentos populares
   year: "filter=globaltopsellers",
-  popular: "sort_by=Reviews_DESC",
+  popular: "", // relevância da própria loja: os jogos mais populares de sempre (CS2, Warframe...)
   top: "sort_by=Reviews_DESC",
   "top-asc": "sort_by=Reviews_ASC",
   release: "sort_by=Released_DESC",
@@ -219,7 +219,7 @@ export async function browseGames(opts: { page: number; perPage: number; sort: s
   ]
     .filter(Boolean)
     .join("&");
-  const order = [STORE_SORT[opts.sort] ?? STORE_SORT.top, filters].filter(Boolean).join("&");
+  const order = [STORE_SORT[opts.sort] ?? "", filters].filter(Boolean).join("&");
   try {
     return await fetchStorePage(opts.page, opts.perPage, order, opts.q?.trim() ?? "");
   } catch {
@@ -249,5 +249,6 @@ async function fetchStorePage(page: number, perPage: number, order: string, q: s
       .filter((g) => g.id && g.title)
       .map(async (g) => ({ ...g, poster: await gamePoster(g.id) })),
   );
-  return { list, total: data.total_count };
+  // A loja ignora o "count" pedido e às vezes devolve mais: corta no tamanho da página.
+  return { list: list.slice(0, perPage), total: data.total_count };
 }

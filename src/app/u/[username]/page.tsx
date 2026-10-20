@@ -137,7 +137,6 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                       key={item.id}
                       item={item}
                       locale={locale}
-                      showMeta={false}
                       eager={i < 4}
                       viewer={viewerFor(item.id)}
                     />
@@ -157,8 +156,6 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                       key={e.id}
                       item={e.items}
                       locale={locale}
-                      rating={e.rating}
-                      liked={e.liked}
                       viewer={viewerFor(e.item_id)}
                     />
                   ))}
