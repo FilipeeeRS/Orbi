@@ -1,4 +1,5 @@
 import "server-only";
+import type { ListComment } from "@/app/lists/social-actions";
 import { createClient } from "./supabase/server";
 import type { Item, Profile } from "./types";
 
@@ -123,4 +124,23 @@ export async function getPopularLists(limit = 3): Promise<PopularList[]> {
     l.comments = (comments ?? []).filter((r) => r.list_id === l.id).length;
   }
   return top;
+}
+
+// Curtidas (e se quem está vendo curtiu) e comentários de uma lista. Sem as tabelas ainda, vem vazio.
+export async function getListSocial(listId: string, viewerId: string | null) {
+  const supabase = await createClient();
+  const [{ data: likes }, { data: comments }] = await Promise.all([
+    supabase.from("list_likes").select("user_id").eq("list_id", listId).limit(10000),
+    supabase
+      .from("list_comments")
+      .select("id, list_id, user_id, body, created_at, author:profiles!list_comments_user_id_fkey(username, display_name, avatar_url, avatar_ring)")
+      .eq("list_id", listId)
+      .order("created_at", { ascending: true })
+      .limit(500),
+  ]);
+  return {
+    likes: likes?.length ?? 0,
+    liked: !!viewerId && (likes ?? []).some((l) => l.user_id === viewerId),
+    comments: (comments ?? []) as unknown as ListComment[],
+  };
 }

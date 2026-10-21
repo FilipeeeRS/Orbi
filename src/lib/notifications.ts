@@ -4,7 +4,7 @@ import { createClient } from "./supabase/server";
 import type { Item, Profile } from "./types";
 
 // Notificações montadas a partir do que já existe (sem tabela própria):
-// - sociais: curtidas e comentários nas minhas reviews, respostas, curtidas em comentários, novos seguidores;
+// - sociais: curtidas e comentários nas minhas reviews e listas, respostas, curtidas em comentários, novos seguidores;
 // - lançamentos: algo da minha watchlist que estreou nos últimos 30 dias;
 // - conta: a conta entrou num aparelho/navegador novo (tabela user_devices);
 // - boas-vindas (no cadastro), que leva para "O que é o Orbi".
@@ -14,8 +14,18 @@ export const NOTIFICATIONS_SEEN_COOKIE = "orbi-notifications-seen";
 export type NotificationActor = Pick<Profile, "username" | "display_name" | "avatar_url" | "avatar_ring">;
 type ItemRef = Pick<Item, "id" | "kind" | "title" | "translations" | "source" | "external_id" | "year">;
 
-export type NotificationKind = "like" | "comment" | "reply" | "follow" | "commentLike" | "release" | "device" | "welcome";
-export const SOCIAL_KINDS: NotificationKind[] = ["like", "comment", "reply", "follow", "commentLike"];
+export type NotificationKind =
+  | "like"
+  | "comment"
+  | "reply"
+  | "follow"
+  | "commentLike"
+  | "listLike"
+  | "listComment"
+  | "release"
+  | "device"
+  | "welcome";
+export const SOCIAL_KINDS: NotificationKind[] = ["like", "comment", "reply", "follow", "commentLike", "listLike", "listComment"];
 
 export type Notification = {
   id: string;
@@ -24,6 +34,7 @@ export type Notification = {
   created_at: string;
   item: ItemRef | null; // obra da review (curtida, comentário, resposta) ou que estreou
   body: string | null; // texto do comentário, aparelho do novo acesso
+  list?: { id: string; title: string; username: string } | null; // lista curtida ou comentada
 };
 
 const ACTOR = "username, display_name, avatar_url, avatar_ring";
@@ -38,10 +49,18 @@ export async function getNotifications(userId: string, opts: { since?: string | 
   const supabase = await createClient();
   const after = <Q extends { gt: (column: string, value: string) => Q }>(q: Q) => (opts.since ? q.gt("created_at", opts.since) : q);
 
-  const [myReviews, myComments] = await Promise.all([
+  const [myReviews, myComments, myLists] = await Promise.all([
     supabase.from("entries").select(`id, items!inner(${ITEM})`).eq("user_id", userId).not("review", "is", null).limit(1000),
     supabase.from("review_comments").select("id").eq("user_id", userId).is("deleted_at", null).limit(1000),
+    supabase.from("lists").select("id, title, owner:profiles!lists_user_id_fkey(username)").eq("user_id", userId).limit(1000),
   ]);
+  const lists = new Map(
+    ((myLists.data ?? []) as unknown as { id: string; title: string; owner: { username: string } }[]).map((l) => [
+      l.id,
+      { id: l.id, title: l.title, username: l.owner?.username ?? "" },
+    ]),
+  );
+  const listIds = [...lists.keys()];
   const reviewItems = new Map((myReviews.data ?? []).map((e) => [e.id as string, e.items as unknown as ItemRef]));
   const reviewIds = [...reviewItems.keys()];
   const commentIds = (myComments.data ?? []).map((c) => c.id as string);
@@ -49,7 +68,7 @@ export async function getNotifications(userId: string, opts: { since?: string | 
 
   const today = new Date().toISOString().slice(0, 10);
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-  const [likes, comments, replies, follows, commentLikes, releases, devices, profile] = await Promise.all([
+  const [likes, comments, replies, follows, commentLikes, releases, devices, profile, listLikes, listComments] = await Promise.all([
     reviewIds.length
       ? after(
           supabase
@@ -119,6 +138,29 @@ export async function getNotifications(userId: string, opts: { since?: string | 
     // Aparelhos em que a conta entrou (sem a tabela ainda, vem vazio)
     supabase.from("user_devices").select("device_key, label, first_seen").eq("user_id", userId).order("first_seen"),
     supabase.from("profiles").select("created_at").eq("id", userId).maybeSingle(),
+    // Curtidas e comentários nas minhas listas (sem as tabelas ainda, vem vazio)
+    listIds.length
+      ? after(
+          supabase
+            .from("list_likes")
+            .select(`list_id, user_id, created_at, actor:profiles!list_likes_user_id_fkey(${ACTOR})`)
+            .in("list_id", listIds)
+            .neq("user_id", userId),
+        )
+          .order("created_at", { ascending: false })
+          .limit(limit)
+      : none,
+    listIds.length
+      ? after(
+          supabase
+            .from("list_comments")
+            .select(`id, list_id, body, created_at, actor:profiles!list_comments_user_id_fkey(${ACTOR})`)
+            .in("list_id", listIds)
+            .neq("user_id", userId),
+        )
+          .order("created_at", { ascending: false })
+          .limit(limit)
+      : none,
   ]);
 
   const list: Notification[] = [];
@@ -153,6 +195,12 @@ export async function getNotifications(userId: string, opts: { since?: string | 
   for (const l of (commentLikes.data ?? []) as Record<string, unknown>[]) {
     const comment = l.comment as { entry: { items: ItemRef } } | null;
     list.push({ id: `clike-${l.comment_id}-${l.user_id}`, kind: "commentLike", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: comment?.entry?.items ?? null, body: null });
+  }
+  for (const l of (listLikes.data ?? []) as Record<string, unknown>[]) {
+    list.push({ id: `llike-${l.list_id}-${l.user_id}`, kind: "listLike", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: null, body: null, list: lists.get(l.list_id as string) ?? null });
+  }
+  for (const c of (listComments.data ?? []) as Record<string, unknown>[]) {
+    list.push({ id: `lcomment-${c.id}`, kind: "listComment", actor: c.actor as NotificationActor, created_at: c.created_at as string, item: null, body: c.body as string, list: lists.get(c.list_id as string) ?? null });
   }
   for (const f of (follows.data ?? []) as Record<string, unknown>[]) {
     list.push({ id: `follow-${f.follower_id}`, kind: "follow", actor: f.actor as NotificationActor, created_at: f.created_at as string, item: null, body: null });

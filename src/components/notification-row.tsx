@@ -11,6 +11,8 @@ const KIND_ICON = {
   commentLike: { color: "text-like", path: "M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z", fill: true },
   like: { color: "text-like", path: "M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z", fill: true },
   comment: { color: "text-accent", path: "M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z", fill: false },
+  listLike: { color: "text-like", path: "M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z", fill: true },
+  listComment: { color: "text-accent", path: "M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z", fill: false },
   reply: { color: "text-accent", path: "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 6 6v5", fill: false },
   follow: { color: "text-ok", path: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10-3v6m3-3h-6", fill: false },
 } as const;
@@ -54,11 +56,15 @@ export function NotificationRow({
     reply: t.notifications.reply(title),
     follow: t.notifications.follow,
     commentLike: t.notifications.commentLike(title),
+    listLike: t.notifications.listLike(n.list?.title ?? ""),
+    listComment: t.notifications.listComment(n.list?.title ?? ""),
     release: t.notifications.release(title),
     device: t.notifications.newDevice(n.body ?? ""),
     welcome: t.notifications.welcome,
   }[n.kind];
-  const href = n.item
+  const href = n.list
+    ? `/u/${n.list.username}/list/${n.list.id}${n.kind === "listComment" ? "#comments" : ""}`
+    : n.item
     ? itemHref(n.item)
     : n.kind === "device"
       ? "/settings"

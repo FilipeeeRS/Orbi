@@ -6,7 +6,8 @@ import { GridSkeleton } from "@/components/skeletons";
 import { Avatar } from "@/components/avatar";
 import { Poster, PosterGrid } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
-import { getList } from "@/lib/lists";
+import { getList, getListSocial } from "@/lib/lists";
+import { ListActions, ListComments } from "./list-social";
 import { getViewerStates } from "@/lib/queries";
 import { applyArtToItems } from "@/lib/art";
 import { ListEditor } from "@/app/lists/list-editor";
@@ -24,7 +25,8 @@ export default function ListPage(props: PageProps<"/u/[username]/list/[id]">) {
   );
 }
 
-// Página de uma lista: nome, dono, descrição e os filmes na ordem (com o número da posição).
+// Página de uma lista: nome, dono, descrição, curtir/comentar/denunciar, as obras na ordem (com a posição)
+// e os comentários.
 async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
   const { username, id } = await params;
   const [list, viewer, { t, locale }] = await Promise.all([getList(id), getViewer(), getDict()]);
@@ -32,9 +34,10 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
 
   const isOwner = viewer?.id === list.user_id;
   // Pôsteres escolhidos por quem está vendo (é pessoal) e os atalhos ✓/♥ nos pôsteres
-  const [items, states] = await Promise.all([
+  const [items, states, social] = await Promise.all([
     viewer ? applyArtToItems(viewer.id, list.items) : list.items,
     viewer ? getViewerStates(viewer.id, list.items.map((i) => i.id)) : null,
+    getListSocial(list.id, viewer?.id ?? null),
   ]);
 
   return (
@@ -65,6 +68,15 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
           </div>
           {list.description && <p className="max-w-2xl text-muted whitespace-pre-line">{list.description}</p>}
           <p className="text-xs tracking-widest text-muted uppercase">{t.lists.count(items.length)}</p>
+          {/* ♥ curtir · 💬 comentários · ⋯ denunciar */}
+          <ListActions
+            listId={list.id}
+            ownerId={list.user_id}
+            viewerId={viewer?.id ?? null}
+            initialLiked={social.liked}
+            initialLikes={social.likes}
+            comments={social.comments.length}
+          />
         </div>
         {isOwner && (
           <ListEditor listId={list.id} username={list.owner.username} variant="button" />
@@ -83,6 +95,8 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
           ))}
         </PosterGrid>
       )}
+
+      <ListComments listId={list.id} ownerId={list.user_id} viewerId={viewer?.id ?? null} initial={social.comments} />
     </div>
   );
 }

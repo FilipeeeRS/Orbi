@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar } from "./avatar";
 import { useI18n } from "./i18n";
 import { TranslatableText } from "./translatable-text";
+import { ContentMenu } from "./content-menu";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import {
   addReviewComment,
@@ -31,7 +32,7 @@ export function ReviewComments({
   actions?: React.ReactNode; // ao lado do 💬 (ex.: o ♥ da review)
 }) {
   const { t } = useI18n();
-  const [removing, startRemoving] = useTransition();
+  const [, startRemoving] = useTransition();
   function removeReview() {
     if (!confirm(t.comments.confirmDeleteReview)) return;
     startRemoving(async () => {
@@ -87,9 +88,9 @@ export function ReviewComments({
 
   return (
     <div className="mt-2">
-      {/* Mesmo espaço entre os três ícones (like, comentários, apagar) */}
+      {/* Mesmo espaço entre os ícones (like, comentários, ⋯) */}
       <div className="flex items-center gap-4">
-        {/* Ordem: like (actions), comentários, apagar */}
+        {/* Ordem: like (actions), comentários, ⋯ (apagar a própria review ou denunciar a dos outros) */}
         {actions}
         <button
           type="button"
@@ -105,21 +106,14 @@ export function ReviewComments({
           {/* Só o ícone quando não há comentários; com comentários, o número */}
           {count > 0 && <span className="tabular-nums">{count}</span>}
         </button>
-        {/* Dono da review: apagar a review (e a conversa inteira dela) */}
-        {viewerId && viewerId === reviewOwnerId && (
-          <button
-            type="button"
-            onClick={removeReview}
-            disabled={removing}
-            aria-label={t.comments.deleteReview}
-            title={t.comments.deleteReview}
-            className="text-muted transition hover:text-danger disabled:opacity-50"
-          >
-            <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
-            </svg>
-          </button>
-        )}
+        <ContentMenu
+          target="review"
+          targetId={entryId}
+          ownerId={reviewOwnerId}
+          viewerId={viewerId}
+          onDelete={viewerId && viewerId === reviewOwnerId ? removeReview : undefined}
+          deleteLabel={t.comments.deleteReview}
+        />
       </div>
 
       {open && (
@@ -204,16 +198,20 @@ function CommentRow({
         <Avatar profile={c.author} size={28} ring={c.author?.avatar_ring} />
       </Link>
       <div className="min-w-0 flex-1">
-        <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
-          <Link href={`/u/${c.author?.username}`} className="font-semibold text-fg hover:text-accent">
-            {name}
-          </Link>
-          <span className="text-muted">@{c.author?.username}</span>
-          <time dateTime={c.created_at} title={new Date(c.created_at).toLocaleString(dictionaries[locale].htmlLang)} className="text-muted">
-            · {timeAgo(c.created_at, dictionaries[locale].htmlLang)}
-          </time>
-        </p>
-        {/* Responder · Traduzir · Apagar na mesma linha */}
+        <div className="flex items-start justify-between gap-2">
+          <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
+            <Link href={`/u/${c.author?.username}`} className="font-semibold text-fg hover:text-accent">
+              {name}
+            </Link>
+            <span className="text-muted">@{c.author?.username}</span>
+            <time dateTime={c.created_at} title={new Date(c.created_at).toLocaleString(dictionaries[locale].htmlLang)} className="text-muted">
+              · {timeAgo(c.created_at, dictionaries[locale].htmlLang)}
+            </time>
+          </p>
+          {/* ⋯: apagar (o seu, ou qualquer um na sua review) e denunciar */}
+          <ContentMenu target="review_comment" targetId={c.id} ownerId={c.user_id} viewerId={viewerId} onDelete={onDelete} />
+        </div>
+        {/* Responder · Traduzir · ♥ na mesma linha */}
         <TranslatableText
           text={c.body}
           className="mt-0.5 text-sm break-words whitespace-pre-line"
@@ -225,11 +223,6 @@ function CommentRow({
             )
           }
         >
-          {onDelete && (
-            <button type="button" onClick={onDelete} className="text-muted hover:text-danger">
-              {t.comments.delete}
-            </button>
-          )}
           <CommentLike commentId={c.id} viewerId={viewerId} initialLiked={c.liked} initialCount={c.likes} />
         </TranslatableText>
       </div>
@@ -365,7 +358,7 @@ function isEmptyComment(body: string) {
 }
 
 // "agora", "há 5 min", "há 3 h", "há 2 dias"... no idioma da pessoa
-function timeAgo(iso: string, lang: string) {
+export function timeAgo(iso: string, lang: string) {
   const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
   const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto", style: "short" });
   const units: [Intl.RelativeTimeFormatUnit, number][] = [
