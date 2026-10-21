@@ -351,6 +351,12 @@ export const tr: Dictionary = {
     note: "Profilinde zaten olan filmler Letterboxd verileriyle güncellenecek.",
   },
   lists: {
+    allTitle: "Tüm listeler",
+    sortPopular: "Popüler",
+    sortRecent: "Yeni",
+    noLists: "Henüz liste yok.",
+    saveList: "Listeyi kaydet",
+    savedList: "Kaydedildi",
     like: "Listeyi beğen",
     comments: "Yorumlar",
     noComments: "Henüz yorum yok.",

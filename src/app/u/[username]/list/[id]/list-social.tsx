@@ -8,27 +8,30 @@ import { TranslatableText } from "@/components/translatable-text";
 import { ContentMenu } from "@/components/content-menu";
 import { timeAgo } from "@/components/review-comments";
 import { dictionaries } from "@/lib/i18n/dictionaries";
-import { addListComment, deleteListComment, setListLike, type ListComment } from "@/app/lists/social-actions";
+import { addListComment, deleteListComment, setListLike, setListSave, type ListComment } from "@/app/lists/social-actions";
 
 const HEART = "M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z";
 
-// À direita do título da lista: ♥ (curtir) e ⋯ (denunciar).
+// À direita do título da lista: ♥ (curtir), marcador (salvar, como no Instagram) e ⋯ (denunciar).
 export function ListActions({
   listId,
   ownerId,
   viewerId,
   initialLiked,
   initialLikes,
+  initialSaved,
 }: {
   listId: string;
   ownerId: string;
   viewerId: string | null;
   initialLiked: boolean;
   initialLikes: number;
+  initialSaved: boolean;
 }) {
   const { t } = useI18n();
   const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialLikes);
+  const [saved, setSaved] = useState(initialSaved);
   const [, start] = useTransition();
   const likeClass = `flex items-center gap-1.5 text-sm tabular-nums transition ${liked ? "text-like" : "text-muted hover:text-like"}`;
   const heart = (
@@ -50,6 +53,22 @@ export function ListActions({
     });
   }
 
+  function toggleSave() {
+    const next = !saved;
+    setSaved(next);
+    start(async () => {
+      const { ok } = await setListSave(listId, next);
+      if (!ok) setSaved(!next);
+    });
+  }
+
+  const flag = (
+    <svg viewBox="0 0 24 24" className="size-5" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" aria-hidden>
+      <path d="M6 3h12v18l-6-5-6 5z" />
+    </svg>
+  );
+  const flagClass = `transition ${saved ? "text-like" : "text-muted hover:text-like"}`;
+
   return (
     <div className="flex items-center gap-3">
       {viewerId ? (
@@ -61,6 +80,15 @@ export function ListActions({
         <Link href="/login" title={t.lists.like} className={likeClass}>
           {heart}
           {likes}
+        </Link>
+      )}
+      {viewerId ? (
+        <button type="button" onClick={toggleSave} aria-pressed={saved} title={saved ? t.lists.savedList : t.lists.saveList} className={flagClass}>
+          {flag}
+        </button>
+      ) : (
+        <Link href="/login" title={t.lists.saveList} className={flagClass}>
+          {flag}
         </Link>
       )}
       <ContentMenu target="list" targetId={listId} ownerId={ownerId} viewerId={viewerId} size="md" />

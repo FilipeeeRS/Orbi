@@ -351,6 +351,12 @@ export const ja: Dictionary = {
     note: "すでにプロフィールにある映画は Letterboxd のデータで更新されます。",
   },
   lists: {
+    allTitle: "すべてのリスト",
+    sortPopular: "人気",
+    sortRecent: "新着",
+    noLists: "まだリストはありません。",
+    saveList: "リストを保存",
+    savedList: "保存済み",
     like: "リストにいいね",
     comments: "コメント",
     noComments: "まだコメントはありません。",

@@ -16,7 +16,8 @@ const FOLDER_PATHS: Record<MediaKind, string> = { movie: "movies", series: "seri
 const MENU_FOLDERS = MEDIA_KINDS;
 
 export async function Header({ viewer, t }: { viewer: Profile | null; t: Dictionary }) {
-  const unread = viewer ? await countUnreadNotifications(viewer.id) : 0;
+  // A contagem vai como promessa: o cabeçalho (e a página inteira) não espera por ela.
+  const unread = viewer ? countUnreadNotifications(viewer.id).catch(() => 0) : Promise.resolve(0);
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
@@ -31,7 +32,7 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
               [
                 { href: "/", label: t.nav.home },
                 { href: `/u/${viewer.username}`, label: t.profile.tab },
-                { href: "/notifications", label: t.nav.notifications, icon: "bell", badge: unread },
+                { href: "/notifications", label: t.nav.notifications, icon: "bell" },
                 ...MENU_FOLDERS.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
               ],
               [

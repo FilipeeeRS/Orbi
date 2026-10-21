@@ -69,8 +69,8 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
           {list.description && <p className="max-w-2xl text-muted whitespace-pre-line">{list.description}</p>}
           <p className="text-xs tracking-widest text-muted uppercase">{t.lists.count(items.length)}</p>
         </div>
-        {/* À direita do título: Editar (dono) e, embaixo, ♥ curtir e ⋯ denunciar */}
-        <div className="ms-auto flex flex-col items-end gap-3">
+        {/* À direita do título, na mesma linha: Editar (dono), ♥ curtir, marcador salvar e ⋯ denunciar */}
+        <div className="ms-auto flex items-center gap-4">
           {isOwner && <ListEditor listId={list.id} username={list.owner.username} variant="button" />}
           <ListActions
             listId={list.id}
@@ -78,6 +78,7 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
             viewerId={viewer?.id ?? null}
             initialLiked={social.liked}
             initialLikes={social.likes}
+            initialSaved={social.saved}
           />
         </div>
       </div>

@@ -359,6 +359,12 @@ export const ru: Dictionary = {
     note: "Фильмы, которые уже есть в вашем профиле, будут обновлены данными из Letterboxd.",
   },
   lists: {
+    allTitle: "Все списки",
+    sortPopular: "Популярные",
+    sortRecent: "Новые",
+    noLists: "Списков пока нет.",
+    saveList: "Сохранить список",
+    savedList: "Сохранено",
     like: "Нравится список",
     comments: "Комментарии",
     noComments: "Комментариев пока нет.",

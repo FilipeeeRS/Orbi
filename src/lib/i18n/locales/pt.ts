@@ -349,6 +349,12 @@ export const pt = {
     note: "Filmes que já estão no seu perfil serão atualizados com os dados do Letterboxd.",
   },
   lists: {
+    allTitle: "Todas as listas",
+    sortPopular: "Populares",
+    sortRecent: "Recentes",
+    noLists: "Nenhuma lista ainda.",
+    saveList: "Salvar lista",
+    savedList: "Salva",
     like: "Curtir lista",
     comments: "Comentários",
     noComments: "Nenhum comentário ainda.",

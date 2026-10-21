@@ -351,6 +351,12 @@ export const bn: Dictionary = {
     note: "আপনার প্রোফাইলে আগে থেকে থাকা সিনেমাগুলো Letterboxd-এর ডেটা দিয়ে আপডেট হবে।",
   },
   lists: {
+    allTitle: "সব তালিকা",
+    sortPopular: "জনপ্রিয়",
+    sortRecent: "সাম্প্রতিক",
+    noLists: "এখনও কোনো তালিকা নেই।",
+    saveList: "তালিকা সংরক্ষণ করুন",
+    savedList: "সংরক্ষিত",
     like: "তালিকা পছন্দ করুন",
     comments: "মন্তব্য",
     noComments: "এখনও কোনো মন্তব্য নেই।",

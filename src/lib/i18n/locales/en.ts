@@ -351,6 +351,12 @@ export const en: Dictionary = {
     note: "Films already on your profile will be updated with the Letterboxd data.",
   },
   lists: {
+    allTitle: "All lists",
+    sortPopular: "Popular",
+    sortRecent: "Recent",
+    noLists: "No lists yet.",
+    saveList: "Save list",
+    savedList: "Saved",
     like: "Like list",
     comments: "Comments",
     noComments: "No comments yet.",

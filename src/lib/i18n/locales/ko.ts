@@ -351,6 +351,12 @@ export const ko: Dictionary = {
     note: "프로필에 이미 있는 영화는 Letterboxd 데이터로 업데이트됩니다.",
   },
   lists: {
+    allTitle: "모든 리스트",
+    sortPopular: "인기",
+    sortRecent: "최신",
+    noLists: "아직 리스트가 없어요.",
+    saveList: "리스트 저장",
+    savedList: "저장됨",
     like: "리스트 좋아요",
     comments: "댓글",
     noComments: "아직 댓글이 없어요.",

@@ -351,6 +351,12 @@ export const zh: Dictionary = {
     note: "已在你主页中的电影将使用 Letterboxd 的数据更新。",
   },
   lists: {
+    allTitle: "全部片单",
+    sortPopular: "热门",
+    sortRecent: "最新",
+    noLists: "还没有片单。",
+    saveList: "收藏片单",
+    savedList: "已收藏",
     like: "喜欢片单",
     comments: "评论",
     noComments: "还没有评论。",

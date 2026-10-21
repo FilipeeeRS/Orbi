@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "./supabase/server";
 import type { Item, Profile } from "./types";
@@ -44,173 +45,142 @@ export async function getNotificationsSeenAt(): Promise<string | null> {
   return (await cookies()).get(NOTIFICATIONS_SEEN_COOKIE)?.value ?? null;
 }
 
-export async function getNotifications(userId: string, opts: { since?: string | null; limit?: number } = {}) {
-  const limit = opts.limit ?? 50;
+// Até 100 notificações, da mais nova para a mais antiga. Uma ida ao banco só (as consultas filtram pelo
+// dono através das junções) e uma vez por carregamento: o número do menu e a Home usam a mesma busca.
+export async function getNotifications(userId: string, opts: { limit?: number } = {}) {
+  return (await loadNotifications(userId)).slice(0, opts.limit ?? 50);
+}
+
+const MAX = 100;
+
+const loadNotifications = cache(async (userId: string): Promise<Notification[]> => {
   const supabase = await createClient();
-  const after = <Q extends { gt: (column: string, value: string) => Q }>(q: Q) => (opts.since ? q.gt("created_at", opts.since) : q);
-
-  const [myReviews, myComments, myLists] = await Promise.all([
-    supabase.from("entries").select(`id, items!inner(${ITEM})`).eq("user_id", userId).not("review", "is", null).limit(1000),
-    supabase.from("review_comments").select("id").eq("user_id", userId).is("deleted_at", null).limit(1000),
-    supabase.from("lists").select("id, title, owner:profiles!lists_user_id_fkey(username)").eq("user_id", userId).limit(1000),
-  ]);
-  const lists = new Map(
-    ((myLists.data ?? []) as unknown as { id: string; title: string; owner: { username: string } }[]).map((l) => [
-      l.id,
-      { id: l.id, title: l.title, username: l.owner?.username ?? "" },
-    ]),
-  );
-  const listIds = [...lists.keys()];
-  const reviewItems = new Map((myReviews.data ?? []).map((e) => [e.id as string, e.items as unknown as ItemRef]));
-  const reviewIds = [...reviewItems.keys()];
-  const commentIds = (myComments.data ?? []).map((c) => c.id as string);
-  const none = Promise.resolve({ data: [] as never[] });
-
   const today = new Date().toISOString().slice(0, 10);
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const recent = <Q extends { order: (c: string, o: { ascending: boolean }) => Q; limit: (n: number) => Q }>(q: Q) =>
+    q.order("created_at", { ascending: false }).limit(MAX);
+
   const [likes, comments, replies, follows, commentLikes, releases, devices, profile, listLikes, listComments] = await Promise.all([
-    reviewIds.length
-      ? after(
-          supabase
-            .from("review_likes")
-            .select(`entry_id, user_id, created_at, actor:profiles!review_likes_user_id_fkey(${ACTOR})`)
-            .in("entry_id", reviewIds)
-            .neq("user_id", userId),
-        )
-          .order("created_at", { ascending: false })
-          .limit(limit)
-      : none,
-    reviewIds.length
-      ? after(
-          supabase
-            .from("review_comments")
-            .select(`id, entry_id, body, created_at, actor:profiles!review_comments_user_id_fkey(${ACTOR})`)
-            .in("entry_id", reviewIds)
-            .neq("user_id", userId)
-            .is("deleted_at", null),
-        )
-          .order("created_at", { ascending: false })
-          .limit(limit)
-      : none,
-    commentIds.length
-      ? after(
-          supabase
-            .from("review_comments")
-            .select(`id, entry_id, body, created_at, actor:profiles!review_comments_user_id_fkey(${ACTOR}), entry:entries!inner(items!inner(${ITEM}))`)
-            .in("parent_id", commentIds)
-            .neq("user_id", userId)
-            .is("deleted_at", null),
-        )
-          .order("created_at", { ascending: false })
-          .limit(limit)
-      : none,
-    after(
+    // Curtidas nas minhas reviews
+    recent(
       supabase
-        .from("follows")
-        .select(`follower_id, created_at, actor:profiles!follows_follower_id_fkey(${ACTOR})`)
-        .eq("followee_id", userId),
-    )
-      .order("created_at", { ascending: false })
-      .limit(limit),
-    // Curtidas nos meus comentários
-    commentIds.length
-      ? after(
-          supabase
-            .from("comment_likes")
-            .select(
-              `comment_id, user_id, created_at, actor:profiles!comment_likes_user_id_fkey(${ACTOR}), comment:review_comments!inner(entry:entries!inner(items!inner(${ITEM})))`,
-            )
-            .in("comment_id", commentIds)
-            .neq("user_id", userId),
+        .from("review_likes")
+        .select(`entry_id, user_id, created_at, actor:profiles!review_likes_user_id_fkey(${ACTOR}), entry:entries!inner(user_id, items!inner(${ITEM}))`)
+        .eq("entry.user_id", userId)
+        .neq("user_id", userId),
+    ),
+    // Comentários nas minhas reviews
+    recent(
+      supabase
+        .from("review_comments")
+        .select(`id, entry_id, body, created_at, actor:profiles!review_comments_user_id_fkey(${ACTOR}), entry:entries!inner(user_id, items!inner(${ITEM}))`)
+        .eq("entry.user_id", userId)
+        .neq("user_id", userId)
+        .is("deleted_at", null),
+    ),
+    // Respostas a comentários meus (em qualquer review)
+    recent(
+      supabase
+        .from("review_comments")
+        .select(
+          `id, entry_id, body, created_at, actor:profiles!review_comments_user_id_fkey(${ACTOR}), parent:parent_id!inner(user_id), entry:entries!inner(items!inner(${ITEM}))`,
         )
-          .order("created_at", { ascending: false })
-          .limit(limit)
-      : none,
+        .eq("parent.user_id", userId)
+        .neq("user_id", userId)
+        .is("deleted_at", null),
+    ),
+    recent(supabase.from("follows").select(`follower_id, created_at, actor:profiles!follows_follower_id_fkey(${ACTOR})`).eq("followee_id", userId)),
+    // Curtidas nos meus comentários
+    recent(
+      supabase
+        .from("comment_likes")
+        .select(
+          `comment_id, user_id, created_at, actor:profiles!comment_likes_user_id_fkey(${ACTOR}), comment:review_comments!inner(user_id, entry:entries!inner(items!inner(${ITEM})))`,
+        )
+        .eq("comment.user_id", userId)
+        .neq("user_id", userId),
+    ),
     // Da minha watchlist, o que estreou nos últimos 30 dias
     supabase
       .from("entries")
       .select(`item_id, items!inner(${ITEM}, release_date)`)
       .eq("user_id", userId)
       .eq("status", "watchlist")
-      .gte("items.release_date", opts.since ? opts.since.slice(0, 10) : monthAgo)
+      .gte("items.release_date", monthAgo)
       .lte("items.release_date", today)
-      .limit(limit),
-    // Aparelhos em que a conta entrou (sem a tabela ainda, vem vazio)
+      .limit(MAX),
+    // Aparelhos em que a conta entrou
     supabase.from("user_devices").select("device_key, label, first_seen").eq("user_id", userId).order("first_seen"),
-    supabase.from("profiles").select("created_at").eq("id", userId).maybeSingle(),
-    // Curtidas e comentários nas minhas listas (sem as tabelas ainda, vem vazio)
-    listIds.length
-      ? after(
-          supabase
-            .from("list_likes")
-            .select(`list_id, user_id, created_at, actor:profiles!list_likes_user_id_fkey(${ACTOR})`)
-            .in("list_id", listIds)
-            .neq("user_id", userId),
-        )
-          .order("created_at", { ascending: false })
-          .limit(limit)
-      : none,
-    listIds.length
-      ? after(
-          supabase
-            .from("list_comments")
-            .select(`id, list_id, body, created_at, actor:profiles!list_comments_user_id_fkey(${ACTOR})`)
-            .in("list_id", listIds)
-            .neq("user_id", userId),
-        )
-          .order("created_at", { ascending: false })
-          .limit(limit)
-      : none,
+    supabase.from("profiles").select("created_at, username").eq("id", userId).maybeSingle(),
+    // Curtidas e comentários nas minhas listas
+    recent(
+      supabase
+        .from("list_likes")
+        .select(`list_id, user_id, created_at, actor:profiles!list_likes_user_id_fkey(${ACTOR}), list:lists!inner(id, title, user_id)`)
+        .eq("list.user_id", userId)
+        .neq("user_id", userId),
+    ),
+    recent(
+      supabase
+        .from("list_comments")
+        .select(`id, list_id, body, created_at, actor:profiles!list_comments_user_id_fkey(${ACTOR}), list:lists!inner(id, title, user_id)`)
+        .eq("list.user_id", userId)
+        .neq("user_id", userId),
+    ),
   ]);
 
+  const me = profile.data as { created_at: string; username: string } | null;
+  const listRef = (l: unknown) => {
+    const list = l as { id: string; title: string } | null;
+    return list ? { id: list.id, title: list.title, username: me?.username ?? "" } : null;
+  };
+  const rows = (r: { data: unknown }) => (r.data ?? []) as Record<string, unknown>[];
+  const itemOf = (entry: unknown) => (entry as { items: ItemRef } | null)?.items ?? null;
+
   const list: Notification[] = [];
-  for (const r of (releases.data ?? []) as Record<string, unknown>[]) {
+  for (const r of rows(releases)) {
     const item = r.items as ItemRef & { release_date: string };
     list.push({ id: `release-${r.item_id}`, kind: "release", actor: null, created_at: `${item.release_date}T12:00:00.000Z`, item, body: null });
   }
   // O primeiro aparelho é o do cadastro; os seguintes são "novo acesso".
-  for (const d of ((devices.data ?? []) as { device_key: string; label: string; first_seen: string }[]).slice(1)) {
-    if (opts.since && d.first_seen <= opts.since) continue;
+  for (const d of (rows(devices) as unknown as { device_key: string; label: string; first_seen: string }[]).slice(1)) {
     list.push({ id: `device-${d.device_key}`, kind: "device", actor: null, created_at: d.first_seen, item: null, body: d.label });
   }
   // Boas-vindas: no cadastro (a primeira notificação de todo mundo)
-  const joined = (profile.data as { created_at: string } | null)?.created_at;
-  if (joined && (!opts.since || joined > opts.since)) {
-    list.push({ id: "welcome", kind: "welcome", actor: null, created_at: joined, item: null, body: null });
-  }
+  if (me?.created_at) list.push({ id: "welcome", kind: "welcome", actor: null, created_at: me.created_at, item: null, body: null });
+
   const seenComments = new Set<string>();
   // Resposta a um comentário meu conta como "respondeu", mesmo se for na minha própria review.
-  for (const r of (replies.data ?? []) as Record<string, unknown>[]) {
+  for (const r of rows(replies)) {
     seenComments.add(r.id as string);
-    const entry = r.entry as { items: ItemRef } | null;
-    list.push({ id: `reply-${r.id}`, kind: "reply", actor: r.actor as NotificationActor, created_at: r.created_at as string, item: entry?.items ?? null, body: r.body as string });
+    list.push({ id: `reply-${r.id}`, kind: "reply", actor: r.actor as NotificationActor, created_at: r.created_at as string, item: itemOf(r.entry), body: r.body as string });
   }
-  for (const c of (comments.data ?? []) as Record<string, unknown>[]) {
+  for (const c of rows(comments)) {
     if (seenComments.has(c.id as string)) continue;
-    list.push({ id: `comment-${c.id}`, kind: "comment", actor: c.actor as NotificationActor, created_at: c.created_at as string, item: reviewItems.get(c.entry_id as string) ?? null, body: c.body as string });
+    list.push({ id: `comment-${c.id}`, kind: "comment", actor: c.actor as NotificationActor, created_at: c.created_at as string, item: itemOf(c.entry), body: c.body as string });
   }
-  for (const l of (likes.data ?? []) as Record<string, unknown>[]) {
-    list.push({ id: `like-${l.entry_id}-${l.user_id}`, kind: "like", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: reviewItems.get(l.entry_id as string) ?? null, body: null });
+  for (const l of rows(likes)) {
+    list.push({ id: `like-${l.entry_id}-${l.user_id}`, kind: "like", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: itemOf(l.entry), body: null });
   }
-  for (const l of (commentLikes.data ?? []) as Record<string, unknown>[]) {
-    const comment = l.comment as { entry: { items: ItemRef } } | null;
-    list.push({ id: `clike-${l.comment_id}-${l.user_id}`, kind: "commentLike", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: comment?.entry?.items ?? null, body: null });
+  for (const l of rows(commentLikes)) {
+    const comment = l.comment as { entry: unknown } | null;
+    list.push({ id: `clike-${l.comment_id}-${l.user_id}`, kind: "commentLike", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: itemOf(comment?.entry), body: null });
   }
-  for (const l of (listLikes.data ?? []) as Record<string, unknown>[]) {
-    list.push({ id: `llike-${l.list_id}-${l.user_id}`, kind: "listLike", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: null, body: null, list: lists.get(l.list_id as string) ?? null });
+  for (const l of rows(listLikes)) {
+    list.push({ id: `llike-${l.list_id}-${l.user_id}`, kind: "listLike", actor: l.actor as NotificationActor, created_at: l.created_at as string, item: null, body: null, list: listRef(l.list) });
   }
-  for (const c of (listComments.data ?? []) as Record<string, unknown>[]) {
-    list.push({ id: `lcomment-${c.id}`, kind: "listComment", actor: c.actor as NotificationActor, created_at: c.created_at as string, item: null, body: c.body as string, list: lists.get(c.list_id as string) ?? null });
+  for (const c of rows(listComments)) {
+    list.push({ id: `lcomment-${c.id}`, kind: "listComment", actor: c.actor as NotificationActor, created_at: c.created_at as string, item: null, body: c.body as string, list: listRef(c.list) });
   }
-  for (const f of (follows.data ?? []) as Record<string, unknown>[]) {
+  for (const f of rows(follows)) {
     list.push({ id: `follow-${f.follower_id}`, kind: "follow", actor: f.actor as NotificationActor, created_at: f.created_at as string, item: null, body: null });
   }
 
   return list
     .filter((n) => n.actor || !SOCIAL_KINDS.includes(n.kind))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
-    .slice(0, limit);
-}
+    .slice(0, MAX);
+});
 
 export const NOTIFICATIONS_READ_COOKIE = "orbi-notif-read";
 

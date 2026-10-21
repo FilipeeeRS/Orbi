@@ -126,10 +126,11 @@ export async function getPopularLists(limit = 3): Promise<PopularList[]> {
   return top;
 }
 
-// Curtidas (e se quem está vendo curtiu) e comentários de uma lista. Sem as tabelas ainda, vem vazio.
+// Curtidas (e se quem está vendo curtiu), se está salva por quem vê e comentários de uma lista.
+// Sem as tabelas ainda, vem vazio.
 export async function getListSocial(listId: string, viewerId: string | null) {
   const supabase = await createClient();
-  const [{ data: likes }, { data: comments }] = await Promise.all([
+  const [{ data: likes }, { data: comments }, { data: saved }] = await Promise.all([
     supabase.from("list_likes").select("user_id").eq("list_id", listId).limit(10000),
     supabase
       .from("list_comments")
@@ -137,10 +138,78 @@ export async function getListSocial(listId: string, viewerId: string | null) {
       .eq("list_id", listId)
       .order("created_at", { ascending: true })
       .limit(500),
+    viewerId
+      ? supabase.from("list_saves").select("list_id").eq("list_id", listId).eq("user_id", viewerId).limit(1)
+      : Promise.resolve({ data: [] }),
   ]);
   return {
+    saved: !!saved?.length,
     likes: likes?.length ?? 0,
     liked: !!viewerId && (likes ?? []).some((l) => l.user_id === viewerId),
     comments: (comments ?? []) as unknown as ListComment[],
+  };
+}
+
+export type ListSort = "popular" | "recent";
+
+// "Todas as listas": as de todo mundo com pelo menos uma obra. Populares = mais curtidas (empate: mais
+// obras adicionadas na semana, depois a atualizada por último); recentes = atualizadas por último.
+export async function browseLists(sort: ListSort, page: number, perPage = 24): Promise<{ lists: PopularList[]; pages: number }> {
+  const supabase = await createClient();
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const [{ data: lists }, { data: items }, { data: likes }] = await Promise.all([
+    supabase
+      .from("lists")
+      .select("id, title, description, updated_at, owner:profiles!lists_user_id_fkey(username, display_name, avatar_url, avatar_ring)")
+      .order("updated_at", { ascending: false })
+      .limit(1000),
+    supabase.from("list_items").select("list_id, added_at").limit(50000),
+    supabase.from("list_likes").select("list_id").limit(50000),
+  ]);
+  const count = new Map<string, number>();
+  const week = new Map<string, number>();
+  for (const r of items ?? []) {
+    count.set(r.list_id, (count.get(r.list_id) ?? 0) + 1);
+    if (r.added_at >= weekAgo) week.set(r.list_id, (week.get(r.list_id) ?? 0) + 1);
+  }
+  const likeCount = new Map<string, number>();
+  for (const r of likes ?? []) likeCount.set(r.list_id, (likeCount.get(r.list_id) ?? 0) + 1);
+
+  type Row = { id: string; updated_at: string };
+  const all = ((lists ?? []) as unknown as (Row & { owner: unknown })[]).filter((l) => count.get(l.id) && l.owner);
+  if (sort === "popular")
+    all.sort(
+      (a, b) =>
+        (likeCount.get(b.id) ?? 0) - (likeCount.get(a.id) ?? 0) ||
+        (week.get(b.id) ?? 0) - (week.get(a.id) ?? 0) ||
+        b.updated_at.localeCompare(a.updated_at),
+    );
+  const pages = Math.max(1, Math.ceil(all.length / perPage));
+  const slice = all.slice((page - 1) * perPage, page * perPage);
+  if (!slice.length) return { lists: [], pages };
+
+  const ids = slice.map((l) => l.id);
+  const [{ data: rows }, { data: comments }] = await Promise.all([
+    supabase.from("list_items").select("list_id, position, items!inner(poster_url)").in("list_id", ids).lt("position", 5).order("position"),
+    supabase.from("list_comments").select("list_id").in("list_id", ids),
+  ]);
+  const posters = new Map<string, (string | null)[]>();
+  for (const r of rows ?? []) {
+    const list = posters.get(r.list_id) ?? [];
+    list.push((r.items as unknown as { poster_url: string | null }).poster_url);
+    posters.set(r.list_id, list);
+  }
+  return {
+    pages,
+    lists: slice.map(
+      (l) =>
+        ({
+          ...l,
+          count: count.get(l.id) ?? 0,
+          posters: posters.get(l.id) ?? [],
+          likes: likeCount.get(l.id) ?? 0,
+          comments: (comments ?? []).filter((c) => c.list_id === l.id).length,
+        }) as unknown as PopularList,
+    ),
   };
 }

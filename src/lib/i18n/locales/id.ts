@@ -351,6 +351,12 @@ export const id: Dictionary = {
     note: "Film yang sudah ada di profilmu akan diperbarui dengan data Letterboxd.",
   },
   lists: {
+    allTitle: "Semua daftar",
+    sortPopular: "Populer",
+    sortRecent: "Terbaru",
+    noLists: "Belum ada daftar.",
+    saveList: "Simpan daftar",
+    savedList: "Tersimpan",
     like: "Suka daftar",
     comments: "Komentar",
     noComments: "Belum ada komentar.",

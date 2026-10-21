@@ -351,6 +351,12 @@ export const hi: Dictionary = {
     note: "जो फ़िल्में पहले से आपकी प्रोफ़ाइल में हैं, वे Letterboxd के डेटा से अपडेट होंगी।",
   },
   lists: {
+    allTitle: "सभी लिस्ट",
+    sortPopular: "लोकप्रिय",
+    sortRecent: "नई",
+    noLists: "अभी कोई लिस्ट नहीं।",
+    saveList: "लिस्ट सेव करें",
+    savedList: "सेव की गई",
     like: "लिस्ट पसंद करें",
     comments: "कमेंट",
     noComments: "अभी कोई कमेंट नहीं।",

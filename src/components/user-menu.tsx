@@ -1,21 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type MenuLink = { href: string; label: string; icon?: "bell"; badge?: number };
+type MenuLink = { href: string; label: string; icon?: "bell" };
 
 type Props = {
   avatar: React.ReactNode;
   name: string;
-  unread?: number; // notificações não lidas: ponto na foto e número no item
+  // Notificações não lidas (ponto na foto e número no sino). Chega depois: o cabeçalho e a página
+  // aparecem sem esperar a contagem.
+  unread: Promise<number>;
   sections: MenuLink[][];
   signOutLabel: string;
 };
 
 // Fecha ao clicar num item, fora do menu, com Esc ou ao trocar de página.
-export function UserMenu({ avatar, name, unread = 0, sections, signOutLabel }: Props) {
+export function UserMenu({ avatar, name, unread, sections, signOutLabel }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -52,9 +54,9 @@ export function UserMenu({ avatar, name, unread = 0, sections, signOutLabel }: P
         {/* flex: sem isso a foto fica na linha do texto e ganha um respiro embaixo (descentralizada) */}
         <span className="relative flex shrink-0">
           {avatar}
-          {unread > 0 && (
-            <span className="absolute -end-0.5 -top-0.5 size-2.5 rounded-full bg-accent ring-2 ring-bg" aria-hidden />
-          )}
+          <Suspense>
+            <UnreadDot unread={unread} />
+          </Suspense>
         </span>
         <span className="hidden max-w-32 truncate text-sm font-semibold sm:block">{name}</span>
         <svg viewBox="0 0 20 20" className={`size-4 text-muted transition ${open ? "rotate-180" : ""}`} aria-hidden>
@@ -83,7 +85,7 @@ export function UserMenu({ avatar, name, unread = 0, sections, signOutLabel }: P
                     <span className="relative">
                       <svg
                         viewBox="0 0 24 24"
-                        className={`size-4 ${l.badge ? "text-fg" : "text-muted"}`}
+                        className="size-4 text-muted"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
@@ -93,11 +95,9 @@ export function UserMenu({ avatar, name, unread = 0, sections, signOutLabel }: P
                       >
                         <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" />
                       </svg>
-                      {!!l.badge && (
-                        <span className="absolute -end-2 -top-2 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 font-bold text-accent-fg tabular-nums ring-2 ring-surface">
-                          {l.badge > 9 ? "9+" : l.badge}
-                        </span>
-                      )}
+                      <Suspense>
+                        <UnreadBadge unread={unread} />
+                      </Suspense>
                     </span>
                   )}
                 </Link>
@@ -115,5 +115,20 @@ export function UserMenu({ avatar, name, unread = 0, sections, signOutLabel }: P
         </nav>
       )}
     </div>
+  );
+}
+
+function UnreadDot({ unread }: { unread: Promise<number> }) {
+  if (use(unread) === 0) return null;
+  return <span className="absolute -end-0.5 -top-0.5 size-2.5 rounded-full bg-accent ring-2 ring-bg" aria-hidden />;
+}
+
+function UnreadBadge({ unread }: { unread: Promise<number> }) {
+  const n = use(unread);
+  if (n === 0) return null;
+  return (
+    <span className="absolute -end-2 -top-2 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 font-bold text-accent-fg tabular-nums ring-2 ring-surface">
+      {n > 9 ? "9+" : n}
+    </span>
   );
 }

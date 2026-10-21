@@ -351,6 +351,12 @@ export const es: Dictionary = {
     note: "Las películas que ya están en tu perfil se actualizarán con los datos de Letterboxd.",
   },
   lists: {
+    allTitle: "Todas las listas",
+    sortPopular: "Populares",
+    sortRecent: "Recientes",
+    noLists: "Aún no hay listas.",
+    saveList: "Guardar lista",
+    savedList: "Guardada",
     like: "Me gusta la lista",
     comments: "Comentarios",
     noComments: "Aún no hay comentarios.",

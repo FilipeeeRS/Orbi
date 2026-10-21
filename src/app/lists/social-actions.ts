@@ -26,6 +26,17 @@ export async function setListLike(listId: string, like: boolean): Promise<{ ok: 
   return { ok: !error || error.code === "23505" };
 }
 
+// Salvar / tirar dos salvos (o marcador).
+export async function setListSave(listId: string, save: boolean): Promise<{ ok: boolean }> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false };
+  const supabase = await createClient();
+  const { error } = save
+    ? await supabase.from("list_saves").insert({ list_id: listId, user_id: viewer.id })
+    : await supabase.from("list_saves").delete().eq("list_id", listId).eq("user_id", viewer.id);
+  return { ok: !error || error.code === "23505" };
+}
+
 export async function addListComment(listId: string, body: string): Promise<{ comment: ListComment | null }> {
   const viewer = await getViewer();
   const text = body.trim().slice(0, 2000);

@@ -351,6 +351,12 @@ export const ur: Dictionary = {
     note: "جو فلمیں پہلے سے آپ کی پروفائل میں ہیں وہ Letterboxd کے ڈیٹا سے اپڈیٹ ہوں گی۔",
   },
   lists: {
+    allTitle: "تمام فہرستیں",
+    sortPopular: "مقبول",
+    sortRecent: "نئی",
+    noLists: "ابھی کوئی فہرست نہیں۔",
+    saveList: "فہرست محفوظ کریں",
+    savedList: "محفوظ شدہ",
     like: "فہرست پسند کریں",
     comments: "تبصرے",
     noComments: "ابھی کوئی تبصرہ نہیں۔",

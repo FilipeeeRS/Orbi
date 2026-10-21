@@ -351,6 +351,12 @@ export const ar: Dictionary = {
     note: "ستُحدَّث الأفلام الموجودة في ملفك الشخصي ببيانات Letterboxd.",
   },
   lists: {
+    allTitle: "كل القوائم",
+    sortPopular: "الأكثر شيوعًا",
+    sortRecent: "الأحدث",
+    noLists: "لا توجد قوائم بعد.",
+    saveList: "حفظ القائمة",
+    savedList: "محفوظة",
     like: "أعجبتني القائمة",
     comments: "التعليقات",
     noComments: "لا توجد تعليقات بعد.",
