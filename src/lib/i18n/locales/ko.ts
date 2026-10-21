@@ -353,7 +353,7 @@ export const ko: Dictionary = {
   lists: {
     like: "리스트 좋아요",
     comments: "댓글",
-    noComments: "아직 댓글이 없어요. 첫 댓글을 남겨 보세요!",
+    noComments: "아직 댓글이 없어요.",
     new: "새 리스트",
     edit: "리스트 편집",
     create: "리스트 만들기",

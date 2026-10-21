@@ -353,7 +353,7 @@ export const id: Dictionary = {
   lists: {
     like: "Suka daftar",
     comments: "Komentar",
-    noComments: "Belum ada komentar. Jadilah yang pertama!",
+    noComments: "Belum ada komentar.",
     new: "Daftar baru",
     edit: "Edit daftar",
     create: "Buat daftar",

@@ -351,7 +351,7 @@ export const pt = {
   lists: {
     like: "Curtir lista",
     comments: "Comentários",
-    noComments: "Nenhum comentário ainda. Seja o primeiro!",
+    noComments: "Nenhum comentário ainda.",
     new: "Nova lista",
     edit: "Editar lista",
     create: "Criar lista",

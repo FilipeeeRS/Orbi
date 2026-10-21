@@ -353,7 +353,7 @@ export const ar: Dictionary = {
   lists: {
     like: "أعجبتني القائمة",
     comments: "التعليقات",
-    noComments: "لا توجد تعليقات بعد. كن أول من يعلّق!",
+    noComments: "لا توجد تعليقات بعد.",
     new: "قائمة جديدة",
     edit: "تعديل القائمة",
     create: "إنشاء القائمة",

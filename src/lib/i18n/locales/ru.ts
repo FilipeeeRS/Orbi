@@ -361,7 +361,7 @@ export const ru: Dictionary = {
   lists: {
     like: "Нравится список",
     comments: "Комментарии",
-    noComments: "Комментариев пока нет. Будьте первым!",
+    noComments: "Комментариев пока нет.",
     new: "Новый список",
     edit: "Изменить список",
     create: "Создать список",

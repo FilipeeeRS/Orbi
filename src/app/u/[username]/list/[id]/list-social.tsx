@@ -11,23 +11,20 @@ import { dictionaries } from "@/lib/i18n/dictionaries";
 import { addListComment, deleteListComment, setListLike, type ListComment } from "@/app/lists/social-actions";
 
 const HEART = "M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z";
-const BUBBLE = "M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z";
 
-// Linha embaixo do título da lista: ♥ (curtir), 💬 (vai aos comentários) e ⋯ (denunciar).
+// À direita do título da lista: ♥ (curtir) e ⋯ (denunciar).
 export function ListActions({
   listId,
   ownerId,
   viewerId,
   initialLiked,
   initialLikes,
-  comments,
 }: {
   listId: string;
   ownerId: string;
   viewerId: string | null;
   initialLiked: boolean;
   initialLikes: number;
-  comments: number;
 }) {
   const { t } = useI18n();
   const [liked, setLiked] = useState(initialLiked);
@@ -54,7 +51,7 @@ export function ListActions({
   }
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-3">
       {viewerId ? (
         <button type="button" onClick={toggle} aria-pressed={liked} title={t.lists.like} className={likeClass}>
           {heart}
@@ -66,13 +63,7 @@ export function ListActions({
           {likes}
         </Link>
       )}
-      <a href="#comments" title={t.comments.comment} className="flex items-center gap-1.5 text-sm text-muted tabular-nums transition hover:text-fg">
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
-          <path d={BUBBLE} />
-        </svg>
-        {comments}
-      </a>
-      <ContentMenu target="list" targetId={listId} ownerId={ownerId} viewerId={viewerId} size="md" align="start" />
+      <ContentMenu target="list" targetId={listId} ownerId={ownerId} viewerId={viewerId} size="md" />
     </div>
   );
 }
@@ -121,7 +112,7 @@ export function ListComments({
   return (
     <section id="comments" className="scroll-mt-24">
       <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
-        {t.lists.comments} <span className="font-normal">{comments.length || ""}</span>
+        {t.lists.comments} <span className="font-normal tabular-nums">{comments.length}</span>
       </h2>
       {comments.length === 0 && <p className="mb-4 text-sm text-muted">{t.lists.noComments}</p>}
       <ul className="mb-4 space-y-4">

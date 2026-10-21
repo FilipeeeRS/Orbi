@@ -353,7 +353,7 @@ export const ja: Dictionary = {
   lists: {
     like: "リストにいいね",
     comments: "コメント",
-    noComments: "まだコメントはありません。最初のコメントを書こう！",
+    noComments: "まだコメントはありません。",
     new: "新しいリスト",
     edit: "リストを編集",
     create: "リストを作成",

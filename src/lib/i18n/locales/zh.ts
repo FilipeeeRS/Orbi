@@ -353,7 +353,7 @@ export const zh: Dictionary = {
   lists: {
     like: "喜欢片单",
     comments: "评论",
-    noComments: "还没有评论，来抢沙发吧！",
+    noComments: "还没有评论。",
     new: "新清单",
     edit: "编辑清单",
     create: "创建清单",

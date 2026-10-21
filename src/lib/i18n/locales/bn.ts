@@ -353,7 +353,7 @@ export const bn: Dictionary = {
   lists: {
     like: "তালিকা পছন্দ করুন",
     comments: "মন্তব্য",
-    noComments: "এখনও কোনো মন্তব্য নেই। প্রথম মন্তব্যটি করুন!",
+    noComments: "এখনও কোনো মন্তব্য নেই।",
     new: "নতুন তালিকা",
     edit: "তালিকা সম্পাদনা",
     create: "তালিকা তৈরি করুন",

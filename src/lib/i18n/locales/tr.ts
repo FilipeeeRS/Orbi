@@ -353,7 +353,7 @@ export const tr: Dictionary = {
   lists: {
     like: "Listeyi beğen",
     comments: "Yorumlar",
-    noComments: "Henüz yorum yok. İlk yorumu sen yap!",
+    noComments: "Henüz yorum yok.",
     new: "Yeni liste",
     edit: "Listeyi düzenle",
     create: "Liste oluştur",

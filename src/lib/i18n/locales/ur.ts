@@ -353,7 +353,7 @@ export const ur: Dictionary = {
   lists: {
     like: "فہرست پسند کریں",
     comments: "تبصرے",
-    noComments: "ابھی کوئی تبصرہ نہیں۔ پہلا تبصرہ آپ کریں!",
+    noComments: "ابھی کوئی تبصرہ نہیں۔",
     new: "نئی فہرست",
     edit: "فہرست میں ترمیم",
     create: "فہرست بنائیں",

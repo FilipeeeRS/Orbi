@@ -353,7 +353,7 @@ export const hi: Dictionary = {
   lists: {
     like: "लिस्ट पसंद करें",
     comments: "कमेंट",
-    noComments: "अभी कोई कमेंट नहीं। पहला कमेंट आप करें!",
+    noComments: "अभी कोई कमेंट नहीं।",
     new: "नई लिस्ट",
     edit: "लिस्ट बदलें",
     create: "लिस्ट बनाएँ",

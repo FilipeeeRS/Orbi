@@ -68,19 +68,18 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
           </div>
           {list.description && <p className="max-w-2xl text-muted whitespace-pre-line">{list.description}</p>}
           <p className="text-xs tracking-widest text-muted uppercase">{t.lists.count(items.length)}</p>
-          {/* ♥ curtir · 💬 comentários · ⋯ denunciar */}
+        </div>
+        {/* À direita do título: Editar (dono) e, embaixo, ♥ curtir e ⋯ denunciar */}
+        <div className="ms-auto flex flex-col items-end gap-3">
+          {isOwner && <ListEditor listId={list.id} username={list.owner.username} variant="button" />}
           <ListActions
             listId={list.id}
             ownerId={list.user_id}
             viewerId={viewer?.id ?? null}
             initialLiked={social.liked}
             initialLikes={social.likes}
-            comments={social.comments.length}
           />
         </div>
-        {isOwner && (
-          <ListEditor listId={list.id} username={list.owner.username} variant="button" />
-        )}
       </div>
 
       {items.length === 0 ? (

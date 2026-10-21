@@ -353,7 +353,7 @@ export const es: Dictionary = {
   lists: {
     like: "Me gusta la lista",
     comments: "Comentarios",
-    noComments: "Aún no hay comentarios. ¡Sé el primero!",
+    noComments: "Aún no hay comentarios.",
     new: "Nueva lista",
     edit: "Editar lista",
     create: "Crear lista",
