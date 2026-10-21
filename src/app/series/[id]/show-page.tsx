@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getShowByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats, withSourceStats } from "@/lib/queries";
+import { preloadItemStats, getItemStats, withSourceStats } from "@/lib/queries";
 import { getSeriesEpisodes, getSeriesInfo, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import { SeriesEpisodes, type SeasonView } from "./series-episodes";
 import { Recommendations } from "@/components/recommendations";
@@ -26,13 +26,16 @@ import {
 
 // Página de uma série do TMDB. (Animes têm página própria, com dados do AniList.)
 export async function ShowPageContent({ id }: { id: string }) {
+  preloadItemStats(getShowByRouteId(id));
   const [item, viewer, { t, locale }] = await Promise.all([getShowByRouteId(id), getViewer(), getDict()]);
   if (!item) notFound();
 
   const supabase = await createClient();
-  const [stats, info, entry, art] = await Promise.all([
+  // As temporadas (episódios e o que você já viu) saem junto com o resto, assim que a ficha chega.
+  const infoPromise = getSeriesInfo(id, tmdbLanguage(locale));
+  const [stats, info, entry, art, seasons] = await Promise.all([
     getItemStats(item.id),
-    getSeriesInfo(id, tmdbLanguage(locale)),
+    infoPromise,
     viewer
       ? supabase
           .from("entries")
@@ -44,11 +47,13 @@ export async function ShowPageContent({ id }: { id: string }) {
       : null,
     // Pôster/fundo que quem está vendo escolheu para esta série
     viewer ? getArt(viewer.id, [item.id]).then((a) => a.get(item.id)) : undefined,
+    infoPromise.then((info) =>
+      info ? getSeasonViews(id, item.id, info.seasons.map((s) => s.number), viewer?.id ?? null, locale) : [],
+    ),
   ]);
   const posterUrl = art?.poster ?? item.poster_url;
   const backdropUrl = art?.backdrop ?? item.backdrop_url;
 
-  const seasons = info ? await getSeasonViews(id, item.id, info.seasons.map((s) => s.number), viewer?.id ?? null, locale) : [];
   const title = itemTitle(item, locale);
 
   // Números da fonte somados aos do Orbi (TMDB: quem votou conta como quem assistiu); a nota mistura as duas.

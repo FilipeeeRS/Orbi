@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import Loading from "../../loading";
+import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMovieByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats, withSourceStats } from "@/lib/queries";
+import { preloadItemStats, getItemStats, withSourceStats } from "@/lib/queries";
 import { getMovieInfo, tmdbLanguage } from "@/lib/tmdb";
 import { MovieInfo } from "./movie-info";
 import { createClient } from "@/lib/supabase/server";
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Pr
 
 export default function MoviePage(props: PageProps<"/movie/[id]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<ItemSkeleton />}>
       <MoviePageContent {...props} />
     </Suspense>
   );
@@ -41,6 +41,7 @@ export default function MoviePage(props: PageProps<"/movie/[id]">) {
 
 async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
   const { id } = await params;
+  preloadItemStats(getMovieByRouteId(id));
   const [item, viewer, { t, locale }] = await Promise.all([getMovieByRouteId(id), getViewer(), getDict()]);
   if (!item) notFound();
 

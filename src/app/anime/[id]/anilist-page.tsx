@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getAniListByRouteId } from "@/lib/catalog";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats, withSourceStats } from "@/lib/queries";
+import { preloadItemStats, getItemStats, withSourceStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { itemOverview, itemTitle, type Entry } from "@/lib/types";
 import { dictionaries, type Dictionary } from "@/lib/i18n/dictionaries";
@@ -17,6 +17,7 @@ import { PosterSection } from "@/components/recommendations";
 // Página de anime (uma temporada) ou de mangá, com dados do AniList: a mesma das séries, com os
 // relacionados (temporada anterior, sequência, mangá original, adaptações...) no lugar dos episódios.
 export async function AniListPageContent({ id, kind }: { id: string; kind: "anime" | "manga" }) {
+  preloadItemStats(getAniListByRouteId(kind, id));
   const [item, viewer, { t, locale }] = await Promise.all([getAniListByRouteId(kind, id), getViewer(), getDict()]);
   if (!item) notFound();
   const manga = kind === "manga";
@@ -24,7 +25,8 @@ export async function AniListPageContent({ id, kind }: { id: string; kind: "anim
   const supabase = await createClient();
   const [stats, media, entry] = await Promise.all([
     getItemStats(item.id),
-    getAnime(Number(id), manga ? "MANGA" : "ANIME"),
+    // AniList fora do ar: a página continua, com o que o catálogo do Orbi já tem.
+    getAnime(Number(id), manga ? "MANGA" : "ANIME").catch(() => null),
     viewer
       ? supabase
           .from("entries")

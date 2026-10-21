@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Loading from "../../loading";
+import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { getShowByRouteId } from "@/lib/catalog";
 import { ShowPageContent } from "./show-page";
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: PageProps<"/series/[id]">): P
 
 export default function SeriesPage(props: PageProps<"/series/[id]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<ItemSkeleton />}>
       <Content {...props} />
     </Suspense>
   );

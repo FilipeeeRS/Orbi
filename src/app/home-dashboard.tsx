@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { RowSkeleton, SectionSkeleton } from "@/components/skeletons";
 import { Avatar } from "@/components/header";
 import { FolderIcon } from "@/components/folder-icon";
 import { Poster, PosterImage } from "@/components/poster";
@@ -79,190 +81,238 @@ export async function HomeDashboard({
   );
 }
 
-// Novidades: as últimas notificações (para quem está logado), a atividade dos amigos e as reviews populares.
-async function NewsTab({ viewer, t, locale }: { viewer: Profile | null; t: Dictionary; locale: Locale }) {
-  const [friends, reviews, notifications, isRead, watchlist, lists] = await Promise.all([
-    viewer ? getFriendsActivity(viewer.id) : [],
-    getPopularReviews(6),
-    viewer ? getNotifications(viewer.id, { limit: 5 }) : [],
-    getReadState(),
-    // Minha watchlist de todas as pastas, das adicionadas por último
-    viewer ? getViewerShelf(viewer.id, "all", "watchlist") : ([] as Item[]),
-    getPopularLists(3),
-  ]);
-  const states = await getViewerStates(
-    viewer?.id ?? "",
-    viewer ? [...friends.map((e) => e.item_id), ...reviews.map((r) => r.item_id), ...watchlist.map((i) => i.id)] : [],
-  );
-  const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
-  const [reviewLikes, commentCounts] = await Promise.all([
-    getReviewLikes(reviews.map((r) => r.id), viewer?.id ?? null),
-    getReviewCommentCounts(reviews.map((r) => r.id)),
-  ]);
+type V = Profile | null;
+type TabProps = { viewer: V; t: Dictionary; locale: Locale };
 
+// Estado de quem está vendo (visto, nota, watchlist...) para os atalhos dos pôsteres.
+async function viewerStates(viewer: V, ids: string[]) {
+  const states = await getViewerStates(viewer?.id ?? "", viewer ? ids : []);
+  return (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
+}
+
+// Cada seção carrega por conta própria, com um esqueleto no lugar: a aba aparece na hora
+// e não espera a seção mais lenta.
+function Streamed({ title, rows, children }: { title: string; rows?: boolean; children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <Section title={title}>
+          {rows === false ? <SectionSkeleton rows={2} /> : <RowSkeleton />}
+        </Section>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
+
+// Novidades: as últimas notificações (para quem está logado), a atividade dos amigos, a watchlist,
+// as listas e as reviews populares.
+function NewsTab({ viewer, t, locale }: TabProps) {
   return (
     <div className="space-y-12">
       {/* Logado: as últimas notificações (lançamentos da watchlist, seguidores, curtidas, novidades do Orbi) */}
       {viewer ? (
-        <Section title={t.notifications.title} more={{ href: "/notifications", label: t.profile.all }}>
-          {notifications.length ? (
-            <ul className="divide-y divide-border ps-4">
-              {notifications.map((n) => (
-                <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} compact />
-              ))}
-            </ul>
-          ) : (
-            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-              {t.notifications.empty}
-            </p>
-          )}
-        </Section>
+        <Streamed title={t.notifications.title} rows={false}>
+          <NotificationsSection viewer={viewer} t={t} locale={locale} />
+        </Streamed>
       ) : (
         <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
           {t.home.newsSoon}
         </div>
       )}
-
-      {/* Logado: o que os amigos avaliaram por último, com a foto de quem avaliou no canto */}
-      {friends.length > 0 && (
-        <Section title={t.home.newFromFriends}>
-          <Row>
-            {friends.map((e, i) => (
-              <div key={e.id} className="relative">
-                <Poster item={e.items} locale={locale} eager={i < 6} viewer={viewerFor(e.item_id)} />
-                <Link
-                  href={`/u/${e.profiles.username}`}
-                  className="absolute start-1.5 top-1.5 z-10 rounded-full ring-2 ring-bg transition hover:scale-110"
-                  title={e.profiles.display_name || e.profiles.username}
-                >
-                  <Avatar profile={e.profiles} size={24} />
-                </Link>
-              </div>
-            ))}
-          </Row>
-        </Section>
-      )}
-
-      {/* Logado: a sua watchlist (todas as pastas), embaixo das notificações */}
       {viewer && (
-        <Section
-          title={t.home.yourWatchlist}
-          more={watchlist.length ? { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.profile.all } : undefined}
-        >
-          {watchlist.length ? (
-            <Row>
-              {watchlist.map((item, i) => (
-                <Poster key={item.id} item={item} locale={locale} eager={i < 6} viewer={viewerFor(item.id)} />
-              ))}
-            </Row>
-          ) : (
-            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-              {t.home.emptyWatchlist}
-            </p>
-          )}
-        </Section>
+        <Streamed title={t.home.newFromFriends}>
+          <FriendsSection viewer={viewer} t={t} locale={locale} />
+        </Streamed>
       )}
-
-      {/* Listas dos usuários (públicas) com mais movimento na semana: 3 por vez, pôsteres em fileira */}
-      {lists.length > 0 && (
-        <Section title={t.home.popularLists}>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {lists.map((list) => (
-              <div key={list.id} className="min-w-0">
-                {/* Só a fileira de pôsteres abre a lista */}
-                <Link href={`/u/${list.owner.username}/list/${list.id}`} className="group block">
-                  <ListStrip posters={list.posters} />
-                </Link>
-                <p className="mt-2 truncate font-semibold">{list.title}</p>
-                <div className="mt-1 flex items-center gap-3 text-xs text-muted">
-                  <Link href={`/u/${list.owner.username}`} className="flex min-w-0 items-center gap-1.5 font-semibold hover:text-fg">
-                    <Avatar profile={list.owner} size={18} />
-                    <span className="truncate">{list.owner.display_name || list.owner.username}</span>
-                  </Link>
-                  <span className="shrink-0">{t.lists.count(list.count)}</span>
-                  <span className="flex shrink-0 items-center gap-1">
-                    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
-                      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
-                    </svg>
-                    {list.comments}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-1">
-                    <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-                      <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
-                    </svg>
-                    {list.likes}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
+      {viewer && (
+        <Streamed title={t.home.yourWatchlist}>
+          <WatchlistSection viewer={viewer} t={t} locale={locale} />
+        </Streamed>
       )}
-
-      {reviews.length > 0 && (
-        <Section title={t.home.popularReviews}>
-          <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
-            {reviews.map((r) => (
-              <article key={r.id} className="flex gap-4">
-                <Link href={itemHref(r.items)} className="group w-16 shrink-0 self-start sm:w-20">
-                  <PosterImage
-                    url={r.items.poster_url}
-                    title={itemTitle(r.items, locale)}
-                    watched={!!states.get(r.item_id)?.watched}
-                  />
-                </Link>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <Link href={itemHref(r.items)} className="block truncate font-semibold hover:text-accent">
-                    {itemTitle(r.items, locale)} <span className="font-normal text-muted">{r.items.year}</span>
-                  </Link>
-                  <Link
-                    href={`/u/${r.profiles.username}`}
-                    className="flex items-center gap-1.5 text-xs text-muted hover:text-fg"
-                  >
-                    <Avatar profile={r.profiles} size={18} />
-                    <span className="truncate">{r.profiles.display_name || r.profiles.username}</span>
-                    <StarsDisplay rating={r.rating} valueLang={dictionaries[locale].htmlLang} />
-                    {r.liked && <span className="text-like">♥</span>}
-                  </Link>
-                  {r.review && <TranslatableText text={r.review} className="line-clamp-4 text-sm whitespace-pre-line text-fg/85" />}
-                  <ReviewAttachments attachments={r.attachments} />
-                  <ReviewComments
-                    entryId={r.id}
-                    reviewOwnerId={r.user_id}
-                    viewerId={viewer?.id ?? null}
-                    initialCount={commentCounts.get(r.id) ?? 0}
-                    actions={
-                      <ReviewLike
-                        entryId={r.id}
-                        viewerId={viewer?.id ?? null}
-                        initialLiked={reviewLikes.mine.has(r.id)}
-                        initialCount={reviewLikes.counts.get(r.id) ?? 0}
-                        label={t.movie.like}
-                      />
-                    }
-                  />
-                </div>
-              </article>
-            ))}
-          </div>
-        </Section>
-      )}
+      <Streamed title={t.home.popularLists}>
+        <PopularListsSection t={t} />
+      </Streamed>
+      <Streamed title={t.home.popularReviews} rows={false}>
+        <PopularReviewsSection viewer={viewer} t={t} locale={locale} />
+      </Streamed>
     </div>
   );
 }
 
+async function NotificationsSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
+  const [notifications, isRead] = await Promise.all([getNotifications(viewer.id, { limit: 5 }), getReadState()]);
+  return (
+    <Section title={t.notifications.title} more={{ href: "/notifications", label: t.profile.all }}>
+      {notifications.length ? (
+        <ul className="divide-y divide-border ps-4">
+          {notifications.map((n) => (
+            <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} compact />
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+          {t.notifications.empty}
+        </p>
+      )}
+    </Section>
+  );
+}
+
+// O que os amigos avaliaram por último, com a foto de quem avaliou no canto.
+async function FriendsSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
+  const friends = await getFriendsActivity(viewer.id);
+  if (!friends.length) return null;
+  const viewerFor = await viewerStates(viewer, friends.map((e) => e.item_id));
+  return (
+    <Section title={t.home.newFromFriends}>
+      <Row>
+        {friends.map((e, i) => (
+          <div key={e.id} className="relative">
+            <Poster item={e.items} locale={locale} eager={i < 6} viewer={viewerFor(e.item_id)} />
+            <Link
+              href={`/u/${e.profiles.username}`}
+              className="absolute start-1.5 top-1.5 z-10 rounded-full ring-2 ring-bg transition hover:scale-110"
+              title={e.profiles.display_name || e.profiles.username}
+            >
+              <Avatar profile={e.profiles} size={24} />
+            </Link>
+          </div>
+        ))}
+      </Row>
+    </Section>
+  );
+}
+
+// A sua watchlist (todas as pastas), das adicionadas por último.
+async function WatchlistSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
+  const watchlist = await getViewerShelf(viewer.id, "all", "watchlist");
+  const viewerFor = await viewerStates(viewer, watchlist.map((i) => i.id));
+  return (
+    <Section
+      title={t.home.yourWatchlist}
+      more={watchlist.length ? { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.profile.all } : undefined}
+    >
+      {watchlist.length ? (
+        <Row>
+          {watchlist.map((item, i) => (
+            <Poster key={item.id} item={item} locale={locale} eager={i < 6} viewer={viewerFor(item.id)} />
+          ))}
+        </Row>
+      ) : (
+        <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+          {t.home.emptyWatchlist}
+        </p>
+      )}
+    </Section>
+  );
+}
+
+// Listas dos usuários (públicas) com mais movimento na semana: 3 por vez, pôsteres em fileira.
+async function PopularListsSection({ t }: { t: Dictionary }) {
+  const lists = await getPopularLists(3);
+  if (!lists.length) return null;
+  return (
+    <Section title={t.home.popularLists}>
+      <div className="grid gap-6 sm:grid-cols-3">
+        {lists.map((list) => (
+          <div key={list.id} className="min-w-0">
+            {/* Só a fileira de pôsteres abre a lista */}
+            <Link href={`/u/${list.owner.username}/list/${list.id}`} className="group block">
+              <ListStrip posters={list.posters} />
+            </Link>
+            <p className="mt-2 truncate font-semibold">{list.title}</p>
+            <div className="mt-1 flex items-center gap-3 text-xs text-muted">
+              <Link href={`/u/${list.owner.username}`} className="flex min-w-0 items-center gap-1.5 font-semibold hover:text-fg">
+                <Avatar profile={list.owner} size={18} />
+                <span className="truncate">{list.owner.display_name || list.owner.username}</span>
+              </Link>
+              <span className="shrink-0">{t.lists.count(list.count)}</span>
+              <span className="flex shrink-0 items-center gap-1">
+                <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
+                  <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
+                </svg>
+                {list.comments}
+              </span>
+              <span className="flex shrink-0 items-center gap-1">
+                <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path d="M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z" />
+                </svg>
+                {list.likes}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+async function PopularReviewsSection({ viewer, t, locale }: TabProps) {
+  const reviews = await getPopularReviews(6);
+  if (!reviews.length) return null;
+  const [states, reviewLikes, commentCounts] = await Promise.all([
+    getViewerStates(viewer?.id ?? "", viewer ? reviews.map((r) => r.item_id) : []),
+    getReviewLikes(reviews.map((r) => r.id), viewer?.id ?? null),
+    getReviewCommentCounts(reviews.map((r) => r.id)),
+  ]);
+  return (
+    <Section title={t.home.popularReviews}>
+      <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+        {reviews.map((r) => (
+          <article key={r.id} className="flex gap-4">
+            <Link href={itemHref(r.items)} className="group w-16 shrink-0 self-start sm:w-20">
+              <PosterImage
+                url={r.items.poster_url}
+                title={itemTitle(r.items, locale)}
+                watched={!!states.get(r.item_id)?.watched}
+              />
+            </Link>
+            <div className="min-w-0 flex-1 space-y-1">
+              <Link href={itemHref(r.items)} className="block truncate font-semibold hover:text-accent">
+                {itemTitle(r.items, locale)} <span className="font-normal text-muted">{r.items.year}</span>
+              </Link>
+              <Link
+                href={`/u/${r.profiles.username}`}
+                className="flex items-center gap-1.5 text-xs text-muted hover:text-fg"
+              >
+                <Avatar profile={r.profiles} size={18} />
+                <span className="truncate">{r.profiles.display_name || r.profiles.username}</span>
+                <StarsDisplay rating={r.rating} valueLang={dictionaries[locale].htmlLang} />
+                {r.liked && <span className="text-like">♥</span>}
+              </Link>
+              {r.review && <TranslatableText text={r.review} className="line-clamp-4 text-sm whitespace-pre-line text-fg/85" />}
+              <ReviewAttachments attachments={r.attachments} />
+              <ReviewComments
+                entryId={r.id}
+                reviewOwnerId={r.user_id}
+                viewerId={viewer?.id ?? null}
+                initialCount={commentCounts.get(r.id) ?? 0}
+                actions={
+                  <ReviewLike
+                    entryId={r.id}
+                    viewerId={viewer?.id ?? null}
+                    initialLiked={reviewLikes.mine.has(r.id)}
+                    initialCount={reviewLikes.counts.get(r.id) ?? 0}
+                    label={t.movie.like}
+                  />
+                }
+              />
+            </div>
+          </article>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
 // Uma pasta: populares da semana (anime: a temporada), a prateleira pessoal e uma amostra de tudo.
-async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer: Profile | null; t: Dictionary; locale: Locale }) {
+function FolderTab({ kind, viewer, t, locale }: TabProps & { kind: MediaKind }) {
   // Em andamento (assistindo, lendo, jogando) onde faz sentido; filmes e músicas: a watchlist.
   const shelfStatus = kind === "movie" || kind === "music" ? "watchlist" : "watching";
-  const [popular, shelf, sample] = await Promise.all([
-    getPopularItems(kind),
-    viewer ? getViewerShelf(viewer.id, kind, shelfStatus) : ([] as Item[]),
-    catalogSample(kind, locale, !!viewer?.show_adult),
-  ]);
-  const states = await getViewerStates(viewer?.id ?? "", viewer ? [...popular, ...shelf].map((i) => i.id) : []);
-  const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states.get(itemId) ?? null } : null);
   const browse = `/browse/${BROWSE_PATHS[kind]}`;
+  const popularTitle = kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind]);
   const shelfTitle =
     shelfStatus === "watchlist"
       ? t.home.yourWatchlist
@@ -271,45 +321,68 @@ async function FolderTab({ kind, viewer, t, locale }: { kind: MediaKind; viewer:
         : kind === "game"
           ? t.home.playingNow
           : t.home.watchingNow;
+  const allTitle = t.folders.allOf(t.folders[kind]);
 
   return (
     <div className="space-y-12">
-      <Section
-        // Animes: os da temporada atual, e o "Ver tudo" abre a página da temporada.
-        title={kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind])}
-        more={{ href: kind === "anime" ? "/anime/season" : `${browse}?sort=week`, label: t.profile.all }}
-      >
-        <ItemRow items={popular} kind={kind} locale={locale} viewerFor={viewerFor} />
-      </Section>
-
+      <Streamed title={popularTitle}>
+        <PopularRow kind={kind} title={popularTitle} browse={browse} viewer={viewer} t={t} locale={locale} />
+      </Streamed>
       {/* Prateleira pessoal: aparece sempre para quem está logado; vazia, um aviso no lugar dos pôsteres */}
       {viewer && (
-        <Section
-          title={shelfTitle}
-          more={
-            shelf.length
-              ? { href: `/u/${viewer.username}/${BROWSE_PATHS[kind]}?tab=${shelfStatus}`, label: t.profile.all }
-              : undefined
-          }
-        >
-          {shelf.length ? (
-            <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
-          ) : (
-            <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-              {shelfStatus === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}
-            </p>
-          )}
-        </Section>
+        <Streamed title={shelfTitle}>
+          <ShelfRow kind={kind} title={shelfTitle} status={shelfStatus} viewer={viewer} t={t} locale={locale} />
+        </Streamed>
       )}
-
-      <Section title={t.folders.allOf(t.folders[kind])} more={{ href: browse, label: t.profile.all }}>
-        {sample.length ? (
-          <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "book" | "game"} list={sample} viewer={viewer} layout="row" />
-        ) : (
-          <ItemRow items={[]} kind={kind} locale={locale} viewerFor={viewerFor} />
-        )}
-      </Section>
+      <Streamed title={allTitle}>
+        <SampleRow kind={kind} title={allTitle} browse={browse} viewer={viewer} t={t} locale={locale} />
+      </Streamed>
     </div>
+  );
+}
+
+type RowProps = TabProps & { kind: MediaKind; title: string };
+
+async function PopularRow({ kind, title, browse, viewer, t, locale }: RowProps & { browse: string }) {
+  const popular = await getPopularItems(kind);
+  const viewerFor = await viewerStates(viewer, popular.map((i) => i.id));
+  return (
+    // Animes: os da temporada atual, e o "Ver tudo" abre a página da temporada.
+    <Section title={title} more={{ href: kind === "anime" ? "/anime/season" : `${browse}?sort=week`, label: t.profile.all }}>
+      <ItemRow items={popular} kind={kind} locale={locale} viewerFor={viewerFor} />
+    </Section>
+  );
+}
+
+async function ShelfRow({ kind, title, status, viewer, t, locale }: RowProps & { viewer: Profile; status: "watchlist" | "watching" }) {
+  const shelf = await getViewerShelf(viewer.id, kind, status);
+  const viewerFor = await viewerStates(viewer, shelf.map((i) => i.id));
+  return (
+    <Section
+      title={title}
+      more={shelf.length ? { href: `/u/${viewer.username}/${BROWSE_PATHS[kind]}?tab=${status}`, label: t.profile.all } : undefined}
+    >
+      {shelf.length ? (
+        <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
+      ) : (
+        <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
+          {status === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}
+        </p>
+      )}
+    </Section>
+  );
+}
+
+async function SampleRow({ kind, title, browse, viewer, t, locale }: RowProps & { browse: string }) {
+  const sample = await catalogSample(kind, locale, !!viewer?.show_adult);
+  return (
+    <Section title={title} more={{ href: browse, label: t.profile.all }}>
+      {sample.length ? (
+        <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "book" | "game"} list={sample} viewer={viewer} layout="row" />
+      ) : (
+        <ItemRow items={[]} kind={kind} locale={locale} viewerFor={() => null} />
+      )}
+    </Section>
   );
 }
 

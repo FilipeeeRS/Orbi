@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Image from "next/image";
+import { SectionSkeleton } from "@/components/skeletons";
 import Link from "next/link";
 import { Avatar } from "@/components/header";
 import { PosterImage } from "@/components/poster";
@@ -142,18 +144,19 @@ export function SignInToLog({ href, label }: { href: string; label: string }) {
   );
 }
 
-// Atividade dos amigos e reviews da obra (com likes e comentários).
-export async function ReviewsSection({
-  itemId,
-  viewerId,
-  t,
-  locale,
-}: {
-  itemId: string;
-  viewerId: string | null;
-  t: Dictionary;
-  locale: Locale;
-}) {
+type ReviewsProps = { itemId: string; viewerId: string | null; t: Dictionary; locale: Locale };
+
+// Atividade dos amigos e reviews da obra (com likes e comentários). Carrega à parte: o resto da
+// página aparece antes, com o esqueleto no lugar.
+export function ReviewsSection(props: ReviewsProps) {
+  return (
+    <Suspense fallback={<SectionSkeleton title={props.t.movie.reviews} />}>
+      <ReviewsSectionContent {...props} />
+    </Suspense>
+  );
+}
+
+async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsProps) {
   const [reviews, friends] = await Promise.all([
     getItemReviews(itemId),
     viewerId ? getFriendsOnItem(viewerId, itemId) : null,

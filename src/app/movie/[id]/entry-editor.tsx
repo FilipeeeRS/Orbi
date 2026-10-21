@@ -1,7 +1,7 @@
 "use client";
 
-import { useLayoutEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useLayoutEffect, useState } from "react";
+import { useSaveQueue } from "@/lib/use-save-queue";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
 import { StarIcon } from "@/components/stars";
@@ -44,7 +44,6 @@ export function EntryEditor({
   unreleased?: boolean; // ainda não lançado: só a watchlist
 }) {
   const { t } = useI18n();
-  const router = useRouter();
   const [entry, setEntry] = useState<Draft | null>(initial);
   const [review, setReview] = useState(initial?.review ?? "");
   const [watchedOn, setWatchedOn] = useState(initial?.watched_on ?? "");
@@ -60,7 +59,8 @@ export function EntryEditor({
     return () => setExpanded(false);
   }, []);
   const [error, setError] = useState(false);
-  const [pending, start] = useTransition();
+  // Gravações em fila: os botões não travam enquanto o servidor responde.
+  const enqueue = useSaveQueue();
 
   const watched = entry?.status === "watched";
   const onWatchlist = entry?.status === "watchlist";
@@ -87,7 +87,7 @@ export function EntryEditor({
     if (value === stoppedAt[field]) return;
     const next = { ...stoppedAt, [field]: value };
     setStoppedAt(next);
-    start(async () => {
+    enqueue(async () => {
       const { error } = await createClient()
         .from("entries")
         .update({ current_season: next.season, current_episode: next.episode })
@@ -102,7 +102,7 @@ export function EntryEditor({
     if (next && next.status !== previous?.status) setExpanded(true);
     setEntry(next);
     setError(false);
-    start(async () => {
+    enqueue(async () => {
       const supabase = createClient();
       // Anexos só vão quando existem (ou acabaram de ser removidos): assim nota, visto e watchlist
       // continuam funcionando mesmo onde a coluna de anexos ainda não foi criada.
@@ -127,7 +127,6 @@ export function EntryEditor({
         return;
       }
       onSaved?.();
-      router.refresh();
     });
   }
 
@@ -275,7 +274,6 @@ export function EntryEditor({
         <Toggle
           on={onWatchlist}
           onClick={toggleWatchlist}
-          disabled={pending}
           tone="plain"
           icon={ICONS.clock}
           removeLabel={t.movie.removeShort}
@@ -314,7 +312,6 @@ export function EntryEditor({
           <Toggle
             on={watched}
             onClick={toggleWatched}
-            disabled={pending}
             tone="ok"
             icon={ICONS.check}
             removeLabel={t.movie.removeShort}
@@ -335,7 +332,6 @@ export function EntryEditor({
             <Toggle
               on={watching}
               onClick={toggleWatching}
-              disabled={pending}
               tone="plain"
               icon={ICONS.play}
               removeLabel={t.movie.removeShort}
@@ -346,7 +342,6 @@ export function EntryEditor({
           <Toggle
             on={!!entry?.liked}
             onClick={() => persist(asWatched({ liked: !entry?.liked }), entry)}
-            disabled={pending}
             tone="like"
             icon={entry?.liked ? ICONS.heartFilled : ICONS.heart}
             removeLabel={t.movie.removeShort}
@@ -357,7 +352,6 @@ export function EntryEditor({
             <Toggle
               on={onWatchlist}
               onClick={toggleWatchlist}
-              disabled={pending}
               tone="plain"
               icon={ICONS.clock}
               removeLabel={t.movie.removeShort}
@@ -391,7 +385,6 @@ export function EntryEditor({
                     role="radio"
                     aria-checked={entry?.rating === value}
                     aria-label={`${value / 2}`}
-                    disabled={pending}
                     onMouseEnter={() => setHover(value)}
                     onFocus={() => setHover(value)}
                     onBlur={() => setHover(null)}
@@ -503,7 +496,7 @@ export function EntryEditor({
               <button
                 type="button"
                 onClick={saveDetails}
-                disabled={pending || uploading || !dirty}
+                disabled={uploading || !dirty}
                 className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
               >
                 {t.movie.save}

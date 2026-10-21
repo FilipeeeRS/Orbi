@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Loading from "../../../../loading";
+import { GridSkeleton } from "@/components/skeletons";
 import { Avatar } from "@/components/avatar";
 import { Poster, PosterGrid } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/u/[username]/list
 
 export default function ListPage(props: PageProps<"/u/[username]/list/[id]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<GridSkeleton />}>
       <ListContent {...props} />
     </Suspense>
   );

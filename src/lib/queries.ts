@@ -237,7 +237,7 @@ export function withSourceStats(
   };
 }
 
-export async function getItemStats(itemId: string) {
+export const getItemStats = cache(async (itemId: string) => {
   const supabase = await createClient();
   const count = () => supabase.from("entries").select("id", { count: "exact", head: true }).eq("item_id", itemId);
   const [watched, likes, watchlist, ratings] = await Promise.all([
@@ -254,6 +254,12 @@ export async function getItemStats(itemId: string) {
     average: values.length ? values.reduce((a, b) => a + b, 0) / values.length / 2 : null,
     ratings: values.length,
   };
+});
+
+// Começa a buscar os números da obra assim que ela chega, sem esperar quem está logado
+// (a página pede de novo depois e recebe a mesma busca).
+export function preloadItemStats(item: Promise<Item | null>) {
+  void item.then((i) => i && getItemStats(i.id)).catch(() => {});
 }
 
 export type FriendProfile = Pick<Profile, "id" | "username" | "display_name" | "avatar_url">;

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import Loading from "../../loading";
+import { GridSkeleton } from "@/components/skeletons";
 import { FilterBar } from "@/components/filter-bar";
 import { FolderIcon } from "@/components/folder-icon";
 import { Pagination } from "@/components/pagination";
@@ -34,7 +34,7 @@ const DEFAULT_SORT: BrowseSort = "popular";
 
 export default function BrowsePage(props: PageProps<"/browse/[folder]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<GridSkeleton />}>
       <BrowseContent {...props} />
     </Suspense>
   );

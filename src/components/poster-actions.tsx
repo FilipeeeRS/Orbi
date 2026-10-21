@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useSaveQueue } from "@/lib/use-save-queue";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "./i18n";
 import { dictionaries } from "@/lib/i18n/dictionaries";
@@ -47,11 +47,10 @@ export function PosterActions({
 }) {
   const { t, locale } = useI18n();
   const lang = dictionaries[locale].htmlLang;
-  const router = useRouter();
   const [state, setState] = useState<ViewerItemState>(initial ?? EMPTY);
   // Desmarcar um filme com nota/review pede um segundo clique (em vez de um confirm do navegador).
   const [confirming, setConfirming] = useState(false);
-  const [pending, start] = useTransition();
+  const enqueue = useSaveQueue();
   const idRef = useRef(itemId);
 
   useEffect(() => {
@@ -63,7 +62,7 @@ export function PosterActions({
   function save(next: ViewerItemState) {
     const previous = state;
     setState(next);
-    start(async () => {
+    enqueue(async () => {
       const id = idRef.current ?? (tmdb ? await ensureTmdbItemId(tmdb.type, tmdb.id) : null);
       if (!id) {
         setState(previous);
@@ -125,7 +124,6 @@ export function PosterActions({
         console.error("Orbi: não foi possível salvar", result.error);
         setState(previous);
       }
-      router.refresh();
     });
   }
 
@@ -198,7 +196,6 @@ export function PosterActions({
           <button
             type="button"
             onClick={toggleWatched}
-            disabled={pending}
             aria-pressed={state.watched}
             title={
               confirming
@@ -231,7 +228,6 @@ export function PosterActions({
             <button
               type="button"
               onClick={toggleWatching}
-              disabled={pending}
               aria-pressed={!!state.watching}
               title={t.movies.tabs.watching}
               className={`${button} ${state.watching ? "bg-white/15 text-white" : "text-white/70 hover:text-white"}`}
@@ -245,7 +241,6 @@ export function PosterActions({
           <button
             type="button"
             onClick={toggleLike}
-            disabled={pending}
             aria-pressed={state.liked}
             title={state.liked ? t.movie.liked : t.movie.like}
             className={`${button} ${state.liked ? "text-like" : "text-white/70 hover:text-white"}`}
@@ -268,7 +263,6 @@ export function PosterActions({
             <button
               type="button"
               onClick={toggleWatchlist}
-              disabled={pending}
               aria-pressed={state.watchlist}
               title={t.movies.tabs.watchlist}
               className={`${button} ${state.watchlist ? "bg-white/15 text-white" : "text-white/70 hover:text-white"}`}

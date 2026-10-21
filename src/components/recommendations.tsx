@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { RowSkeleton } from "@/components/skeletons";
 import { ExternalPosters, type ExternalPoster } from "@/components/external-posters";
 import { adultMovieIds } from "@/lib/catalog";
 import { getRecommendations, isAnime, releaseYear, tmdbImage, type TmdbType } from "@/lib/tmdb";
@@ -8,19 +10,24 @@ import type { Profile } from "@/lib/types";
 const LIMIT = 6;
 
 // Fim da página de um filme ou série: obras parecidas, do mesmo tipo, com os atalhos ✓ ▶ ♥ 🕐 no pôster.
-export async function Recommendations({
-  type,
-  tmdbId,
-  language,
-  viewer,
-  t,
-}: {
-  type: TmdbType;
-  tmdbId: string;
-  language: string;
-  viewer: Profile | null;
-  t: Dictionary;
-}) {
+type RecommendationsProps = { type: TmdbType; tmdbId: string; language: string; viewer: Profile | null; t: Dictionary };
+
+// Carrega à parte, com uma fileira de esqueleto no lugar.
+export function Recommendations(props: RecommendationsProps) {
+  return (
+    <Suspense
+      fallback={
+        <PosterSection title={props.t.movie.recommendations}>
+          <RowSkeleton />
+        </PosterSection>
+      }
+    >
+      <RecommendationsContent {...props} />
+    </Suspense>
+  );
+}
+
+async function RecommendationsContent({ type, tmdbId, language, viewer, t }: RecommendationsProps) {
   let list = await getRecommendations(type, tmdbId, language);
   // Mesmas regras das listagens: sem anime nas séries e sem +18 para quem não ativou.
   if (type === "tv") list = list.filter((m) => !isAnime(m));

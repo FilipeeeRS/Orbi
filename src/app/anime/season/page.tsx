@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import Loading from "../../loading";
+import { GridSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { FolderIcon } from "@/components/folder-icon";
 import { ExternalPosters } from "@/components/external-posters";
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Anime" };
 // dos mais populares para os menos, com setas para a anterior e a próxima. Sem parâmetros, a atual.
 export default function AnimeSeasonPage(props: PageProps<"/anime/season">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<GridSkeleton />}>
       <SeasonContent {...props} />
     </Suspense>
   );

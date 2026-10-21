@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import Loading from "../../loading";
+import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getGameByRouteId } from "@/lib/catalog";
 import { genreTag, getGame, getGameReviews } from "@/lib/steam";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats, withSourceStats } from "@/lib/queries";
+import { preloadItemStats, getItemStats, withSourceStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { itemTitle, type Entry } from "@/lib/types";
 import { MovieInfo } from "../../movie/[id]/movie-info";
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<"/game/[id]">): Pro
 // Jogo (dados da loja da Steam): mesma página dos filmes, com desenvolvedora, plataformas e gêneros.
 export default function GamePage(props: PageProps<"/game/[id]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<ItemSkeleton />}>
       <GameContent {...props} />
     </Suspense>
   );
@@ -29,6 +29,7 @@ export default function GamePage(props: PageProps<"/game/[id]">) {
 
 async function GameContent({ params }: PageProps<"/game/[id]">) {
   const { id } = await params;
+  preloadItemStats(getGameByRouteId(id));
   const [item, viewer, { t, locale }] = await Promise.all([getGameByRouteId(id), getViewer(), getDict()]);
   if (!item) notFound();
 

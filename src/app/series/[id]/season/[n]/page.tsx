@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Loading from "../../../../loading";
+import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps<"/series/[id]/seaso
 
 export default function SeasonPage(props: PageProps<"/series/[id]/season/[n]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<ItemSkeleton />}>
       <SeasonPageContent {...props} />
     </Suspense>
   );

@@ -74,21 +74,22 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
     ...o.favorites.map((e) => e.items).filter((i) => !chosenIds.has(i.id)),
   ].slice(0, 4);
   const base = `/u/${profile.username}`;
-  const states = viewer
-    ? await getViewerStates(viewer.id, [
-        ...favorites.map((i) => i.id),
-        ...o.recent.map((e) => e.item_id),
-        ...o.recentReviews.map((e) => e.item_id),
-      ])
-    : null;
+  // Estado de quem está vendo, likes e comentários das reviews: tudo de uma vez.
+  const [states, reviewLikes, commentCounts] = await Promise.all([
+    viewer
+      ? getViewerStates(viewer.id, [
+          ...favorites.map((i) => i.id),
+          ...o.recent.map((e) => e.item_id),
+          ...o.recentReviews.map((e) => e.item_id),
+        ])
+      : null,
+    getReviewLikes(o.recentReviews.map((r) => r.id), viewer?.id ?? null),
+    getReviewCommentCounts(o.recentReviews.map((r) => r.id)),
+  ]);
   const viewerFor = (itemId: string) => (viewer ? { id: viewer.id, state: states?.get(itemId) ?? null } : null);
   // Só a capa escolhida pelo usuário; sem ela, o topo do perfil fica sem imagem.
   const backdrop = profile.cover_url ?? null;
   const diary = o.recent.filter((e) => e.watched_on).slice(0, 11);
-  const [reviewLikes, commentCounts] = await Promise.all([
-    getReviewLikes(o.recentReviews.map((r) => r.id), viewer?.id ?? null),
-    getReviewCommentCounts(o.recentReviews.map((r) => r.id)),
-  ]);
 
   return (
     <div className="space-y-8">

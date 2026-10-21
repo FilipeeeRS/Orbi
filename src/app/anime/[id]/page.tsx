@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Loading from "../../loading";
+import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { getAniListByRouteId } from "@/lib/catalog";
 import { AniListPageContent } from "./anilist-page";
@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: PageProps<"/anime/[id]">): Pr
 // Anime (uma temporada, dados do AniList).
 export default function AnimePage(props: PageProps<"/anime/[id]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<ItemSkeleton />}>
       <Content {...props} />
     </Suspense>
   );

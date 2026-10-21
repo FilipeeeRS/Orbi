@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 import { createAdminClient } from "./supabase/admin";
 import {
   getMovieWithTranslations,
@@ -85,8 +86,30 @@ export const getMovieByRouteId = cache(async (id: string): Promise<Item | null> 
     return data as Item | null;
   }
   const tmdbId = Number(id);
-  return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureMovie(tmdbId) : null;
+  return Number.isInteger(tmdbId) && tmdbId > 0 ? cachedItem("movie", tmdbId) : null;
 });
+
+// A linha da obra muda pouco (a nota da fonte, a sincronização do AniList): guarda por algumas horas,
+// para a página não esperar o banco a cada visita. Erro não entra no cache (é lançado).
+type CachedKind = "movie" | "series" | "anime" | "manga" | "book" | "game";
+async function cachedItem(kind: CachedKind, id: number | string): Promise<Item | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(`item:${kind}:${id}`);
+  switch (kind) {
+    case "movie":
+      return ensureMovie(Number(id));
+    case "series":
+      return ensureSeries(Number(id));
+    case "anime":
+    case "manga":
+      return ensureAniList(kind, Number(id));
+    case "book":
+      return ensureBook(String(id));
+    case "game":
+      return ensureGame(Number(id));
+  }
+}
 
 // ---- Séries e temporadas ----
 
@@ -207,7 +230,7 @@ export async function ensureSeason(showTmdbId: number, seasonNumber: number): Pr
 
 export const getShowByRouteId = cache(async (id: string): Promise<Item | null> => {
   const tmdbId = Number(id);
-  return Number.isInteger(tmdbId) && tmdbId > 0 ? ensureSeries(tmdbId) : null;
+  return Number.isInteger(tmdbId) && tmdbId > 0 ? cachedItem("series", tmdbId) : null;
 });
 
 export const getSeasonByRoute = cache(async (id: string, season: string) => {
@@ -252,7 +275,7 @@ export const ensureManga = (id: number) => ensureAniList("manga", id);
 
 export const getAniListByRouteId = cache(async (kind: "anime" | "manga", id: string): Promise<Item | null> => {
   const anilistId = Number(id);
-  return Number.isInteger(anilistId) && anilistId > 0 ? ensureAniList(kind, anilistId) : null;
+  return Number.isInteger(anilistId) && anilistId > 0 ? cachedItem(kind, anilistId) : null;
 });
 
 // ---- Livros (Open Library) e jogos (Steam) ----
@@ -324,10 +347,10 @@ export const ensureGame = (appId: number) =>
     };
   });
 
-export const getBookByRouteId = cache(async (id: string) => (/^OL\d+W$/.test(id) ? ensureBook(id) : null));
+export const getBookByRouteId = cache(async (id: string) => (/^OL\d+W$/.test(id) ? cachedItem("book", id) : null));
 export const getGameByRouteId = cache(async (id: string) => {
   const appId = Number(id);
-  return Number.isInteger(appId) && appId > 0 ? ensureGame(appId) : null;
+  return Number.isInteger(appId) && appId > 0 ? cachedItem("game", appId) : null;
 });
 
 // Uma tradução por idioma do Orbi, preferindo a região padrão (pt-BR, zh-CN...).

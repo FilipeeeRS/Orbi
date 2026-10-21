@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import Loading from "../loading";
+import { GridSkeleton } from "@/components/skeletons";
 import { PosterGrid, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
 import { type Sort } from "@/lib/queries";
@@ -36,7 +36,7 @@ type SearchSort = (typeof SEARCH_SORTS)[number];
 
 export default function SearchPage(props: PageProps<"/search">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<GridSkeleton />}>
       <SearchResults {...props} />
     </Suspense>
   );

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import Loading from "../../../loading";
+import { GridSkeleton } from "@/components/skeletons";
 import type { FolderKind } from "@/lib/types";
 import { FolderView } from "../folder-view";
 
@@ -17,7 +17,7 @@ const FOLDER_SLUGS: Record<string, FolderKind> = {
 
 export default function FolderPage(props: PageProps<"/u/[username]/[folder]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<GridSkeleton />}>
       <FolderPageContent {...props} />
     </Suspense>
   );

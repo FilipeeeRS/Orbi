@@ -1,11 +1,11 @@
 import { Suspense } from "react";
-import Loading from "../../loading";
+import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBookByRouteId } from "@/lib/catalog";
 import { getBook } from "@/lib/openlibrary";
 import { getDict, getViewer } from "@/lib/session";
-import { getItemStats, withSourceStats } from "@/lib/queries";
+import { preloadItemStats, getItemStats, withSourceStats } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { itemOverview, itemTitle, type Entry } from "@/lib/types";
 import { MovieInfo } from "../../movie/[id]/movie-info";
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps<"/book/[id]">): Pro
 // Livro (dados da Open Library): mesma página dos filmes, com autores, páginas e assuntos.
 export default function BookPage(props: PageProps<"/book/[id]">) {
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<ItemSkeleton />}>
       <BookContent {...props} />
     </Suspense>
   );
@@ -28,6 +28,7 @@ export default function BookPage(props: PageProps<"/book/[id]">) {
 
 async function BookContent({ params }: PageProps<"/book/[id]">) {
   const { id } = await params;
+  preloadItemStats(getBookByRouteId(id));
   const [item, viewer, { t, locale }] = await Promise.all([getBookByRouteId(id), getViewer(), getDict()]);
   if (!item) notFound();
 
