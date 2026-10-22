@@ -57,6 +57,14 @@ export function PosterActions({
         : { done: t.movie.watched, todo: t.movie.watch, doing: t.movies.tabs.watching };
   const lang = dictionaries[locale].htmlLang;
   const [state, setState] = useState<ViewerItemState>(initial ?? EMPTY);
+  // Dados novos do servidor (ex.: mudou o status na página da obra e voltou): acompanha, em vez de
+  // ficar com o estado antigo da tela guardada.
+  const serverState = JSON.stringify(initial ?? EMPTY);
+  const [syncedState, setSyncedState] = useState(serverState);
+  if (serverState !== syncedState) {
+    setSyncedState(serverState);
+    setState(initial ?? EMPTY);
+  }
   // Desmarcar um filme com nota/review pede um segundo clique (em vez de um confirm do navegador).
   const [confirming, setConfirming] = useState(false);
   const enqueue = useSaveQueue();

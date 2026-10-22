@@ -47,7 +47,9 @@ async function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <I18nProvider locale={locale}>
-      <NavigationTracker />
+      <Suspense fallback={null}>
+        <NavigationTracker />
+      </Suspense>
       <Header viewer={viewer} t={t} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
       <SiteFooter t={t} username={viewer?.username ?? null} />
