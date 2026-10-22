@@ -385,6 +385,7 @@ export const ar: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} فيلم` : `${n} أفلام`),
   },
   notifications: {
+    markUnread: "تعليم كغير مقروء",
     markRead: "تعليم كمقروء",
     delete: "حذف الإشعار",
     deleteForever: "حذف نهائي",

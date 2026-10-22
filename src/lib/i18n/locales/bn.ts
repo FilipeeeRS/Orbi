@@ -385,6 +385,7 @@ export const bn: Dictionary = {
     count: (n: number) => (n === 1 ? `${n}টি সিনেমা` : `${n}টি সিনেমা`),
   },
   notifications: {
+    markUnread: "না-পড়া চিহ্নিত করুন",
     markRead: "পড়া হয়েছে চিহ্নিত করুন",
     delete: "বিজ্ঞপ্তি মুছুন",
     deleteForever: "চিরতরে মুছুন",

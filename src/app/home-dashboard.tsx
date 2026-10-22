@@ -133,7 +133,7 @@ function NewsTab({ viewer, t, locale }: TabProps) {
         </Streamed>
       )}
       <Streamed title={t.home.popularLists}>
-        <PopularListsSection t={t} />
+        <PopularListsSection t={t} viewer={viewer} />
       </Streamed>
       <Streamed title={t.home.popularReviews} rows={false}>
         <PopularReviewsSection viewer={viewer} t={t} locale={locale} />
@@ -211,14 +211,14 @@ async function WatchlistSection({ viewer, t, locale }: TabProps & { viewer: Prof
 }
 
 // Listas dos usuários (públicas) com mais movimento na semana: 3 por vez, pôsteres em fileira.
-async function PopularListsSection({ t }: { t: Dictionary }) {
+async function PopularListsSection({ t, viewer }: { t: Dictionary; viewer: V }) {
   const lists = await getPopularLists(3);
   if (!lists.length) return null;
   return (
     <Section title={t.home.popularLists} more={{ href: "/lists", label: t.profile.all }}>
       <div className="grid gap-6 sm:grid-cols-3">
         {lists.map((list) => (
-          <ListCard key={list.id} list={list} t={t} />
+          <ListCard key={list.id} list={list} t={t} viewerId={viewer?.id ?? null} />
         ))}
       </div>
     </Section>

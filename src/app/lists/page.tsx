@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GridSkeleton } from "@/components/skeletons";
 import { Pagination } from "@/components/pagination";
-import { getDict } from "@/lib/session";
+import { getDict, getViewer } from "@/lib/session";
 import { browseLists, type ListSort } from "@/lib/lists";
 import { ListCard } from "./list-card";
 import { BackButton } from "@/components/back-button";
@@ -22,7 +22,7 @@ export default function ListsPage(props: PageProps<"/lists">) {
 
 // Todas as listas criadas no Orbi: populares (mais curtidas) ou recentes, 24 por página.
 async function ListsContent({ searchParams }: PageProps<"/lists">) {
-  const [{ t }, query] = await Promise.all([getDict(), searchParams]);
+  const [{ t }, query, viewer] = await Promise.all([getDict(), searchParams, getViewer()]);
   const sort: ListSort = SORTS.includes(query.sort as ListSort) ? (query.sort as ListSort) : "popular";
   const page = Math.max(1, Number(query.page) || 1);
   const { lists, pages } = await browseLists(sort, page);
@@ -55,7 +55,7 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
       ) : (
         <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {lists.map((list) => (
-            <ListCard key={list.id} list={list} t={t} />
+            <ListCard key={list.id} list={list} t={t} viewerId={viewer?.id ?? null} />
           ))}
         </div>
       )}

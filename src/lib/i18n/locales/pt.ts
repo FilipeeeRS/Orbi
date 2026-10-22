@@ -383,6 +383,7 @@ export const pt = {
     count: (n: number) => (n === 1 ? `${n} filme` : `${n} filmes`),
   },
   notifications: {
+    markUnread: "Marcar como não lida",
     markRead: "Marcar como lida",
     delete: "Apagar notificação",
     deleteForever: "Apagar de vez",

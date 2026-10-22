@@ -213,8 +213,13 @@ export function notificationKey(id: string) {
 export async function getReadState() {
   const jar = await cookies();
   const keys = new Set(decodeURIComponent(jar.get(NOTIFICATIONS_READ_COOKIE)?.value ?? "").split(".").filter(Boolean));
+  const unread = new Set(decodeURIComponent(jar.get("orbi-notif-unread")?.value ?? "").split(".").filter(Boolean));
   const seenAt = jar.get(NOTIFICATIONS_SEEN_COOKIE)?.value ?? null;
-  return (n: Notification) => keys.has(notificationKey(n.id)) || (!!seenAt && n.created_at <= seenAt);
+  return (n: Notification) => {
+    const key = notificationKey(n.id);
+    if (unread.has(key)) return false; // marcada de novo como não lida
+    return keys.has(key) || (!!seenAt && n.created_at <= seenAt);
+  };
 }
 
 // Quantas não lidas (para o número no menu); conta até 99.

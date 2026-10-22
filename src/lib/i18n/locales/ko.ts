@@ -385,6 +385,7 @@ export const ko: Dictionary = {
     count: (n: number) => (n === 1 ? `영화 ${n}편` : `영화 ${n}편`),
   },
   notifications: {
+    markUnread: "읽지 않음으로 표시",
     markRead: "읽음으로 표시",
     delete: "알림 삭제",
     deleteForever: "영구 삭제",

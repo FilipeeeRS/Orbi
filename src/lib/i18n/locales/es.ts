@@ -385,6 +385,7 @@ export const es: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} película` : `${n} películas`),
   },
   notifications: {
+    markUnread: "Marcar como no leída",
     markRead: "Marcar como leída",
     delete: "Eliminar notificación",
     deleteForever: "Eliminar para siempre",

@@ -1,6 +1,7 @@
 import "server-only";
 import type { ListComment } from "@/app/lists/social-actions";
 import { createClient } from "./supabase/server";
+import { getViewer } from "./session";
 import type { Item, Profile } from "./types";
 
 // Listas personalizadas (tabelas lists e list_items). A RLS esconde as de perfis invisíveis.
@@ -74,6 +75,7 @@ export async function getList(id: string): Promise<ListDetail | null> {
 export type PopularList = ListSummary & {
   owner: Pick<Profile, "username" | "display_name" | "avatar_url" | "avatar_ring">;
   likes: number;
+  liked: boolean; // quem está vendo já curtiu
   comments: number;
 };
 
@@ -107,7 +109,7 @@ export async function getPopularLists(limit = 3): Promise<PopularList[]> {
   const top = lists
     .map((l) => {
       const posters = byList.get(l.id) ?? [];
-      return { ...l, count: posters.length, posters: posters.slice(0, 5), likes: 0, comments: 0 } as unknown as PopularList;
+      return { ...l, count: posters.length, posters: posters.slice(0, 5), likes: 0, liked: false, comments: 0 } as unknown as PopularList;
     })
     .filter((l) => l.count > 0 && l.owner)
     .sort((a, b) => (activity.get(b.id) ?? 0) - (activity.get(a.id) ?? 0) || b.updated_at.localeCompare(a.updated_at))
@@ -115,12 +117,14 @@ export async function getPopularLists(limit = 3): Promise<PopularList[]> {
 
   // Curtidas e comentários (se as tabelas ainda não existirem, ficam em 0)
   const ids = top.map((l) => l.id);
-  const [{ data: likes }, { data: comments }] = await Promise.all([
-    supabase.from("list_likes").select("list_id").in("list_id", ids),
+  const [{ data: likes }, { data: comments }, viewer] = await Promise.all([
+    supabase.from("list_likes").select("list_id, user_id").in("list_id", ids),
     supabase.from("list_comments").select("list_id").in("list_id", ids),
+    getViewer(),
   ]);
   for (const l of top) {
     l.likes = (likes ?? []).filter((r) => r.list_id === l.id).length;
+    l.liked = !!viewer && (likes ?? []).some((r) => r.list_id === l.id && r.user_id === viewer.id);
     l.comments = (comments ?? []).filter((r) => r.list_id === l.id).length;
   }
   return top;
@@ -157,14 +161,15 @@ export type ListSort = "popular" | "recent";
 export async function browseLists(sort: ListSort, page: number, perPage = 24): Promise<{ lists: PopularList[]; pages: number }> {
   const supabase = await createClient();
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-  const [{ data: lists }, { data: items }, { data: likes }] = await Promise.all([
+  const [{ data: lists }, { data: items }, { data: likes }, viewer] = await Promise.all([
     supabase
       .from("lists")
       .select("id, title, description, updated_at, owner:profiles!lists_user_id_fkey(username, display_name, avatar_url, avatar_ring)")
       .order("updated_at", { ascending: false })
       .limit(1000),
     supabase.from("list_items").select("list_id, added_at").limit(50000),
-    supabase.from("list_likes").select("list_id").limit(50000),
+    supabase.from("list_likes").select("list_id, user_id").limit(50000),
+    getViewer(),
   ]);
   const count = new Map<string, number>();
   const week = new Map<string, number>();
@@ -173,7 +178,11 @@ export async function browseLists(sort: ListSort, page: number, perPage = 24): P
     if (r.added_at >= weekAgo) week.set(r.list_id, (week.get(r.list_id) ?? 0) + 1);
   }
   const likeCount = new Map<string, number>();
-  for (const r of likes ?? []) likeCount.set(r.list_id, (likeCount.get(r.list_id) ?? 0) + 1);
+  const mine = new Set<string>();
+  for (const r of likes ?? []) {
+    likeCount.set(r.list_id, (likeCount.get(r.list_id) ?? 0) + 1);
+    if (r.user_id === viewer?.id) mine.add(r.list_id);
+  }
 
   type Row = { id: string; updated_at: string };
   const all = ((lists ?? []) as unknown as (Row & { owner: unknown })[]).filter((l) => count.get(l.id) && l.owner);
@@ -208,6 +217,7 @@ export async function browseLists(sort: ListSort, page: number, perPage = 24): P
           count: count.get(l.id) ?? 0,
           posters: posters.get(l.id) ?? [],
           likes: likeCount.get(l.id) ?? 0,
+          liked: mine.has(l.id),
           comments: (comments ?? []).filter((c) => c.list_id === l.id).length,
         }) as unknown as PopularList,
     ),

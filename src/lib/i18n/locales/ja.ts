@@ -385,6 +385,7 @@ export const ja: Dictionary = {
     count: (n: number) => (n === 1 ? `${n}本` : `${n}本`),
   },
   notifications: {
+    markUnread: "未読にする",
     markRead: "既読にする",
     delete: "通知を削除",
     deleteForever: "完全に削除",

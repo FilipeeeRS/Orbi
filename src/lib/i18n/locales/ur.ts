@@ -385,6 +385,7 @@ export const ur: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} فلم` : `${n} فلمیں`),
   },
   notifications: {
+    markUnread: "نہ پڑھا ہوا نشان زد کریں",
     markRead: "پڑھا ہوا نشان زد کریں",
     delete: "اطلاع حذف کریں",
     deleteForever: "ہمیشہ کے لیے حذف کریں",

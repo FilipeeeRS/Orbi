@@ -393,6 +393,7 @@ export const ru: Dictionary = {
     count: (n: number) => (n === 1 ? `Фильмов: ${n}` : `Фильмов: ${n}`),
   },
   notifications: {
+    markUnread: "Отметить как непрочитанное",
     markRead: "Отметить как прочитанное",
     delete: "Удалить уведомление",
     deleteForever: "Удалить навсегда",

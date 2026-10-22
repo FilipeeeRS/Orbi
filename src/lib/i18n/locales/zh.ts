@@ -385,6 +385,7 @@ export const zh: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} 部电影` : `${n} 部电影`),
   },
   notifications: {
+    markUnread: "标为未读",
     markRead: "标为已读",
     delete: "删除通知",
     deleteForever: "永久删除",
