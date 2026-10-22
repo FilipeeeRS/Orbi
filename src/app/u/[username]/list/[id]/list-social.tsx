@@ -12,7 +12,7 @@ import { addListComment, deleteListComment, setListLike, setListSave, type ListC
 
 const HEART = "M12 21s-7.5-4.6-9.5-9.3C1 8 3.4 4.5 7 4.5c2 0 3.6 1 5 2.8 1.4-1.8 3-2.8 5-2.8 3.6 0 6 3.5 4.5 7.2C19.5 16.4 12 21 12 21z";
 
-// À direita do título da lista: ♥ (curtir), marcador (salvar, como no Instagram) e ⋯ (denunciar).
+// À direita do título da lista: marcador (salvar, como no Instagram), ♥ (curtir) e ⋯ (denunciar).
 export function ListActions({
   listId,
   ownerId,
@@ -72,6 +72,16 @@ export function ListActions({
 
   return (
     <div className="flex items-center gap-3">
+      {/* Sempre nesta ordem: salvar, curtir */}
+      {viewerId ? (
+        <button type="button" onClick={toggleSave} aria-pressed={saved} title={saved ? t.lists.savedList : t.lists.saveList} className={flagClass}>
+          {flag}
+        </button>
+      ) : (
+        <Link href="/login" title={t.lists.saveList} className={flagClass}>
+          {flag}
+        </Link>
+      )}
       {viewerId ? (
         <button type="button" onClick={toggle} aria-pressed={liked} title={t.lists.like} className={likeClass}>
           {heart}
@@ -81,15 +91,6 @@ export function ListActions({
         <Link href="/login" title={t.lists.like} className={likeClass}>
           {heart}
           {likes}
-        </Link>
-      )}
-      {viewerId ? (
-        <button type="button" onClick={toggleSave} aria-pressed={saved} title={saved ? t.lists.savedList : t.lists.saveList} className={flagClass}>
-          {flag}
-        </button>
-      ) : (
-        <Link href="/login" title={t.lists.saveList} className={flagClass}>
-          {flag}
         </Link>
       )}
       <ContentMenu target="list" targetId={listId} ownerId={ownerId} viewerId={viewerId} size="md" />
