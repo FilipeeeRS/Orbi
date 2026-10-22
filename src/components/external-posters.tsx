@@ -76,6 +76,7 @@ export async function ExternalPosters({
               initial={itemId ? (states.get(itemId) ?? null) : null}
               series={kind !== "movie"}
               unreleased={m.unreleased}
+              verb={kind === "book" || kind === "manga" ? "read" : kind === "game" ? "play" : "watch"}
             />
           )}
         </div>

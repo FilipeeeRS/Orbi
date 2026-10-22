@@ -248,6 +248,7 @@ export const hi: Dictionary = {
     published: (y: number) => `${y} में प्रकाशित`,
   },
   game: {
+    tabs: { watched: "खेले गए", watching: "खेल रहे हैं" },
     reviewsOnSteam: (n: string) => `Steam पर ${n} रिव्यू`,
     play: "खेलें",
     played: "खेला",

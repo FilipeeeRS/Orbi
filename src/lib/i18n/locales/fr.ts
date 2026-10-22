@@ -248,6 +248,7 @@ export const fr: Dictionary = {
     published: (y: number) => `Publié en ${y}`,
   },
   game: {
+    tabs: { watched: "Joués", watching: "En cours" },
     reviewsOnSteam: (n: string) => `${n} évaluations sur Steam`,
     play: "Jouer",
     played: "Joué",

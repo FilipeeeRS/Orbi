@@ -248,6 +248,7 @@ export const ja: Dictionary = {
     published: (y: number) => `${y}年刊行`,
   },
   game: {
+    tabs: { watched: "プレイ済み", watching: "プレイ中" },
     reviewsOnSteam: (n: string) => `Steamのレビュー ${n}件`,
     play: "プレイ",
     played: "プレイ済み",

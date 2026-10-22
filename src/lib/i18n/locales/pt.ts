@@ -246,6 +246,7 @@ export const pt = {
     published: (y: number) => `Publicado em ${y}`,
   },
   game: {
+    tabs: { watched: "Jogados", watching: "Jogando" },
     reviewsOnSteam: (n: string) => `${n} avaliações na Steam`,
     play: "Jogar",
     played: "Jogado",

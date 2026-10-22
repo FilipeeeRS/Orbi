@@ -36,6 +36,7 @@ export function PosterActions({
   series = false,
   unreleased = false,
   badge: showBadge = true,
+  verb = "watch",
 }: {
   itemId: string | null;
   tmdb?: { type: "movie" | "tv" | "anime" | "manga" | "book" | "game"; id: number | string }; // id na fonte
@@ -44,8 +45,16 @@ export function PosterActions({
   series?: boolean; // séries ganham o "Assistindo"
   unreleased?: boolean; // ainda não lançado: só o relógio (watchlist)
   badge?: boolean; // selo do status no canto (no perfil fica de fora: a pasta já diz o status)
+  verb?: "watch" | "read" | "play"; // livros e mangás: Ler/Lido/Lendo; jogos: Jogar/Jogado/Jogando
 }) {
   const { t, locale } = useI18n();
+  // Nomes do status conforme a pasta (o like é igual em todas)
+  const words =
+    verb === "read"
+      ? { done: t.manga.readDone, todo: t.manga.read, doing: t.manga.reading }
+      : verb === "play"
+        ? { done: t.game.played, todo: t.game.play, doing: t.game.playing }
+        : { done: t.movie.watched, todo: t.movie.watch, doing: t.movies.tabs.watching };
   const lang = dictionaries[locale].htmlLang;
   const [state, setState] = useState<ViewerItemState>(initial ?? EMPTY);
   // Desmarcar um filme com nota/review pede um segundo clique (em vez de um confirm do navegador).
@@ -147,10 +156,10 @@ export function PosterActions({
 
   // Selo do status atual no canto do pôster, sempre visível (sem passar o mouse): fundo escuro, ícone na cor do status.
   const badge = state.watched
-    ? { label: t.movie.watched, className: "text-ok", icon: <path d="M5 12.5l4.5 4.5L19 7.5" strokeWidth="3.2" /> }
+    ? { label: words.done, className: "text-ok", icon: <path d="M5 12.5l4.5 4.5L19 7.5" strokeWidth="3.2" /> }
     : state.watching
       ? {
-          label: t.movies.tabs.watching,
+          label: words.doing,
           className: "text-white",
           icon: <path d="M8.5 6.5v11l9-5.5z" fill="currentColor" strokeWidth="1.5" />,
         }
@@ -201,8 +210,8 @@ export function PosterActions({
               confirming
                 ? t.movie.confirmRemove
                 : state.watched
-                  ? t.movie.watched
-                  : t.movie.watch
+                  ? words.done
+                  : words.todo
             }
             className={`${button} ${confirming ? "bg-danger/30 text-danger" : state.watched ? "text-ok" : "text-white/70 hover:text-white"}`}
           >
@@ -229,7 +238,7 @@ export function PosterActions({
               type="button"
               onClick={toggleWatching}
               aria-pressed={!!state.watching}
-              title={t.movies.tabs.watching}
+              title={words.doing}
               className={`${button} ${state.watching ? "bg-white/15 text-white" : "text-white/70 hover:text-white"}`}
             >
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" aria-hidden>

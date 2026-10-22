@@ -248,6 +248,7 @@ export const ar: Dictionary = {
     published: (y: number) => `نُشر عام ${y}`,
   },
   game: {
+    tabs: { watched: "لُعبت", watching: "ألعبها الآن" },
     reviewsOnSteam: (n: string) => `${n} مراجعة على Steam`,
     play: "العب",
     played: "لُعبت",

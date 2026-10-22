@@ -248,6 +248,7 @@ export const zh: Dictionary = {
     published: (y: number) => `${y} 年出版`,
   },
   game: {
+    tabs: { watched: "已玩", watching: "在玩" },
     reviewsOnSteam: (n: string) => `Steam 上 ${n} 篇评测`,
     play: "玩",
     played: "玩过",

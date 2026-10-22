@@ -248,6 +248,7 @@ export const ko: Dictionary = {
     published: (y: number) => `${y}년 출간`,
   },
   game: {
+    tabs: { watched: "플레이함", watching: "플레이 중" },
     reviewsOnSteam: (n: string) => `Steam 평가 ${n}개`,
     play: "플레이",
     played: "플레이함",

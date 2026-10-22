@@ -248,6 +248,7 @@ export const tr: Dictionary = {
     published: (y: number) => `${y} yılında yayımlandı`,
   },
   game: {
+    tabs: { watched: "Oynananlar", watching: "Oynuyor" },
     reviewsOnSteam: (n: string) => `Steam'de ${n} inceleme`,
     play: "Oyna",
     played: "Oynandı",

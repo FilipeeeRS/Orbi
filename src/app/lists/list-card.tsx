@@ -50,12 +50,12 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
         <Link href={href} aria-label={list.title} className="block rounded-md ring-2 ring-transparent transition group-hover:ring-fg">
           <ListStrip posters={list.posters} />
         </Link>
-        {/* No canto de cima, como os selos dos pôsteres: o marcador branco se você salvou e o ♥ se curtiu */}
+        {/* No canto de cima, como os selos dos pôsteres: o marcador todo branco se você salvou e o ♥ se curtiu */}
         {(liked || saved) && (
           <span className="pointer-events-none absolute end-1.5 top-1.5 z-10 flex items-center gap-1">
             {saved && (
               <span title={t.lists.savedList} className="grid size-6 place-items-center rounded-md bg-black/75 text-white shadow-md">
-                <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round" aria-hidden>
+                <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
                   <path d={BOOKMARK} />
                 </svg>
               </span>

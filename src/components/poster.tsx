@@ -30,6 +30,7 @@ export function Poster({ item, locale, eager, viewer, badge = true }: Props) {
             series={item.kind !== "movie" && item.kind !== "music"}
             badge={badge}
             unreleased={isUnreleased(item)}
+            verb={item.kind === "book" || item.kind === "manga" ? "read" : item.kind === "game" ? "play" : "watch"}
           />
         )}
       </div>

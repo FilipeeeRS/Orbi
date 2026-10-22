@@ -114,7 +114,7 @@ export async function FolderView({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
         <nav className="-mb-px flex gap-1 overflow-x-auto">
-          {TABS.filter((key) => key !== "watching" || kind === "series" || kind === "anime" || kind === "manga").map((key) => (
+          {TABS.filter((key) => key !== "watching" || kind !== "movie").map((key) => (
             <Link
               key={key}
               href={href({ tab: key })}
@@ -123,7 +123,14 @@ export async function FolderView({
               }`}
             >
               {/* Mangá: "Lidos" e "Lendo" no lugar de "Vistos" e "Assistindo" */}
-              {kind === "manga" && (key === "watched" || key === "watching") ? t.manga.tabs[key] : t.movies.tabs[key]}
+              {/* Livros e mangás: Lidos/Lendo; jogos: Jogados/Jogando; o resto: Vistos/Assistindo */}
+              {key === "watched" || key === "watching"
+                ? kind === "manga" || kind === "book"
+                  ? t.manga.tabs[key]
+                  : kind === "game"
+                    ? t.game.tabs[key]
+                    : t.movies.tabs[key]
+                : t.movies.tabs[key]}
             </Link>
           ))}
         </nav>

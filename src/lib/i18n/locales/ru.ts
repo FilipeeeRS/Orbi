@@ -256,6 +256,7 @@ export const ru: Dictionary = {
     published: (y: number) => `Издана в ${y}`,
   },
   game: {
+    tabs: { watched: "Пройдено", watching: "Играю" },
     reviewsOnSteam: (n: string) => `Обзоров в Steam: ${n}`,
     play: "Играть",
     played: "Пройдено",
