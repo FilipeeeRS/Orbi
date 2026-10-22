@@ -15,6 +15,7 @@ export const ar: Dictionary = {
     signOut: "تسجيل الخروج",
   },
   folders: {
+    yours: { movie: "أفلامك", series: "مسلسلاتك", book: "كتبك", anime: "الأنمي الخاص بك", manga: "المانغا الخاصة بك", game: "ألعابك", music: "موسيقاك" },
     yourAll: "كل ما لديك",
     allOf: (f: string) => `كل ${f}`,
     createList: "أنشئ قائمتك الخاصة",

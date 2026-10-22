@@ -15,6 +15,7 @@ export const fr: Dictionary = {
     signOut: "Déconnexion",
   },
   folders: {
+    yours: { movie: "Tes films", series: "Tes séries", book: "Tes livres", anime: "Tes animés", manga: "Tes mangas", game: "Tes jeux", music: "Ta musique" },
     yourAll: "Ton tout",
     allOf: (f: string) => `${["Séries", "Musique"].includes(f) ? "Toutes les" : "Tous les"} ${f.toLowerCase()}`,
     createList: "Crée ta propre liste",

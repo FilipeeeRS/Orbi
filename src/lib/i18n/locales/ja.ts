@@ -15,6 +15,7 @@ export const ja: Dictionary = {
     signOut: "ログアウト",
   },
   folders: {
+    yours: { movie: "あなたの映画", series: "あなたのドラマ", book: "あなたの本", anime: "あなたのアニメ", manga: "あなたのマンガ", game: "あなたのゲーム", music: "あなたの音楽" },
     yourAll: "あなたのすべて",
     allOf: (f: string) => `すべての${f}`,
     createList: "自分だけのリストを作る",

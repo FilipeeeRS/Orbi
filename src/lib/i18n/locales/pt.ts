@@ -13,6 +13,7 @@ export const pt = {
     signOut: "Sair",
   },
   folders: {
+    yours: { movie: "Seus filmes", series: "Suas séries", book: "Seus livros", anime: "Seus animes", manga: "Seus mangás", game: "Seus jogos", music: "Suas músicas" },
     yourAll: "Seu tudo",
     allOf: (f: string) => `${["Séries", "Músicas"].includes(f) ? "Todas as" : "Todos os"} ${f.toLowerCase()}`,
     createList: "Crie sua própria lista",

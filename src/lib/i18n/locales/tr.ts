@@ -15,6 +15,7 @@ export const tr: Dictionary = {
     signOut: "Çıkış yap",
   },
   folders: {
+    yours: { movie: "Filmlerin", series: "Dizilerin", book: "Kitapların", anime: "Animelerin", manga: "Mangaların", game: "Oyunların", music: "Müziklerin" },
     yourAll: "Senin her şeyin",
     allOf: (f: string) => `Tüm ${f.toLowerCase()}`,
     createList: "Kendi listeni oluştur",

@@ -15,6 +15,7 @@ export const zh: Dictionary = {
     signOut: "退出",
   },
   folders: {
+    yours: { movie: "你的电影", series: "你的剧集", book: "你的书", anime: "你的动画", manga: "你的漫画", game: "你的游戏", music: "你的音乐" },
     yourAll: "你的全部",
     allOf: (f: string) => `全部${f}`,
     createList: "创建你自己的清单",

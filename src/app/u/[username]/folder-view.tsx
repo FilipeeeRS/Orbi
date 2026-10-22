@@ -105,9 +105,9 @@ export async function FolderView({
           >
             {viewer?.id !== profile.id && <span className="pe-1">@{profile.username}</span>}
           </BackButton>
-          {/* A sua pasta "Tudo" vira "Seu tudo"; a dos outros continua "Tudo" (com o @ ao lado) */}
+          {/* As suas pastas: "Seus filmes", "Suas séries", "Seu tudo"; as dos outros: "Filmes" (com o @ ao lado) */}
           <h1 className="font-display text-2xl font-extrabold">
-            {kind === "all" && viewer?.id === profile.id ? t.folders.yourAll : t.folders[kind]}
+            {viewer?.id === profile.id ? (kind === "all" ? t.folders.yourAll : t.folders.yours[kind]) : t.folders[kind]}
           </h1>
         </div>
         <span className="text-sm text-muted">{t.profile.items(total)}</span>

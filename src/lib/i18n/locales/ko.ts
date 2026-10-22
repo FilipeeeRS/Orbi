@@ -15,6 +15,7 @@ export const ko: Dictionary = {
     signOut: "로그아웃",
   },
   folders: {
+    yours: { movie: "나의 영화", series: "나의 시리즈", book: "나의 책", anime: "나의 애니", manga: "나의 만화", game: "나의 게임", music: "나의 음악" },
     yourAll: "나의 전체",
     allOf: (f: string) => `모든 ${f}`,
     createList: "나만의 리스트 만들기",

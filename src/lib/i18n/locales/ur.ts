@@ -15,6 +15,7 @@ export const ur: Dictionary = {
     signOut: "سائن آؤٹ",
   },
   folders: {
+    yours: { movie: "آپ کی فلمیں", series: "آپ کی سیریز", book: "آپ کی کتابیں", anime: "آپ کے اینیمے", manga: "آپ کی مانگا", game: "آپ کے گیمز", music: "آپ کی موسیقی" },
     yourAll: "آپ کا سب",
     allOf: (f: string) => `تمام ${f}`,
     createList: "اپنی فہرست بنائیں",

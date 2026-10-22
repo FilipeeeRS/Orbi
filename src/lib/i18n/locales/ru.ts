@@ -23,6 +23,7 @@ export const ru: Dictionary = {
     signOut: "Выйти",
   },
   folders: {
+    yours: { movie: "Ваши фильмы", series: "Ваши сериалы", book: "Ваши книги", anime: "Ваше аниме", manga: "Ваша манга", game: "Ваши игры", music: "Ваша музыка" },
     yourAll: "Всё ваше",
     allOf: (f: string) => `Все: ${f.toLowerCase()}`,
     createList: "Создай свой список",

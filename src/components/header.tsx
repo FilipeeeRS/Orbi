@@ -33,7 +33,7 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
                 { href: "/", label: t.nav.home },
                 { href: `/u/${viewer.username}`, label: t.profile.tab },
                 { href: "/notifications", label: t.nav.notifications, icon: "bell" },
-                ...MENU_FOLDERS.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
+                ...MENU_FOLDERS.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders.yours[kind] })),
               ],
               [
                 { href: `/u/${viewer.username}/all`, label: t.folders.yourAll },

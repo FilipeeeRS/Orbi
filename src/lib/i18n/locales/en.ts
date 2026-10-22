@@ -15,6 +15,7 @@ export const en: Dictionary = {
     signOut: "Sign out",
   },
   folders: {
+    yours: { movie: "Your Films", series: "Your Series", book: "Your Books", anime: "Your Anime", manga: "Your Manga", game: "Your Games", music: "Your Music" },
     yourAll: "Your All",
     allOf: (f: string) => `All ${f.toLowerCase()}`,
     createList: "Create your own list",
