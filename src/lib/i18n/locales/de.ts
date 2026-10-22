@@ -15,6 +15,7 @@ export const de: Dictionary = {
     signOut: "Abmelden",
   },
   folders: {
+    yourAll: "Dein Alles",
     allOf: (f: string) => `Alle ${f}`,
     createList: "Eigene Liste erstellen",
     inDevelopment: "In Entwicklung",
@@ -511,5 +512,5 @@ export const de: Dictionary = {
     notFoundBody: "Der Link ist vielleicht falsch oder der Inhalt wurde entfernt.",
     home: "Zur Startseite",
   },
-  common: { error: "Etwas ist schiefgelaufen.", loading: "Wird geladen…" },
+  common: { back: "Zurück", error: "Etwas ist schiefgelaufen.", loading: "Wird geladen…" },
 };

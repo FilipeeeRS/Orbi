@@ -15,6 +15,7 @@ export const id: Dictionary = {
     signOut: "Keluar",
   },
   folders: {
+    yourAll: "Semua milikmu",
     allOf: (f: string) => `Semua ${f.toLowerCase()}`,
     createList: "Buat daftarmu sendiri",
     inDevelopment: "Dalam pengembangan",
@@ -511,5 +512,5 @@ export const id: Dictionary = {
     notFoundBody: "Tautannya mungkin salah atau kontennya sudah dihapus.",
     home: "Kembali ke beranda",
   },
-  common: { error: "Terjadi kesalahan.", loading: "Memuat…" },
+  common: { back: "Kembali", error: "Terjadi kesalahan.", loading: "Memuat…" },
 };

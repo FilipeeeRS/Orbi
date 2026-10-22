@@ -26,6 +26,7 @@ import { TranslatableText } from "@/components/translatable-text";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 import { getUserLists } from "@/lib/lists";
 import { ListsGrid } from "@/app/lists/lists-grid";
+import { BackButton } from "@/components/back-button";
 
 // Listagem de uma pasta (filmes, séries, músicas, jogos ou livros) do perfil, com abas e ordenação.
 export async function FolderView({
@@ -96,17 +97,17 @@ export async function FolderView({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           {/* No perfil de outra pessoa, o @ mostra de quem é a pasta */}
-          <Link
-            href={`/u/${profile.username}`}
-            aria-label={t.nav.profile}
+          <BackButton
+            fallback={`/u/${profile.username}`}
+            label={t.common.back}
             className="flex items-center gap-1 rounded-full p-1.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
           >
-            <svg viewBox="0 0 24 24" className="size-5 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
             {viewer?.id !== profile.id && <span className="pe-1">@{profile.username}</span>}
-          </Link>
-          <h1 className="font-display text-2xl font-extrabold">{t.folders[kind]}</h1>
+          </BackButton>
+          {/* A sua pasta "Tudo" vira "Seu tudo"; a dos outros continua "Tudo" (com o @ ao lado) */}
+          <h1 className="font-display text-2xl font-extrabold">
+            {kind === "all" && viewer?.id === profile.id ? t.folders.yourAll : t.folders[kind]}
+          </h1>
         </div>
         <span className="text-sm text-muted">{t.profile.items(total)}</span>
       </div>

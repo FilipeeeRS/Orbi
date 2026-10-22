@@ -15,6 +15,7 @@ export const en: Dictionary = {
     signOut: "Sign out",
   },
   folders: {
+    yourAll: "Your All",
     allOf: (f: string) => `All ${f.toLowerCase()}`,
     createList: "Create your own list",
     inDevelopment: "In development",
@@ -511,5 +512,5 @@ export const en: Dictionary = {
     notFoundBody: "The link may be wrong or the content was removed.",
     home: "Back to home",
   },
-  common: { error: "Something went wrong.", loading: "Loading…" },
+  common: { back: "Back", error: "Something went wrong.", loading: "Loading…" },
 };

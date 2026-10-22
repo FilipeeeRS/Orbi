@@ -15,6 +15,7 @@ export const hi: Dictionary = {
     signOut: "साइन आउट",
   },
   folders: {
+    yourAll: "आपका सब",
     allOf: (f: string) => `सभी ${f}`,
     createList: "अपनी सूची बनाएँ",
     inDevelopment: "विकास में",
@@ -511,5 +512,5 @@ export const hi: Dictionary = {
     notFoundBody: "लिंक ग़लत हो सकता है या सामग्री हटा दी गई है।",
     home: "होम पर जाएँ",
   },
-  common: { error: "कुछ गड़बड़ हो गई।", loading: "लोड हो रहा है…" },
+  common: { back: "वापस", error: "कुछ गड़बड़ हो गई।", loading: "लोड हो रहा है…" },
 };

@@ -15,6 +15,7 @@ export const ar: Dictionary = {
     signOut: "تسجيل الخروج",
   },
   folders: {
+    yourAll: "كل ما لديك",
     allOf: (f: string) => `كل ${f}`,
     createList: "أنشئ قائمتك الخاصة",
     inDevelopment: "قيد التطوير",
@@ -511,5 +512,5 @@ export const ar: Dictionary = {
     notFoundBody: "قد يكون الرابط خاطئًا أو أن المحتوى قد حُذف.",
     home: "العودة إلى الرئيسية",
   },
-  common: { error: "حدث خطأ ما.", loading: "جارٍ التحميل…" },
+  common: { back: "رجوع", error: "حدث خطأ ما.", loading: "جارٍ التحميل…" },
 };

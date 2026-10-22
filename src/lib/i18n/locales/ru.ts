@@ -23,6 +23,7 @@ export const ru: Dictionary = {
     signOut: "Выйти",
   },
   folders: {
+    yourAll: "Всё ваше",
     allOf: (f: string) => `Все: ${f.toLowerCase()}`,
     createList: "Создай свой список",
     inDevelopment: "В разработке",
@@ -519,5 +520,5 @@ export const ru: Dictionary = {
     notFoundBody: "Возможно, ссылка неверна или содержимое удалено.",
     home: "На главную",
   },
-  common: { error: "Что-то пошло не так.", loading: "Загрузка…" },
+  common: { back: "Назад", error: "Что-то пошло не так.", loading: "Загрузка…" },
 };

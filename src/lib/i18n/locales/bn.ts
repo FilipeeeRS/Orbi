@@ -15,6 +15,7 @@ export const bn: Dictionary = {
     signOut: "সাইন আউট",
   },
   folders: {
+    yourAll: "আপনার সব",
     allOf: (f: string) => `সব ${f}`,
     createList: "নিজের তালিকা বানান",
     inDevelopment: "নির্মাণাধীন",
@@ -511,5 +512,5 @@ export const bn: Dictionary = {
     notFoundBody: "লিংকটি ভুল হতে পারে বা কনটেন্ট সরিয়ে ফেলা হয়েছে।",
     home: "হোমে ফিরুন",
   },
-  common: { error: "কিছু ভুল হয়েছে।", loading: "লোড হচ্ছে…" },
+  common: { back: "ফিরে যান", error: "কিছু ভুল হয়েছে।", loading: "লোড হচ্ছে…" },
 };

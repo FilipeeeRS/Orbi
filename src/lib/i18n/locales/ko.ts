@@ -15,6 +15,7 @@ export const ko: Dictionary = {
     signOut: "로그아웃",
   },
   folders: {
+    yourAll: "나의 전체",
     allOf: (f: string) => `모든 ${f}`,
     createList: "나만의 리스트 만들기",
     inDevelopment: "개발 중",
@@ -511,5 +512,5 @@ export const ko: Dictionary = {
     notFoundBody: "링크가 잘못되었거나 콘텐츠가 삭제되었을 수 있습니다.",
     home: "홈으로",
   },
-  common: { error: "문제가 발생했습니다.", loading: "불러오는 중…" },
+  common: { back: "뒤로", error: "문제가 발생했습니다.", loading: "불러오는 중…" },
 };

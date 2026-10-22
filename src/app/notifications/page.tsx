@@ -7,6 +7,7 @@ import { getDict, getViewer } from "@/lib/session";
 import { getNotifications, getReadState, SOCIAL_KINDS, type Notification } from "@/lib/notifications";
 import { NotificationRow } from "@/components/notification-row";
 import { MarkAllRead } from "./mark-all-read";
+import { BackButton } from "@/components/back-button";
 
 export const metadata: Metadata = { title: "Notificações" };
 
@@ -40,7 +41,10 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
   return (
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-end justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.notifications.title}</h1>
+        <div className="flex items-center gap-2">
+          <BackButton fallback="/home" label={t.common.back} />
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.notifications.title}</h1>
+        </div>
         <MarkAllRead label={t.notifications.markAllRead} />
       </div>
       <nav className="mb-2 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none]">

@@ -36,7 +36,7 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
                 ...MENU_FOLDERS.map((kind) => ({ href: `/u/${viewer.username}/${FOLDER_PATHS[kind]}`, label: t.folders[kind] })),
               ],
               [
-                { href: `/u/${viewer.username}/all`, label: t.folders.all },
+                { href: `/u/${viewer.username}/all`, label: t.folders.yourAll },
                 { href: `/u/${viewer.username}/all?tab=liked`, label: t.movies.tabs.liked },
                 { href: `/u/${viewer.username}/all?tab=watchlist`, label: t.movies.tabs.watchlist },
                 { href: `/u/${viewer.username}/all?tab=reviews`, label: t.movies.tabs.reviews },

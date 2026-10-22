@@ -15,6 +15,7 @@ export const it: Dictionary = {
     signOut: "Esci",
   },
   folders: {
+    yourAll: "Il tuo tutto",
     allOf: (f: string) => `${["Serie", "Musica"].includes(f) ? "Tutte le" : f === "Anime" ? "Tutti gli" : "Tutti i"} ${f.toLowerCase()}`,
     createList: "Crea la tua lista",
     inDevelopment: "In sviluppo",
@@ -511,5 +512,5 @@ export const it: Dictionary = {
     notFoundBody: "Il link potrebbe essere errato o il contenuto è stato rimosso.",
     home: "Torna all'inizio",
   },
-  common: { error: "Qualcosa è andato storto.", loading: "Caricamento…" },
+  common: { back: "Indietro", error: "Qualcosa è andato storto.", loading: "Caricamento…" },
 };

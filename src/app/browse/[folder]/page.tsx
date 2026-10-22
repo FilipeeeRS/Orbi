@@ -14,6 +14,7 @@ import { sortOptions } from "@/lib/sort-options";
 import { getDict, getViewer } from "@/lib/session";
 import { getMovieGenres, releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import type { MediaKind } from "@/lib/types";
+import { BackButton } from "@/components/back-button";
 
 // "Ver tudo" da Home: /browse/movies, /browse/series (TMDB), /browse/anime e /browse/manga (AniList)...
 const SLUGS: Record<string, MediaKind> = {
@@ -125,6 +126,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
       {/* Título e filtros na mesma linha, como nas pastas do perfil */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
         <h1 className="font-display flex items-center gap-2 pb-2 text-2xl font-extrabold">
+          <BackButton fallback={`/home?folder=${kind}`} label={t.common.back} />
           <FolderIcon kind={kind} className="size-6 text-accent" />
           {t.folders.allOf(t.folders[kind])}
           {/* Filtro vindo da ficha de um jogo (desenvolvedora, distribuidora, gênero, plataforma) */}

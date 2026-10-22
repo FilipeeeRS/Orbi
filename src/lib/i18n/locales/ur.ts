@@ -15,6 +15,7 @@ export const ur: Dictionary = {
     signOut: "سائن آؤٹ",
   },
   folders: {
+    yourAll: "آپ کا سب",
     allOf: (f: string) => `تمام ${f}`,
     createList: "اپنی فہرست بنائیں",
     inDevelopment: "زیرِ تکمیل",
@@ -511,5 +512,5 @@ export const ur: Dictionary = {
     notFoundBody: "ہو سکتا ہے لنک غلط ہو یا مواد ہٹا دیا گیا ہو۔",
     home: "ہوم پر جائیں",
   },
-  common: { error: "کچھ غلط ہو گیا۔", loading: "لوڈ ہو رہا ہے…" },
+  common: { back: "واپس", error: "کچھ غلط ہو گیا۔", loading: "لوڈ ہو رہا ہے…" },
 };

@@ -15,6 +15,7 @@ export const es: Dictionary = {
     signOut: "Salir",
   },
   folders: {
+    yourAll: "Tu todo",
     allOf: (f: string) => `${["Juegos", "Libros", "Anime", "Manga"].includes(f) ? "Todos los" : "Todas las"} ${f.toLowerCase()}`,
     createList: "Crea tu propia lista",
     inDevelopment: "En desarrollo",
@@ -511,5 +512,5 @@ export const es: Dictionary = {
     notFoundBody: "El enlace puede ser incorrecto o el contenido fue eliminado.",
     home: "Volver al inicio",
   },
-  common: { error: "Algo salió mal.", loading: "Cargando…" },
+  common: { back: "Volver", error: "Algo salió mal.", loading: "Cargando…" },
 };

@@ -15,6 +15,7 @@ export const tr: Dictionary = {
     signOut: "Çıkış yap",
   },
   folders: {
+    yourAll: "Senin her şeyin",
     allOf: (f: string) => `Tüm ${f.toLowerCase()}`,
     createList: "Kendi listeni oluştur",
     inDevelopment: "Geliştiriliyor",
@@ -511,5 +512,5 @@ export const tr: Dictionary = {
     notFoundBody: "Bağlantı yanlış olabilir ya da içerik kaldırılmış olabilir.",
     home: "Ana sayfaya dön",
   },
-  common: { error: "Bir sorun oluştu.", loading: "Yükleniyor…" },
+  common: { back: "Geri", error: "Bir sorun oluştu.", loading: "Yükleniyor…" },
 };

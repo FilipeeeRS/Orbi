@@ -6,6 +6,7 @@ import { Pagination } from "@/components/pagination";
 import { getDict } from "@/lib/session";
 import { browseLists, type ListSort } from "@/lib/lists";
 import { ListCard } from "./list-card";
+import { BackButton } from "@/components/back-button";
 
 export const metadata: Metadata = { title: "Listas" };
 
@@ -30,7 +31,10 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.lists.allTitle}</h1>
+        <div className="flex items-center gap-2">
+          <BackButton fallback="/home" label={t.common.back} />
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.lists.allTitle}</h1>
+        </div>
         <nav className="flex gap-2">
           {SORTS.map((s) => (
             <Link

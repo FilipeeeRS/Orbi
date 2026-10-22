@@ -15,6 +15,7 @@ export const ja: Dictionary = {
     signOut: "ログアウト",
   },
   folders: {
+    yourAll: "あなたのすべて",
     allOf: (f: string) => `すべての${f}`,
     createList: "自分だけのリストを作る",
     inDevelopment: "開発中",
@@ -511,5 +512,5 @@ export const ja: Dictionary = {
     notFoundBody: "リンクが間違っているか、コンテンツが削除された可能性があります。",
     home: "ホームに戻る",
   },
-  common: { error: "エラーが発生しました。", loading: "読み込み中…" },
+  common: { back: "戻る", error: "エラーが発生しました。", loading: "読み込み中…" },
 };

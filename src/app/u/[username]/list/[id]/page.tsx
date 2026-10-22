@@ -11,6 +11,7 @@ import { ListActions, ListComments } from "./list-social";
 import { getViewerStates } from "@/lib/queries";
 import { applyArtToItems } from "@/lib/art";
 import { ListEditor } from "@/app/lists/list-editor";
+import { BackButton } from "@/components/back-button";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]/list/[id]">): Promise<Metadata> {
   const list = await getList((await params).id);
@@ -46,15 +47,7 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
         <div className="min-w-0 space-y-2">
           {/* < (foto) @usuario / nome da lista */}
           <div className="flex items-center gap-2">
-            <Link
-              href={`/u/${list.owner.username}/all?tab=lists`}
-              aria-label={t.movies.tabs.lists}
-              className="grid size-8 shrink-0 place-items-center rounded-full text-muted hover:bg-surface-2 hover:text-fg"
-            >
-              <svg viewBox="0 0 24 24" className="size-5 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </Link>
+            <BackButton fallback={`/u/${list.owner.username}/all?tab=lists`} label={t.common.back} />
             <Link href={`/u/${list.owner.username}`} className="shrink-0">
               <Avatar profile={list.owner} size={32} ring={list.owner.avatar_ring} />
             </Link>

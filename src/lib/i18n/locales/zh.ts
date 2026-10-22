@@ -15,6 +15,7 @@ export const zh: Dictionary = {
     signOut: "退出",
   },
   folders: {
+    yourAll: "你的全部",
     allOf: (f: string) => `全部${f}`,
     createList: "创建你自己的清单",
     inDevelopment: "开发中",
@@ -511,5 +512,5 @@ export const zh: Dictionary = {
     notFoundBody: "链接可能有误，或内容已被删除。",
     home: "返回首页",
   },
-  common: { error: "出错了。", loading: "加载中…" },
+  common: { back: "返回", error: "出错了。", loading: "加载中…" },
 };

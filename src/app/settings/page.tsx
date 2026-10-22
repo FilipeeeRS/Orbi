@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import Loading from "../loading";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDict, getViewer } from "@/lib/session";
 import { SettingsForm } from "./settings-form";
 import { getItemsByIds } from "@/lib/queries";
 import { itemTitle } from "@/lib/types";
+import { BackButton } from "@/components/back-button";
 
 export const metadata: Metadata = { title: "Configurações" };
 
@@ -29,18 +29,9 @@ async function SettingsPageContent() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Seta para voltar ao perfil */}
+      {/* Seta para voltar (sem histórico, o perfil) */}
       <div className="mb-6 flex items-center gap-3">
-        <Link
-          href={`/u/${viewer.username}`}
-          aria-label={t.profile.tab}
-          title={t.profile.tab}
-          className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition hover:bg-surface-2 hover:text-fg"
-        >
-          <svg viewBox="0 0 24 24" className="size-5 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </Link>
+        <BackButton fallback={`/u/${viewer.username}`} label={t.common.back} />
         <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.settings.title}</h1>
       </div>
       <SettingsForm profile={viewer} favorites={favorites} />

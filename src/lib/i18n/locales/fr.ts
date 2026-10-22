@@ -15,6 +15,7 @@ export const fr: Dictionary = {
     signOut: "Déconnexion",
   },
   folders: {
+    yourAll: "Ton tout",
     allOf: (f: string) => `${["Séries", "Musique"].includes(f) ? "Toutes les" : "Tous les"} ${f.toLowerCase()}`,
     createList: "Crée ta propre liste",
     inDevelopment: "En développement",
@@ -511,5 +512,5 @@ export const fr: Dictionary = {
     notFoundBody: "Le lien est peut-être erroné ou le contenu a été supprimé.",
     home: "Retour à l'accueil",
   },
-  common: { error: "Un problème est survenu.", loading: "Chargement…" },
+  common: { back: "Retour", error: "Un problème est survenu.", loading: "Chargement…" },
 };

@@ -8,6 +8,7 @@ import { ExternalPosters } from "@/components/external-posters";
 import { ANIME_SEASONS, seasonOf, shiftSeason, type AnimeSeason } from "@/lib/anilist";
 import { browseCatalog } from "@/lib/anime-db";
 import { getDict, getViewer } from "@/lib/session";
+import { BackButton } from "@/components/back-button";
 
 export const metadata: Metadata = { title: "Anime" };
 
@@ -57,6 +58,7 @@ async function SeasonContent({ searchParams }: PageProps<"/anime/season">) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-2">
         <h1 className="font-display flex items-center gap-2 text-2xl font-extrabold">
+          <BackButton fallback="/home?folder=anime" label={t.common.back} />
           <FolderIcon kind="anime" className="size-6 text-accent" />
           {label(current)}
         </h1>
