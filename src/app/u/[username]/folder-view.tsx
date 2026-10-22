@@ -20,7 +20,7 @@ import { getMovieGenres, tmdbLanguage } from "@/lib/tmdb";
 import { CATALOG_GENRES, mirrorReady } from "@/lib/anime-db";
 import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
-import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
+import { itemHref, itemTitle, MEDIA_KINDS, type FolderKind, type MediaKind } from "@/lib/types";
 import { ReviewAttachments } from "@/components/review-attachments";
 import { TranslatableText } from "@/components/translatable-text";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
@@ -70,7 +70,8 @@ export async function FolderView({
   const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
   // Aba Listas: as listas personalizadas do perfil (de todas as pastas)
   const listSort: UserListSort = LIST_SORTS.includes(query.sort as UserListSort) ? (query.sort as UserListSort) : "recent";
-  const lists = tab === "lists" ? await getUserLists(profile.id, listSort, filters.q) : null;
+  const listFolder = MEDIA_KINDS.includes(query.folder as MediaKind) ? (query.folder as MediaKind) : null;
+  const lists = tab === "lists" ? await getUserLists(profile.id, listSort, filters.q, listFolder) : null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const base = `/u/${profile.username}/${path}`;
   // Mantém filtros e ordenação ao trocar de aba ou de página.
@@ -141,6 +142,7 @@ export async function FolderView({
             labels={t.movies.filters}
             defaultSort="recent"
             sorts={sortOptions(LIST_SORTS, t)}
+            folders={MEDIA_KINDS.map((k) => ({ value: k, label: t.folders[k] }))}
             decades={[]}
             genres={[]}
             ratings={[]}

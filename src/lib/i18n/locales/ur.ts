@@ -115,7 +115,7 @@ export const ur: Dictionary = {
     sort: { week: "اس ہفتے مقبول", release: "ریلیز (نئی پہلے)", releaseOld: "ریلیز (پرانی پہلے)", recent: "حال ہی میں شامل کیے گئے", recentOld: "سب سے پہلے شامل کیے گئے", yours: "آپ کی سب سے زیادہ ریٹنگ", top: "سب سے زیادہ ریٹنگ", popular: "مقبولیت", titleAz: "عنوان (A–Z)", titleZa: "عنوان (Z–A)", runtimeShort: "چھوٹی پہلے", runtimeLong: "لمبی پہلے" },
     sortGroups: { popularity: "مقبولیت", name: "نام", added: "کب شامل کیا", release: "ریلیز کی تاریخ", average: "اوسط ریٹنگ", yours: "آپ کی ریٹنگ", length: "دورانیہ" },
     sortOrder: { mostCommented: "سب سے زیادہ تبصرے", anticipated: "سب سے زیادہ منتظر", thisWeek: "اس ہفتے", thisMonth: "اس مہینے", thisYear: "اس سال", allTime: "ہر دور", newest: "نئے پہلے", earliest: "پرانے پہلے", highest: "سب سے زیادہ پہلے", lowest: "سب سے کم پہلے", az: "A–Z", za: "Z–A", shortest: "چھوٹے پہلے", longest: "لمبے پہلے" },
-    filters: { decade: "دہائی", genre: "صنف", rating: "ریٹنگ", sortBy: "ترتیب", any: "کوئی بھی", noRating: "بغیر ریٹنگ", search: "عنوان سے فلٹر کریں…", clear: "فلٹر ہٹائیں" },
+    filters: { folder: "فولڈر", decade: "دہائی", genre: "صنف", rating: "ریٹنگ", sortBy: "ترتیب", any: "کوئی بھی", noRating: "بغیر ریٹنگ", search: "عنوان سے فلٹر کریں…", clear: "فلٹر ہٹائیں" },
     page: (n: number, total: number) => `صفحہ ${n} از ${total}`,
     prev: "پچھلا",
     first: "پہلا صفحہ",

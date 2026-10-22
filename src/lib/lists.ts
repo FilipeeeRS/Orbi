@@ -33,7 +33,12 @@ export type UserListSort = (typeof LIST_SORTS)[number];
 
 // Listas de um perfil, como cartões (com quem fez, curtidas, comentários e se quem vê curtiu/salvou).
 // Popularidade = curtidas (no período, para semana/mês/ano; empate pelas de sempre); "comments" = mais comentadas.
-export async function getUserLists(userId: string, sort: UserListSort = "recent", q?: string): Promise<PopularList[]> {
+export async function getUserLists(
+  userId: string,
+  sort: UserListSort = "recent",
+  q?: string,
+  folder: MediaKind | null = null, // só listas com pelo menos uma obra dessa pasta
+): Promise<PopularList[]> {
   const supabase = await createClient();
   let query = supabase
     .from("lists")
@@ -43,8 +48,21 @@ export async function getUserLists(userId: string, sort: UserListSort = "recent"
     .limit(200);
   const text = q?.trim().slice(0, 100).replace(/[%,()]/g, " ");
   if (text) query = query.ilike("title", `%${text}%`);
-  const { data: lists } = await query;
-  if (!lists?.length) return [];
+  const { data: found } = await query;
+  if (!found?.length) return [];
+  let lists = found;
+  if (folder) {
+    const kinds = folder === "series" ? ["series", "season"] : [folder];
+    const { data: withKind } = await supabase
+      .from("list_items")
+      .select("list_id, items!inner(kind)")
+      .in("list_id", lists.map((l) => l.id))
+      .in("items.kind", kinds)
+      .limit(50000);
+    const keep = new Set((withKind ?? []).map((r) => r.list_id));
+    lists = lists.filter((l) => keep.has(l.id));
+    if (!lists.length) return [];
+  }
   const ids = lists.map((l) => l.id);
 
   const [{ data: rows }, { data: likes }, { data: comments }, viewer] = await Promise.all([

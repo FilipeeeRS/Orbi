@@ -115,7 +115,7 @@ export const it: Dictionary = {
     sort: { week: "Popolari questa settimana", release: "Uscita (più recenti)", releaseOld: "Uscita (meno recenti)", recent: "Aggiunti di recente", recentOld: "Aggiunti per primi", yours: "Votati meglio da te", top: "Meglio votati", popular: "Popolarità", titleAz: "Titolo (A–Z)", titleZa: "Titolo (Z–A)", runtimeShort: "Più brevi prima", runtimeLong: "Più lunghi prima" },
     sortGroups: { popularity: "Popolarità", name: "Nome", added: "Data di aggiunta", release: "Uscita", average: "Voto medio", yours: "Il tuo voto", length: "Durata" },
     sortOrder: { mostCommented: "Più commentati", anticipated: "Più attesi", thisWeek: "Questa settimana", thisMonth: "Questo mese", thisYear: "Quest'anno", allTime: "Di sempre", newest: "Più recenti prima", earliest: "Meno recenti prima", highest: "Più alti prima", lowest: "Più bassi prima", az: "A–Z", za: "Z–A", shortest: "Più brevi prima", longest: "Più lunghi prima" },
-    filters: { decade: "Decennio", genre: "Genere", rating: "Voto", sortBy: "Ordina per", any: "Qualsiasi", noRating: "Senza voto", search: "Filtra per titolo…", clear: "Cancella filtri" },
+    filters: { folder: "Cartella", decade: "Decennio", genre: "Genere", rating: "Voto", sortBy: "Ordina per", any: "Qualsiasi", noRating: "Senza voto", search: "Filtra per titolo…", clear: "Cancella filtri" },
     page: (n: number, total: number) => `Pagina ${n} di ${total}`,
     prev: "Precedente",
     first: "Prima pagina",

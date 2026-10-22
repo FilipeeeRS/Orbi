@@ -16,11 +16,13 @@ export type FilterBarProps = {
     noRating: string;
     search: string;
     clear: string;
+    folder?: string;
   };
   decades: Option[];
   genres: Option[];
   ratings: Option[];
   sorts: Option[];
+  folders?: Option[]; // aba Listas: listas com obras de uma pasta (filmes, séries...)
   defaultSort: string;
   // Parâmetro da URL usado pela lupa. Na busca é outro ("in"), para não substituir o termo pesquisado.
   searchParam?: string;
@@ -28,7 +30,7 @@ export type FilterBarProps = {
 
 // Barra de filtros das pastas, no estilo do Letterboxd: menus que abrem ao passar o mouse
 // (ou ao clicar, no celular) e uma lupa para filtrar pelo título. Tudo fica na URL.
-export function FilterBar({ labels, decades, genres, ratings, sorts, defaultSort, searchParam = "q" }: FilterBarProps) {
+export function FilterBar({ labels, decades, genres, ratings, sorts, folders, defaultSort, searchParam = "q" }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -51,11 +53,11 @@ export function FilterBar({ labels, decades, genres, ratings, sorts, defaultSort
     timer.current = setTimeout(() => update(searchParam, value.trim() || null), 350);
   }
 
-  const active = ["decade", "genre", "rating", searchParam].some((k) => params.get(k));
+  const active = ["decade", "genre", "rating", "folder", searchParam].some((k) => params.get(k));
 
   function clear() {
     const next = new URLSearchParams(params.toString());
-    for (const k of ["decade", "genre", "rating", searchParam, "page"]) next.delete(k);
+    for (const k of ["decade", "genre", "rating", "folder", searchParam, "page"]) next.delete(k);
     setQ("");
     setSearchOpen(false);
     router.push(next.size ? `${pathname}?${next}` : pathname, { scroll: false });
@@ -76,6 +78,9 @@ export function FilterBar({ labels, decades, genres, ratings, sorts, defaultSort
       )}
       {ratings.length > 0 && (
         <Dropdown label={labels.rating} anyLabel={labels.any} options={ratings} value={params.get("rating")} onChange={(v) => update("rating", v)} />
+      )}
+      {folders && folders.length > 0 && (
+        <Dropdown label={labels.folder ?? ""} anyLabel={labels.any} options={folders} value={params.get("folder")} onChange={(v) => update("folder", v)} />
       )}
       <Dropdown
         label={labels.sortBy}
