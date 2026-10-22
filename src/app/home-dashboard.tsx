@@ -314,7 +314,7 @@ function FolderTab({ kind, viewer, t, locale }: TabProps & { kind: MediaKind }) 
       {/* Ainda não lançados, dos mais aguardados (livros e músicas ainda sem fonte para isso) */}
       {UPCOMING_KINDS.includes(kind) && (
         <Streamed title={t.home.mostAnticipated(t.folders[kind])}>
-          <UpcomingRow kind={kind} title={t.home.mostAnticipated(t.folders[kind])} viewer={viewer} t={t} locale={locale} />
+          <UpcomingRow kind={kind} title={t.home.mostAnticipated(t.folders[kind])} browse={browse} viewer={viewer} t={t} locale={locale} />
         </Streamed>
       )}
       <Streamed title={allTitle}>
@@ -358,10 +358,10 @@ async function ShelfRow({ kind, title, status, viewer, t, locale }: RowProps & {
 
 const UPCOMING_KINDS: MediaKind[] = ["movie", "series", "anime", "manga", "game"];
 
-async function UpcomingRow({ kind, title, viewer, locale }: RowProps) {
+async function UpcomingRow({ kind, title, browse, viewer, t, locale }: RowProps & { browse: string }) {
   const list = await upcoming(kind, locale, !!viewer?.show_adult);
   return (
-    <Section title={title}>
+    <Section title={title} more={{ href: `${browse}?sort=anticipated`, label: t.profile.all }}>
       {list.length ? (
         <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "game"} list={list} viewer={viewer} layout="row" />
       ) : (
@@ -399,7 +399,7 @@ async function upcoming(kind: MediaKind, locale: Locale, showAdult: boolean): Pr
     return list.slice(0, 6).map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), unreleased: true }));
   }
   if (kind === "game") {
-    const { list } = await browseGames({ page: 1, perPage: 6, sort: "upcoming" });
+    const { list } = await browseGames({ page: 1, perPage: 6, sort: "anticipated" });
     return list.map((g) => ({ ...g, unreleased: true }));
   }
   return [];

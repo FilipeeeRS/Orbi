@@ -4,6 +4,7 @@ import type { Dictionary } from "./i18n/dictionaries";
 // "Lançamento" → Mais novos primeiro / Mais antigos primeiro, e assim por diante.
 // A ordem do menu é sempre a desta lista.
 const MENU = [
+  { key: "anticipated", group: "popularity", order: "anticipated" },
   { key: "week", group: "popularity", order: "thisWeek" },
   { key: "month", group: "popularity", order: "thisMonth" },
   { key: "year", group: "popularity", order: "thisYear" },

@@ -113,7 +113,7 @@ export const es: Dictionary = {
     tabs: { watched: "Vistas", watching: "Viendo", watchlist: "Watchlist", liked: "Me gusta", reviews: "Reseñas", lists: "Listas" },
     sort: { week: "Populares esta semana", release: "Estreno (más recientes)", releaseOld: "Estreno (más antiguas)", recent: "Añadidos recientemente", recentOld: "Añadidos hace más tiempo", yours: "Mejor valoradas por ti", top: "Mejor valoradas", popular: "Popularidad", titleAz: "Título (A–Z)", titleZa: "Título (Z–A)", runtimeShort: "Más cortas primero", runtimeLong: "Más largas primero" },
     sortGroups: { popularity: "Popularidad", name: "Nombre", added: "Cuándo lo añadiste", release: "Estreno", average: "Nota media", yours: "Tu nota", length: "Duración" },
-    sortOrder: { thisWeek: "Esta semana", thisMonth: "Este mes", thisYear: "Este año", allTime: "De todos los tiempos", newest: "Más nuevos primero", earliest: "Más antiguos primero", highest: "Más altas primero", lowest: "Más bajas primero", az: "A–Z", za: "Z–A", shortest: "Más cortos primero", longest: "Más largos primero" },
+    sortOrder: { anticipated: "Más esperados", thisWeek: "Esta semana", thisMonth: "Este mes", thisYear: "Este año", allTime: "De todos los tiempos", newest: "Más nuevos primero", earliest: "Más antiguos primero", highest: "Más altas primero", lowest: "Más bajas primero", az: "A–Z", za: "Z–A", shortest: "Más cortos primero", longest: "Más largos primero" },
     filters: { decade: "Década", genre: "Género", rating: "Nota", sortBy: "Ordenar por", any: "Cualquiera", noRating: "Sin nota", search: "Filtrar por título…", clear: "Limpiar filtros" },
     page: (n: number, total: number) => `Página ${n} de ${total}`,
     prev: "Anterior",

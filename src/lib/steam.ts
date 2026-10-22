@@ -200,7 +200,7 @@ const STORE_SORT: Record<string, string> = {
   "release-old": "sort_by=Released_ASC",
   title: "sort_by=Name_ASC",
   "title-desc": "sort_by=Name_DESC",
-  upcoming: "filter=popularcomingsoon", // ainda não lançados, dos mais aguardados
+  anticipated: "filter=popularcomingsoon", // ainda não lançados, dos mais aguardados
 };
 
 // Gênero da loja (id do appdetails) → tag da busca da loja.

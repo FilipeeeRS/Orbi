@@ -10,7 +10,7 @@ import { periodStart } from "./browse";
 // Enquanto a cópia não existe (migração não aplicada ou importação não feita), cai na API do AniList.
 
 export type CatalogKind = "anime" | "manga";
-export type CatalogSort = "week" | "month" | "year" | "popular" | "top" | "top-asc" | "release" | "release-old" | "title" | "title-desc";
+export type CatalogSort = "anticipated" | "week" | "month" | "year" | "popular" | "top" | "top-asc" | "release" | "release-old" | "title" | "title-desc";
 
 export type CatalogQuery = {
   kind: CatalogKind;
@@ -56,6 +56,7 @@ export const toPoster = (
 
 // Ordenações das listagens → ordenação do AniList (quando ainda não há cópia no banco).
 const API_SORT: Record<CatalogSort, AnimeSort> = {
+  anticipated: "POPULARITY_DESC",
   week: "TRENDING_DESC",
   month: "POPULARITY_DESC",
   year: "POPULARITY_DESC",
@@ -82,6 +83,7 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
       season: q.season,
       seasonYear: q.seasonYear,
       showAdult: q.showAdult,
+      status: q.sort === "anticipated" ? "NOT_YET_RELEASED" : undefined,
     });
     return {
       list: found.list.map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), rating: a.averageScore ? a.averageScore / 20 : null, unreleased: a.status === "NOT_YET_RELEASED" })),
@@ -101,6 +103,9 @@ export async function browseCatalog(q: CatalogQuery): Promise<{ list: ExternalPo
   const desc = { ascending: false, nullsFirst: false } as const;
   const asc = { ascending: true, nullsFirst: false } as const;
   switch (q.sort) {
+    case "anticipated":
+      query = query.eq("status", "NOT_YET_RELEASED").order("tmdb_votes", desc);
+      break;
     // "Em alta": o que está saindo agora, do mais popular para o menos.
     case "week":
       query = query.eq("status", "RELEASING").order("tmdb_votes", desc);

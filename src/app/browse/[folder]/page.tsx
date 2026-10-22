@@ -46,7 +46,8 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
   const kind = SLUGS[folder];
   if (!kind) notFound();
 
-  const sort: BrowseSort = BROWSE_SORTS.includes(query.sort as BrowseSort) ? (query.sort as BrowseSort) : DEFAULT_SORT;
+  const sorts = BROWSE_SORTS.filter((s) => s !== "anticipated" || (kind !== "book" && kind !== "music"));
+  const sort: BrowseSort = sorts.includes(query.sort as BrowseSort) ? (query.sort as BrowseSort) : DEFAULT_SORT;
   const page = Math.max(1, Number(query.page) || 1);
   const [viewer, { t, locale }] = await Promise.all([getViewer(), getDict()]);
   const language = tmdbLanguage(locale);
@@ -60,7 +61,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
   const browsable = kind !== "music";
   if (kind === "book") {
     const subject = typeof query.genre === "string" ? query.genre : undefined;
-    const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort, q, decade, subject });
+    const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort: sort === "anticipated" ? "popular" : sort, q, decade, subject });
     // Assuntos mais comuns da Open Library (e o que veio da ficha, se não estiver na lista)
     genres = [...new Set([...BOOK_SUBJECTS, ...(subject ? [subject] : [])])].map((g) => ({ value: g, label: g }));
     list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
@@ -137,7 +138,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
           <FilterBar
             labels={t.movies.filters}
             defaultSort={DEFAULT_SORT}
-            sorts={sortOptions(BROWSE_SORTS, t)}
+            sorts={sortOptions(sorts, t)}
             decades={Array.from({ length: 13 }, (_, i) => 2020 - i * 10).map((d) => ({ value: String(d), label: `${d}s` }))}
             genres={genres}
             ratings={[]}

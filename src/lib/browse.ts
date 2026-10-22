@@ -4,7 +4,7 @@ import { isAnime, searchMoviesPages, tmdbDiscover, tmdbTrendingWeek, releaseYear
 
 // "Ver tudo" da Home: qualquer filme ou série que existe, direto do TMDB (não só o catálogo do Orbi).
 
-export const BROWSE_SORTS = ["week", "month", "year", "popular", "top", "top-asc", "release", "release-old", "title", "title-desc"] as const;
+export const BROWSE_SORTS = ["anticipated", "week", "month", "year", "popular", "top", "top-asc", "release", "release-old", "title", "title-desc"] as const;
 export type BrowseSort = (typeof BROWSE_SORTS)[number];
 
 export type BrowseFilters = { decade?: number; genre?: number; q?: string };
@@ -15,6 +15,7 @@ const TMDB_MAX_PAGES = 500; // limite da própria API
 // Popularidade: "em alta" na semana; no mês e no ano, os mais populares entre os lançados no período;
 // de todos os tempos, os mais votados.
 const DISCOVER_SORT: Record<Exclude<BrowseSort, "week">, string> = {
+  anticipated: "popularity.desc", // só os que ainda não lançaram (data a partir de amanhã)
   month: "popularity.desc",
   year: "popularity.desc",
   popular: "vote_count.desc",
@@ -61,7 +62,11 @@ export async function browseMovies(
               {
                 sort_by: tmdbSort(sort === "week" ? "popular" : sort),
                 with_genres: filters.genre,
-                [`${date}.gte`]: filters.decade ? `${filters.decade}-01-01` : periodStart(sort),
+                [`${date}.gte`]: filters.decade
+                  ? `${filters.decade}-01-01`
+                  : sort === "anticipated"
+                    ? new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+                    : periodStart(sort),
                 [`${date}.lte`]: filters.decade
                   ? `${filters.decade + 9}-12-31`
                   : sort === "release" || sort === "month" || sort === "year"
