@@ -9,17 +9,17 @@ const MAX_ITEMS = 250;
 
 // Janela de criar/editar lista: nome, descrição e filmes (busca no TMDB, reordenar, remover).
 // Sem listId cria uma nova; o "gatilho" é a caixa com + (nova) ou o botão Editar.
-export function ListEditor({ listId, username, variant }: { listId?: string; username: string; variant: "card" | "button" }) {
+export function ListEditor({ listId, username, variant }: { listId?: string; username: string; variant: "card" | "wide" | "button" }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      {variant === "card" ? (
+      {variant === "card" || variant === "wide" ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group flex aspect-[2/3] w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border text-muted transition hover:border-accent hover:text-accent"
+          className={`group flex ${variant === "wide" ? "aspect-[20/9]" : "aspect-[2/3]"} w-full flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border text-muted transition hover:border-accent hover:text-accent`}
         >
           <svg viewBox="0 0 24 24" className="size-10 transition group-hover:scale-110" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
             <path d="M12 5v14M5 12h14" />

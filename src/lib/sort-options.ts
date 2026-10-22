@@ -9,6 +9,7 @@ const MENU = [
   { key: "month", group: "popularity", order: "thisMonth" },
   { key: "year", group: "popularity", order: "thisYear" },
   { key: "popular", group: "popularity", order: "allTime" },
+  { key: "comments", group: "popularity", order: "mostCommented" },
   { key: "title", group: "name", order: "az" },
   { key: "title-desc", group: "name", order: "za" },
   { key: "recent", group: "added", order: "newest" },

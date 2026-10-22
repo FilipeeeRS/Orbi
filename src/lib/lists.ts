@@ -28,15 +28,16 @@ export type ListDetail = {
   items: Item[]; // na ordem da lista
 };
 
-export const LIST_SORTS = ["week", "month", "year", "popular", "title", "title-desc", "recent", "recent-old"] as const;
+export const LIST_SORTS = ["week", "month", "year", "popular", "comments", "title", "title-desc", "recent", "recent-old"] as const;
 export type UserListSort = (typeof LIST_SORTS)[number];
 
-// Listas de um perfil. Popularidade = curtidas (no período, para semana/mês/ano; empate pelas de sempre).
-export async function getUserLists(userId: string, sort: UserListSort = "recent", q?: string): Promise<ListSummary[]> {
+// Listas de um perfil, como cartões (com quem fez, curtidas, comentários e se quem vê curtiu/salvou).
+// Popularidade = curtidas (no período, para semana/mês/ano; empate pelas de sempre); "comments" = mais comentadas.
+export async function getUserLists(userId: string, sort: UserListSort = "recent", q?: string): Promise<PopularList[]> {
   const supabase = await createClient();
   let query = supabase
     .from("lists")
-    .select("id, title, description, updated_at")
+    .select("id, title, description, updated_at, owner:profiles!lists_user_id_fkey(username, display_name, avatar_url, avatar_ring)")
     .eq("user_id", userId)
     .order("updated_at", { ascending: sort === "recent-old" })
     .limit(200);
@@ -44,40 +45,53 @@ export async function getUserLists(userId: string, sort: UserListSort = "recent"
   if (text) query = query.ilike("title", `%${text}%`);
   const { data: lists } = await query;
   if (!lists?.length) return [];
+  const ids = lists.map((l) => l.id);
 
-  if (sort === "title" || sort === "title-desc") {
-    lists.sort((a, b) => (sort === "title" ? 1 : -1) * a.title.localeCompare(b.title));
-  } else if (sort === "week" || sort === "month" || sort === "year" || sort === "popular") {
-    const { data: likes } = await supabase
-      .from("list_likes")
-      .select("list_id, created_at")
-      .in("list_id", lists.map((l) => l.id))
-      .limit(50000);
-    const since = sort === "popular" ? "" : periodSince(sort);
-    const inPeriod = new Map<string, number>();
-    const ever = new Map<string, number>();
-    for (const l of likes ?? []) {
-      ever.set(l.list_id, (ever.get(l.list_id) ?? 0) + 1);
-      if (l.created_at >= since) inPeriod.set(l.list_id, (inPeriod.get(l.list_id) ?? 0) + 1);
-    }
-    lists.sort((a, b) => (inPeriod.get(b.id) ?? 0) - (inPeriod.get(a.id) ?? 0) || (ever.get(b.id) ?? 0) - (ever.get(a.id) ?? 0));
-  }
+  const [{ data: rows }, { data: likes }, { data: comments }, viewer] = await Promise.all([
+    supabase.from("list_items").select("list_id, position, items!inner(poster_url)").in("list_id", ids).order("position", { ascending: true }),
+    supabase.from("list_likes").select("list_id, user_id, created_at").in("list_id", ids).limit(50000),
+    supabase.from("list_comments").select("list_id").in("list_id", ids).limit(50000),
+    getViewer(),
+  ]);
+  const { data: saves } = viewer
+    ? await supabase.from("list_saves").select("list_id").eq("user_id", viewer.id).in("list_id", ids)
+    : { data: [] };
 
-  const { data: rows } = await supabase
-    .from("list_items")
-    .select("list_id, position, items!inner(poster_url)")
-    .in("list_id", lists.map((l) => l.id))
-    .order("position", { ascending: true });
   const byList = new Map<string, (string | null)[]>();
   for (const row of rows ?? []) {
     const list = byList.get(row.list_id) ?? [];
     list.push((row.items as unknown as { poster_url: string | null }).poster_url);
     byList.set(row.list_id, list);
   }
-  return lists.map((l) => {
+  const since = sort === "week" || sort === "month" || sort === "year" ? periodSince(sort) : "";
+  const likeCount = new Map<string, number>();
+  const inPeriod = new Map<string, number>();
+  const mine = new Set<string>();
+  for (const l of likes ?? []) {
+    likeCount.set(l.list_id, (likeCount.get(l.list_id) ?? 0) + 1);
+    if (l.created_at >= since) inPeriod.set(l.list_id, (inPeriod.get(l.list_id) ?? 0) + 1);
+    if (l.user_id === viewer?.id) mine.add(l.list_id);
+  }
+  const commentCount = new Map<string, number>();
+  for (const c of comments ?? []) commentCount.set(c.list_id, (commentCount.get(c.list_id) ?? 0) + 1);
+
+  const result = lists.map((l) => {
     const posters = byList.get(l.id) ?? [];
-    return { ...l, count: posters.length, posters: posters.slice(0, 5) } as ListSummary;
+    return {
+      ...l,
+      count: posters.length,
+      posters: posters.slice(0, 5),
+      likes: likeCount.get(l.id) ?? 0,
+      liked: mine.has(l.id),
+      saved: (saves ?? []).some((r) => r.list_id === l.id),
+      comments: commentCount.get(l.id) ?? 0,
+    } as unknown as PopularList;
   });
+  if (sort === "title" || sort === "title-desc") result.sort((a, b) => (sort === "title" ? 1 : -1) * a.title.localeCompare(b.title));
+  else if (sort === "comments") result.sort((a, b) => b.comments - a.comments || b.likes - a.likes);
+  else if (since || sort === "popular")
+    result.sort((a, b) => (inPeriod.get(b.id) ?? 0) - (inPeriod.get(a.id) ?? 0) || b.likes - a.likes);
+  return result;
 }
 
 export async function getList(id: string): Promise<ListDetail | null> {
@@ -185,10 +199,11 @@ export async function getListSocial(listId: string, viewerId: string | null) {
   };
 }
 
-export type ListSort = "popular" | "recent";
+export type ListSort = "popular" | "recent" | "comments";
 
 // "Todas as listas": as de todo mundo com pelo menos uma obra. Populares = mais curtidas (empate: mais
-// obras adicionadas na semana, depois a atualizada por último); recentes = atualizadas por último.
+// obras adicionadas na semana, depois a atualizada por último); recentes = atualizadas por último;
+// comentadas = mais comentários.
 export async function browseLists(
   sort: ListSort,
   page: number,
@@ -197,7 +212,7 @@ export async function browseLists(
 ): Promise<{ lists: PopularList[]; pages: number }> {
   const supabase = await createClient();
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-  const [{ data: lists }, { data: items }, { data: likes }, viewer] = await Promise.all([
+  const [{ data: lists }, { data: items }, { data: likes }, { data: allComments }, viewer] = await Promise.all([
     supabase
       .from("lists")
       .select("id, title, description, updated_at, owner:profiles!lists_user_id_fkey(username, display_name, avatar_url, avatar_ring)")
@@ -205,8 +220,11 @@ export async function browseLists(
       .limit(1000),
     supabase.from("list_items").select("list_id, added_at, items!inner(kind)").limit(50000),
     supabase.from("list_likes").select("list_id, user_id").limit(50000),
+    supabase.from("list_comments").select("list_id").limit(50000),
     getViewer(),
   ]);
+  const commentCount = new Map<string, number>();
+  for (const c of allComments ?? []) commentCount.set(c.list_id, (commentCount.get(c.list_id) ?? 0) + 1);
   const count = new Map<string, number>();
   const week = new Map<string, number>();
   const inFolder = new Set<string>(); // listas com pelo menos uma obra da pasta escolhida
@@ -227,7 +245,9 @@ export async function browseLists(
   const all = ((lists ?? []) as unknown as (Row & { owner: unknown })[]).filter(
     (l) => count.get(l.id) && l.owner && (!folder || inFolder.has(l.id)),
   );
-  if (sort === "popular")
+  if (sort === "comments")
+    all.sort((a, b) => (commentCount.get(b.id) ?? 0) - (commentCount.get(a.id) ?? 0) || (likeCount.get(b.id) ?? 0) - (likeCount.get(a.id) ?? 0));
+  else if (sort === "popular")
     all.sort(
       (a, b) =>
         (likeCount.get(b.id) ?? 0) - (likeCount.get(a.id) ?? 0) ||
@@ -239,9 +259,8 @@ export async function browseLists(
   if (!slice.length) return { lists: [], pages };
 
   const ids = slice.map((l) => l.id);
-  const [{ data: rows }, { data: comments }, { data: saves }] = await Promise.all([
+  const [{ data: rows }, { data: saves }] = await Promise.all([
     supabase.from("list_items").select("list_id, position, items!inner(poster_url)").in("list_id", ids).lt("position", 5).order("position"),
-    supabase.from("list_comments").select("list_id").in("list_id", ids),
     viewer ? supabase.from("list_saves").select("list_id").eq("user_id", viewer.id).in("list_id", ids) : Promise.resolve({ data: [] }),
   ]);
   const posters = new Map<string, (string | null)[]>();
@@ -261,7 +280,7 @@ export async function browseLists(
           likes: likeCount.get(l.id) ?? 0,
           liked: mine.has(l.id),
           saved: (saves ?? []).some((s) => s.list_id === l.id),
-          comments: (comments ?? []).filter((c) => c.list_id === l.id).length,
+          comments: commentCount.get(l.id) ?? 0,
         }) as unknown as PopularList,
     ),
   };

@@ -113,7 +113,7 @@ export const hi: Dictionary = {
     tabs: { watched: "देखी गईं", watching: "देख रहे हैं", watchlist: "वॉचलिस्ट", liked: "पसंद की गईं", reviews: "रिव्यू", lists: "सूचियाँ" },
     sort: { week: "इस हफ़्ते लोकप्रिय", release: "रिलीज़ (नई पहले)", releaseOld: "रिलीज़ (पुरानी पहले)", recent: "हाल ही में जोड़े गए", recentOld: "सबसे पहले जोड़े गए", yours: "आपकी सबसे ऊँची रेटिंग", top: "सबसे ऊँची रेटिंग", popular: "लोकप्रियता", titleAz: "शीर्षक (A–Z)", titleZa: "शीर्षक (Z–A)", runtimeShort: "छोटी पहले", runtimeLong: "लंबी पहले" },
     sortGroups: { popularity: "लोकप्रियता", name: "नाम", added: "कब जोड़ा", release: "रिलीज़ तारीख", average: "औसत रेटिंग", yours: "आपकी रेटिंग", length: "अवधि" },
-    sortOrder: { anticipated: "सबसे ज़्यादा इंतज़ार", thisWeek: "इस हफ़्ते", thisMonth: "इस महीने", thisYear: "इस साल", allTime: "अब तक", newest: "नए पहले", earliest: "पुराने पहले", highest: "सबसे ऊँची पहले", lowest: "सबसे कम पहले", az: "A–Z", za: "Z–A", shortest: "छोटे पहले", longest: "लंबे पहले" },
+    sortOrder: { mostCommented: "सबसे ज़्यादा कमेंट", anticipated: "सबसे ज़्यादा इंतज़ार", thisWeek: "इस हफ़्ते", thisMonth: "इस महीने", thisYear: "इस साल", allTime: "अब तक", newest: "नए पहले", earliest: "पुराने पहले", highest: "सबसे ऊँची पहले", lowest: "सबसे कम पहले", az: "A–Z", za: "Z–A", shortest: "छोटे पहले", longest: "लंबे पहले" },
     filters: { decade: "दशक", genre: "शैली", rating: "रेटिंग", sortBy: "क्रम", any: "कोई भी", noRating: "बिना रेटिंग", search: "शीर्षक से फ़िल्टर करें…", clear: "फ़िल्टर हटाएँ" },
     page: (n: number, total: number) => `पेज ${n} / ${total}`,
     prev: "पिछला",
@@ -354,6 +354,7 @@ export const hi: Dictionary = {
     note: "जो फ़िल्में पहले से आपकी प्रोफ़ाइल में हैं, वे Letterboxd के डेटा से अपडेट होंगी।",
   },
   lists: {
+    sortComments: "सबसे ज़्यादा कमेंट",
     allTitle: "सभी लिस्ट",
     sortPopular: "लोकप्रिय",
     sortRecent: "नई",

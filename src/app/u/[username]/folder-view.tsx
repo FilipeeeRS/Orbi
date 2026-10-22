@@ -168,7 +168,7 @@ export async function FolderView({
       </div>
 
       {lists ? (
-        <ListsGrid lists={lists} isOwner={viewer?.id === profile.id} username={profile.username} t={t} />
+        <ListsGrid lists={lists} canCreate={viewer?.id === profile.id} username={profile.username} viewerId={viewer?.id ?? null} t={t} />
       ) : entries.length === 0 ? (
         <p className="text-sm text-muted">{t.profile.empty}</p>
       ) : tab === "reviews" ? (

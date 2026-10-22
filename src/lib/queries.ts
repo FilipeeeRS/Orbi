@@ -83,6 +83,7 @@ export const SORTS = [
   "week",
   "month",
   "year",
+  "comments",
   "recent",
   "recent-old",
   "release",
@@ -197,12 +198,14 @@ export async function listEntries(
   const from = (page - 1) * PAGE_SIZE;
   let entries: EntryWithItem[];
   let total: number;
-  if (sort === "week" || sort === "month" || sort === "year") {
+  if (sort === "week" || sort === "month" || sort === "year" || sort === "comments") {
     // Popularidade no período: quantas pessoas registraram (ou mexeram em) cada obra no Orbi nesse tempo;
-    // empate pela popularidade de sempre. Ordena tudo da pasta e depois pagina.
+    // "comments": quantos comentários as reviews da obra têm no Orbi. Empate pela popularidade de sempre.
+    // Ordena tudo da pasta e depois pagina.
     const { data, count } = await query.limit(3000);
     const all = (data ?? []) as EntryWithItem[];
-    const activity = await recentActivity(all.map((e) => e.item_id), sort);
+    const ids = all.map((e) => e.item_id);
+    const activity = sort === "comments" ? await commentsPerItem(ids) : await recentActivity(ids, sort);
     all.sort(
       (a, b) =>
         (activity.get(b.item_id) ?? 0) - (activity.get(a.item_id) ?? 0) || (b.items.tmdb_votes ?? 0) - (a.items.tmdb_votes ?? 0),
@@ -222,6 +225,26 @@ export function periodSince(sort: "week" | "month" | "year") {
   const now = new Date();
   if (sort === "year") return `${now.getFullYear()}-01-01`;
   return new Date(now.getTime() - (sort === "week" ? 7 : 30) * 86400000).toISOString();
+}
+
+// Quantos comentários (em todas as reviews) cada obra tem.
+async function commentsPerItem(itemIds: string[]) {
+  const supabase = await createClient();
+  const ids = [...new Set(itemIds)];
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += 150) chunks.push(ids.slice(i, i + 150));
+  const results = await Promise.all(
+    chunks.map((chunk) =>
+      supabase.from("review_comments").select("entry:entries!inner(item_id)").in("entry.item_id", chunk).is("deleted_at", null).limit(10000),
+    ),
+  );
+  const counts = new Map<string, number>();
+  for (const { data } of results)
+    for (const r of data ?? []) {
+      const itemId = (r.entry as unknown as { item_id: string }).item_id;
+      counts.set(itemId, (counts.get(itemId) ?? 0) + 1);
+    }
+  return counts;
 }
 
 // Quantas entradas (de qualquer pessoa) cada obra teve no período.

@@ -113,7 +113,7 @@ export const de: Dictionary = {
     tabs: { watched: "Gesehen", watching: "Am Schauen", watchlist: "Watchlist", liked: "Gefällt mir", reviews: "Rezensionen", lists: "Listen" },
     sort: { week: "Beliebt diese Woche", release: "Erscheinungsdatum (neueste)", releaseOld: "Erscheinungsdatum (älteste)", recent: "Zuletzt hinzugefügt", recentOld: "Zuerst hinzugefügt", yours: "Von dir am besten bewertet", top: "Am besten bewertet", popular: "Beliebtheit", titleAz: "Titel (A–Z)", titleZa: "Titel (Z–A)", runtimeShort: "Kürzeste zuerst", runtimeLong: "Längste zuerst" },
     sortGroups: { popularity: "Beliebtheit", name: "Name", added: "Hinzugefügt", release: "Erscheinungsdatum", average: "Durchschnittsbewertung", yours: "Deine Bewertung", length: "Länge" },
-    sortOrder: { anticipated: "Meisterwartet", thisWeek: "Diese Woche", thisMonth: "Diesen Monat", thisYear: "Dieses Jahr", allTime: "Aller Zeiten", newest: "Neueste zuerst", earliest: "Älteste zuerst", highest: "Höchste zuerst", lowest: "Niedrigste zuerst", az: "A–Z", za: "Z–A", shortest: "Kürzeste zuerst", longest: "Längste zuerst" },
+    sortOrder: { mostCommented: "Meistkommentiert", anticipated: "Meisterwartet", thisWeek: "Diese Woche", thisMonth: "Diesen Monat", thisYear: "Dieses Jahr", allTime: "Aller Zeiten", newest: "Neueste zuerst", earliest: "Älteste zuerst", highest: "Höchste zuerst", lowest: "Niedrigste zuerst", az: "A–Z", za: "Z–A", shortest: "Kürzeste zuerst", longest: "Längste zuerst" },
     filters: { decade: "Jahrzehnt", genre: "Genre", rating: "Bewertung", sortBy: "Sortieren nach", any: "Alle", noRating: "Ohne Bewertung", search: "Nach Titel filtern…", clear: "Filter zurücksetzen" },
     page: (n: number, total: number) => `Seite ${n} von ${total}`,
     prev: "Zurück",
@@ -354,6 +354,7 @@ export const de: Dictionary = {
     note: "Filme, die schon in deinem Profil sind, werden mit den Letterboxd-Daten aktualisiert.",
   },
   lists: {
+    sortComments: "Meistkommentiert",
     allTitle: "Alle Listen",
     sortPopular: "Beliebt",
     sortRecent: "Neueste",

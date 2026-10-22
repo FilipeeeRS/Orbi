@@ -113,7 +113,7 @@ export const bn: Dictionary = {
     tabs: { watched: "দেখা", watching: "দেখছি", watchlist: "ওয়াচলিস্ট", liked: "পছন্দের", reviews: "রিভিউ", lists: "তালিকা" },
     sort: { week: "এই সপ্তাহে জনপ্রিয়", release: "মুক্তি (নতুন আগে)", releaseOld: "মুক্তি (পুরোনো আগে)", recent: "সম্প্রতি যোগ করা", recentOld: "সবচেয়ে আগে যোগ করা", yours: "আপনার সর্বোচ্চ রেটিং", top: "সর্বোচ্চ রেটিং", popular: "জনপ্রিয়তা", titleAz: "শিরোনাম (A–Z)", titleZa: "শিরোনাম (Z–A)", runtimeShort: "ছোট আগে", runtimeLong: "বড় আগে" },
     sortGroups: { popularity: "জনপ্রিয়তা", name: "নাম", added: "কখন যোগ করেছেন", release: "মুক্তির তারিখ", average: "গড় রেটিং", yours: "আপনার রেটিং", length: "দৈর্ঘ্য" },
-    sortOrder: { anticipated: "সবচেয়ে প্রতীক্ষিত", thisWeek: "এই সপ্তাহ", thisMonth: "এই মাস", thisYear: "এই বছর", allTime: "সর্বকালের", newest: "নতুনগুলো আগে", earliest: "পুরোনোগুলো আগে", highest: "সর্বোচ্চ আগে", lowest: "সর্বনিম্ন আগে", az: "A–Z", za: "Z–A", shortest: "ছোটগুলো আগে", longest: "বড়গুলো আগে" },
+    sortOrder: { mostCommented: "সবচেয়ে বেশি মন্তব্য", anticipated: "সবচেয়ে প্রতীক্ষিত", thisWeek: "এই সপ্তাহ", thisMonth: "এই মাস", thisYear: "এই বছর", allTime: "সর্বকালের", newest: "নতুনগুলো আগে", earliest: "পুরোনোগুলো আগে", highest: "সর্বোচ্চ আগে", lowest: "সর্বনিম্ন আগে", az: "A–Z", za: "Z–A", shortest: "ছোটগুলো আগে", longest: "বড়গুলো আগে" },
     filters: { decade: "দশক", genre: "ধরন", rating: "রেটিং", sortBy: "সাজান", any: "যেকোনো", noRating: "রেটিং নেই", search: "শিরোনাম দিয়ে ফিল্টার…", clear: "ফিল্টার মুছুন" },
     page: (n: number, total: number) => `পৃষ্ঠা ${n} / ${total}`,
     prev: "আগের",
@@ -354,6 +354,7 @@ export const bn: Dictionary = {
     note: "আপনার প্রোফাইলে আগে থেকে থাকা সিনেমাগুলো Letterboxd-এর ডেটা দিয়ে আপডেট হবে।",
   },
   lists: {
+    sortComments: "সবচেয়ে বেশি মন্তব্য",
     allTitle: "সব তালিকা",
     sortPopular: "জনপ্রিয়",
     sortRecent: "সাম্প্রতিক",

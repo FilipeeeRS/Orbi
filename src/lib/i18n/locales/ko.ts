@@ -113,7 +113,7 @@ export const ko: Dictionary = {
     tabs: { watched: "본 영화", watching: "보는 중", watchlist: "보고 싶어요", liked: "좋아요", reviews: "리뷰", lists: "리스트" },
     sort: { week: "이번 주 인기", release: "개봉일(최신순)", releaseOld: "개봉일(오래된순)", recent: "최근 추가순", recentOld: "오래전 추가순", yours: "내 별점 높은 순", top: "평점 높은 순", popular: "인기순", titleAz: "제목(A–Z)", titleZa: "제목(Z–A)", runtimeShort: "짧은 순", runtimeLong: "긴 순" },
     sortGroups: { popularity: "인기", name: "제목", added: "추가한 날짜", release: "개봉일", average: "평균 평점", yours: "내 평점", length: "러닝타임" },
-    sortOrder: { anticipated: "가장 기대되는", thisWeek: "이번 주", thisMonth: "이번 달", thisYear: "올해", allTime: "역대", newest: "최신순", earliest: "오래된순", highest: "높은순", lowest: "낮은순", az: "A–Z", za: "Z–A", shortest: "짧은순", longest: "긴순" },
+    sortOrder: { mostCommented: "댓글 많은 순", anticipated: "가장 기대되는", thisWeek: "이번 주", thisMonth: "이번 달", thisYear: "올해", allTime: "역대", newest: "최신순", earliest: "오래된순", highest: "높은순", lowest: "낮은순", az: "A–Z", za: "Z–A", shortest: "짧은순", longest: "긴순" },
     filters: { decade: "연대", genre: "장르", rating: "별점", sortBy: "정렬", any: "전체", noRating: "별점 없음", search: "제목으로 필터…", clear: "필터 지우기" },
     page: (n: number, total: number) => `${total}페이지 중 ${n}페이지`,
     prev: "이전",
@@ -354,6 +354,7 @@ export const ko: Dictionary = {
     note: "프로필에 이미 있는 영화는 Letterboxd 데이터로 업데이트됩니다.",
   },
   lists: {
+    sortComments: "댓글 많은 순",
     allTitle: "모든 리스트",
     sortPopular: "인기",
     sortRecent: "최신",

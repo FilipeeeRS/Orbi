@@ -113,7 +113,7 @@ export const ar: Dictionary = {
     tabs: { watched: "شاهدتها", watching: "أشاهده", watchlist: "قائمة المشاهدة", liked: "أعجبتني", reviews: "المراجعات", lists: "القوائم" },
     sort: { week: "الأكثر رواجًا هذا الأسبوع", release: "الإصدار (الأحدث)", releaseOld: "الإصدار (الأقدم)", recent: "المضافة حديثًا", recentOld: "المضافة أولًا", yours: "الأعلى تقييمًا منك", top: "الأعلى تقييمًا", popular: "الشعبية", titleAz: "العنوان (أ–ي)", titleZa: "العنوان (ي–أ)", runtimeShort: "الأقصر أولًا", runtimeLong: "الأطول أولًا" },
     sortGroups: { popularity: "الشعبية", name: "الاسم", added: "تاريخ الإضافة", release: "تاريخ الإصدار", average: "متوسط التقييم", yours: "تقييمك", length: "المدة" },
-    sortOrder: { anticipated: "الأكثر انتظارًا", thisWeek: "هذا الأسبوع", thisMonth: "هذا الشهر", thisYear: "هذا العام", allTime: "كل الأوقات", newest: "الأحدث أولًا", earliest: "الأقدم أولًا", highest: "الأعلى أولًا", lowest: "الأدنى أولًا", az: "A–Z", za: "Z–A", shortest: "الأقصر أولًا", longest: "الأطول أولًا" },
+    sortOrder: { mostCommented: "الأكثر تعليقًا", anticipated: "الأكثر انتظارًا", thisWeek: "هذا الأسبوع", thisMonth: "هذا الشهر", thisYear: "هذا العام", allTime: "كل الأوقات", newest: "الأحدث أولًا", earliest: "الأقدم أولًا", highest: "الأعلى أولًا", lowest: "الأدنى أولًا", az: "A–Z", za: "Z–A", shortest: "الأقصر أولًا", longest: "الأطول أولًا" },
     filters: { decade: "العقد", genre: "النوع", rating: "التقييم", sortBy: "ترتيب حسب", any: "الكل", noRating: "بدون تقييم", search: "تصفية بالعنوان…", clear: "مسح عوامل التصفية" },
     page: (n: number, total: number) => `صفحة ${n} من ${total}`,
     prev: "السابق",
@@ -354,6 +354,7 @@ export const ar: Dictionary = {
     note: "ستُحدَّث الأفلام الموجودة في ملفك الشخصي ببيانات Letterboxd.",
   },
   lists: {
+    sortComments: "الأكثر تعليقًا",
     allTitle: "كل القوائم",
     sortPopular: "الأكثر شيوعًا",
     sortRecent: "الأحدث",

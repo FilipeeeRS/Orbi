@@ -113,7 +113,7 @@ export const fr: Dictionary = {
     tabs: { watched: "Vus", watching: "En cours", watchlist: "Watchlist", liked: "Aimés", reviews: "Critiques", lists: "Listes" },
     sort: { week: "Populaires cette semaine", release: "Sortie (plus récents)", releaseOld: "Sortie (plus anciens)", recent: "Ajoutés récemment", recentOld: "Ajoutés en premier", yours: "Mieux notés par vous", top: "Mieux notés", popular: "Popularité", titleAz: "Titre (A–Z)", titleZa: "Titre (Z–A)", runtimeShort: "Plus courts d'abord", runtimeLong: "Plus longs d'abord" },
     sortGroups: { popularity: "Popularité", name: "Nom", added: "Date d'ajout", release: "Date de sortie", average: "Note moyenne", yours: "Votre note", length: "Durée" },
-    sortOrder: { anticipated: "Les plus attendus", thisWeek: "Cette semaine", thisMonth: "Ce mois-ci", thisYear: "Cette année", allTime: "De tous les temps", newest: "Plus récents d'abord", earliest: "Plus anciens d'abord", highest: "Meilleures d'abord", lowest: "Moins bonnes d'abord", az: "A–Z", za: "Z–A", shortest: "Plus courts d'abord", longest: "Plus longs d'abord" },
+    sortOrder: { mostCommented: "Les plus commentés", anticipated: "Les plus attendus", thisWeek: "Cette semaine", thisMonth: "Ce mois-ci", thisYear: "Cette année", allTime: "De tous les temps", newest: "Plus récents d'abord", earliest: "Plus anciens d'abord", highest: "Meilleures d'abord", lowest: "Moins bonnes d'abord", az: "A–Z", za: "Z–A", shortest: "Plus courts d'abord", longest: "Plus longs d'abord" },
     filters: { decade: "Décennie", genre: "Genre", rating: "Note", sortBy: "Trier par", any: "Toutes", noRating: "Sans note", search: "Filtrer par titre…", clear: "Effacer les filtres" },
     page: (n: number, total: number) => `Page ${n} sur ${total}`,
     prev: "Précédent",
@@ -354,6 +354,7 @@ export const fr: Dictionary = {
     note: "Les films déjà présents sur votre profil seront mis à jour avec les données de Letterboxd.",
   },
   lists: {
+    sortComments: "Les plus commentées",
     allTitle: "Toutes les listes",
     sortPopular: "Populaires",
     sortRecent: "Récentes",

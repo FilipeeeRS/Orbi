@@ -113,7 +113,7 @@ export const id: Dictionary = {
     tabs: { watched: "Ditonton", watching: "Sedang ditonton", watchlist: "Watchlist", liked: "Disukai", reviews: "Ulasan", lists: "Daftar" },
     sort: { week: "Populer minggu ini", release: "Rilis (terbaru)", releaseOld: "Rilis (terlama)", recent: "Baru ditambahkan", recentOld: "Paling lama ditambahkan", yours: "Nilai tertinggi darimu", top: "Nilai tertinggi", popular: "Popularitas", titleAz: "Judul (A–Z)", titleZa: "Judul (Z–A)", runtimeShort: "Terpendek dulu", runtimeLong: "Terpanjang dulu" },
     sortGroups: { popularity: "Popularitas", name: "Nama", added: "Waktu ditambahkan", release: "Tanggal rilis", average: "Nilai rata-rata", yours: "Nilaimu", length: "Durasi" },
-    sortOrder: { anticipated: "Paling dinantikan", thisWeek: "Minggu ini", thisMonth: "Bulan ini", thisYear: "Tahun ini", allTime: "Sepanjang masa", newest: "Terbaru dulu", earliest: "Terlama dulu", highest: "Tertinggi dulu", lowest: "Terendah dulu", az: "A–Z", za: "Z–A", shortest: "Terpendek dulu", longest: "Terpanjang dulu" },
+    sortOrder: { mostCommented: "Paling banyak dikomentari", anticipated: "Paling dinantikan", thisWeek: "Minggu ini", thisMonth: "Bulan ini", thisYear: "Tahun ini", allTime: "Sepanjang masa", newest: "Terbaru dulu", earliest: "Terlama dulu", highest: "Tertinggi dulu", lowest: "Terendah dulu", az: "A–Z", za: "Z–A", shortest: "Terpendek dulu", longest: "Terpanjang dulu" },
     filters: { decade: "Dekade", genre: "Genre", rating: "Nilai", sortBy: "Urutkan", any: "Semua", noRating: "Tanpa nilai", search: "Filter judul…", clear: "Hapus filter" },
     page: (n: number, total: number) => `Halaman ${n} dari ${total}`,
     prev: "Sebelumnya",
@@ -354,6 +354,7 @@ export const id: Dictionary = {
     note: "Film yang sudah ada di profilmu akan diperbarui dengan data Letterboxd.",
   },
   lists: {
+    sortComments: "Paling banyak dikomentari",
     allTitle: "Semua daftar",
     sortPopular: "Populer",
     sortRecent: "Terbaru",

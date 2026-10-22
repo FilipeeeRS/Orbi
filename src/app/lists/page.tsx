@@ -5,14 +5,14 @@ import { GridSkeleton } from "@/components/skeletons";
 import { Pagination } from "@/components/pagination";
 import { getDict, getViewer } from "@/lib/session";
 import { browseLists, type ListSort } from "@/lib/lists";
-import { ListCard } from "./list-card";
+import { ListsGrid } from "./lists-grid";
 import { FolderIcon } from "@/components/folder-icon";
 import { MEDIA_KINDS, type MediaKind } from "@/lib/types";
 import { BackButton } from "@/components/back-button";
 
 export const metadata: Metadata = { title: "Listas" };
 
-const SORTS: ListSort[] = ["popular", "recent"];
+const SORTS: ListSort[] = ["popular", "recent", "comments"];
 
 export default function ListsPage(props: PageProps<"/lists">) {
   return (
@@ -53,7 +53,7 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
                 s === sort ? "border-fg bg-fg text-bg" : "border-border text-muted hover:border-fg hover:text-fg"
               }`}
             >
-              {s === "popular" ? t.lists.sortPopular : t.lists.sortRecent}
+              {s === "popular" ? t.lists.sortPopular : s === "recent" ? t.lists.sortRecent : t.lists.sortComments}
             </Link>
           ))}
         </nav>
@@ -70,14 +70,16 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
           </Link>
         ))}
       </nav>
-      {lists.length === 0 ? (
+      {lists.length === 0 && !viewer ? (
         <p className="py-6 text-muted">{t.lists.noLists}</p>
       ) : (
-        <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {lists.map((list) => (
-            <ListCard key={list.id} list={list} viewerId={viewer?.id ?? null} />
-          ))}
-        </div>
+        <ListsGrid
+          lists={lists}
+          canCreate={!!viewer && page === 1}
+          username={viewer?.username ?? null}
+          viewerId={viewer?.id ?? null}
+          t={t}
+        />
       )}
       <Pagination page={page} pages={pages} hrefFor={(p) => hrefFor(sort, p)} t={t} />
     </div>
