@@ -386,3 +386,13 @@ select {
   animation: orbi-moon-y calc(var(--orbit, 7s) / 2) cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
   animation-delay: calc(var(--orbit, 7s) / -4);
 }
+
+/* Barrinha de carregamento entre páginas (NavigationProgress) */
+@keyframes orbi-progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}

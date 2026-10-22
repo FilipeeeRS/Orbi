@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Syne } from "next/font/google";
 import { Header } from "@/components/header";
 import { NavigationTracker } from "@/components/back-button";
+import { NavigationProgress } from "@/components/navigation-progress";
 import { I18nProvider } from "@/components/i18n";
 import { themeScript } from "@/components/theme-toggle";
 import { SiteFooter } from "@/components/site-footer";
@@ -49,6 +50,7 @@ async function AppShell({ children }: { children: React.ReactNode }) {
     <I18nProvider locale={locale}>
       <Suspense fallback={null}>
         <NavigationTracker />
+        <NavigationProgress />
       </Suspense>
       <Header viewer={viewer} t={t} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
