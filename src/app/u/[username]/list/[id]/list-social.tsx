@@ -67,7 +67,8 @@ export function ListActions({
       <path d="M6 3h12v18l-6-5-6 5z" />
     </svg>
   );
-  const flagClass = `transition ${saved ? "text-like" : "text-muted hover:text-like"}`;
+  // Salva: o marcador fica branco (cor do texto), preenchido
+  const flagClass = `transition ${saved ? "text-fg" : "text-muted hover:text-fg"}`;
 
   return (
     <div className="flex items-center gap-3">
