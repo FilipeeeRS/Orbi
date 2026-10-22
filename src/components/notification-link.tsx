@@ -20,8 +20,8 @@ function setKey(cookie: string, key: string, on: boolean) {
 }
 const addKey = (cookie: string, key: string) => setKey(cookie, key, true);
 
-// Uma notificação: a linha inteira é um link (ao clicar, fica lida/cinza). À direita, a bolinha de
-// não lida, ✓ para marcar como lida ou não lida (cinza ↔ normal) e ✕ para apagar (vai para "Apagadas"; lá, o ✕ apaga de vez).
+// Uma notificação: a linha inteira é um link (ao clicar, fica lida/cinza). À direita, fora da linha, a
+// bolinha de não lida; dentro, ✓ para marcar como lida ou não lida (cinza ↔ normal) e ✕ para apagar (vai para "Apagadas"; lá, o ✕ apaga de vez).
 export function NotificationItem({
   href,
   readKey,
@@ -61,11 +61,12 @@ export function NotificationItem({
   const action = "grid size-7 place-items-center rounded-full text-muted transition hover:bg-surface-2 hover:text-fg";
 
   return (
-    <li className="relative">
+    // pe-6: a notificação fica mais estreita e a bolinha de não lida mora fora dela, na ponta direita
+    <li className="relative pe-6">
       <Link href={href} onClick={markRead} className={`${className ?? ""} pe-24 ${read ? "text-muted opacity-70" : ""}`} data-read={read || undefined}>
         {children}
       </Link>
-      <div className="absolute end-0 top-3 flex items-center gap-0.5">
+      <div className="absolute end-7 top-3 flex items-center gap-0.5">
         {/* ✓: lida (cinza) ↔ não lida (normal) */}
         <button
           type="button"
@@ -90,9 +91,9 @@ export function NotificationItem({
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
-        {/* Bolinha de não lida, na ponta direita */}
-        <span className={`ms-1 size-2 rounded-full ${read ? "bg-transparent" : "bg-accent"}`} aria-hidden />
       </div>
+      {/* Bolinha de não lida: fora da notificação, na ponta direita */}
+      {!read && <span className="absolute end-0 top-1/2 size-2 -translate-y-1/2 rounded-full bg-accent" aria-hidden />}
     </li>
   );
 }
