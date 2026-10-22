@@ -13,8 +13,11 @@ export const GONE_COOKIE = "orbi-notif-gone";
 export const UNREAD_COOKIE = "orbi-notif-unread";
 
 function setKey(cookie: string, key: string, on: boolean) {
-  const current = document.cookie.match(new RegExp(`(?:^|; )${cookie}=([^;]*)`))?.[1] ?? "";
-  const rest = decodeURIComponent(current).split(".").filter((k) => k && k !== key);
+  const current =
+    document.cookie.match(new RegExp(`(?:^|; )${cookie}=([^;]*)`))?.[1] ?? "";
+  const rest = decodeURIComponent(current)
+    .split(".")
+    .filter((k) => k && k !== key);
   const keys = (on ? [key, ...rest] : rest).slice(0, 200);
   document.cookie = `${cookie}=${encodeURIComponent(keys.join("."))}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
 }
@@ -58,42 +61,78 @@ export function NotificationItem({
   }
 
   if (hidden) return null;
-  const action = "grid size-7 place-items-center rounded-full text-muted transition hover:bg-surface-2 hover:text-fg";
+  const action =
+    "grid size-7 place-items-center rounded-full text-muted transition hover:bg-surface-2 hover:text-fg";
 
   return (
     // ps-5: a notificação fica mais estreita e a bolinha de não lida mora fora dela, antes da linha
     <li className="relative ps-5">
-      <Link href={href} onClick={markRead} className={`${className ?? ""} pe-24 ${read ? "text-muted opacity-70" : ""}`} data-read={read || undefined}>
+      <Link
+        href={href}
+        onClick={markRead}
+        className={`${className ?? ""} pe-24 ${read ? "text-muted opacity-70" : ""}`}
+        data-read={read || undefined}
+      >
         {children}
       </Link>
       <div className="absolute end-0 top-3 flex items-center gap-0.5">
-        {/* ✓: lida (cinza) ↔ não lida (normal) */}
-        <button
-          type="button"
-          onClick={() => setReadState(!read)}
-          aria-pressed={read}
-          title={read ? t.notifications.markUnread : t.notifications.markRead}
-          aria-label={read ? t.notifications.markUnread : t.notifications.markRead}
-          className={action}
-        >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M5 12.5l4.5 4.5L19 7.5" />
-          </svg>
-        </button>
+        {/* ✓: lida (cinza) ↔ não lida (normal). Nas apagadas não aparece. */}
+        {!deleted && (
+          <button
+            type="button"
+            onClick={() => setReadState(!read)}
+            aria-pressed={read}
+            title={read ? t.notifications.markUnread : t.notifications.markRead}
+            aria-label={
+              read ? t.notifications.markUnread : t.notifications.markRead
+            }
+            className={action}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="size-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+          </button>
+        )}
         <button
           type="button"
           onClick={remove}
-          title={deleted ? t.notifications.deleteForever : t.notifications.delete}
-          aria-label={deleted ? t.notifications.deleteForever : t.notifications.delete}
+          title={
+            deleted ? t.notifications.deleteForever : t.notifications.delete
+          }
+          aria-label={
+            deleted ? t.notifications.deleteForever : t.notifications.delete
+          }
           className={`${action} hover:text-danger`}
         >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+          <svg
+            viewBox="0 0 24 24"
+            className="size-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            aria-hidden
+          >
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
       </div>
       {/* Bolinha de não lida: fora da notificação, antes dela */}
-      {!read && <span className="absolute start-0 top-1/2 size-2 -translate-y-1/2 rounded-full bg-accent" aria-hidden />}
+      {!read && (
+        <span
+          className="absolute start-0 top-1/2 size-2 -translate-y-1/2 rounded-full bg-accent"
+          aria-hidden
+        />
+      )}
     </li>
   );
 }
