@@ -24,7 +24,7 @@ import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
 import { ReviewAttachments } from "@/components/review-attachments";
 import { TranslatableText } from "@/components/translatable-text";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
-import { getUserLists } from "@/lib/lists";
+import { getUserLists, LIST_SORTS, type UserListSort } from "@/lib/lists";
 import { ListsGrid } from "@/app/lists/lists-grid";
 import { BackButton } from "@/components/back-button";
 
@@ -69,7 +69,8 @@ export async function FolderView({
   ]);
   const states = viewer ? await getViewerStates(viewer.id, entries.map((e) => e.item_id)) : null;
   // Aba Listas: as listas personalizadas do perfil (de todas as pastas)
-  const lists = tab === "lists" ? await getUserLists(profile.id) : null;
+  const listSort: UserListSort = LIST_SORTS.includes(query.sort as UserListSort) ? (query.sort as UserListSort) : "recent";
+  const lists = tab === "lists" ? await getUserLists(profile.id, listSort, filters.q) : null;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const base = `/u/${profile.username}/${path}`;
   // Mantém filtros e ordenação ao trocar de aba ou de página.
@@ -134,6 +135,17 @@ export async function FolderView({
             </Link>
           ))}
         </nav>
+        {/* Listas: só ordenar (popularidade pelas curtidas, nome, data) e a lupa */}
+        {tab === "lists" && (
+          <FilterBar
+            labels={t.movies.filters}
+            defaultSort="recent"
+            sorts={sortOptions(LIST_SORTS, t)}
+            decades={[]}
+            genres={[]}
+            ratings={[]}
+          />
+        )}
         {tab !== "lists" && (
           <FilterBar
             labels={t.movies.filters}

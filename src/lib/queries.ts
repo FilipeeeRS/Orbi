@@ -80,6 +80,9 @@ export const TABS = ["watched", "watching", "liked", "watchlist", "reviews", "li
 export type Tab = (typeof TABS)[number];
 // Ordenações das pastas (valor da URL). "recent" (adicionados por último) é a padrão.
 export const SORTS = [
+  "week",
+  "month",
+  "year",
   "recent",
   "recent-old",
   "release",
@@ -192,9 +195,48 @@ export async function listEntries(
   query = query.order("updated_at", { ascending: !newest });
 
   const from = (page - 1) * PAGE_SIZE;
-  const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
-  const entries = (data ?? []) as EntryWithItem[];
-  return { entries: artViewerId ? await applyArtToEntries(artViewerId, entries) : entries, total: count ?? 0 };
+  let entries: EntryWithItem[];
+  let total: number;
+  if (sort === "week" || sort === "month" || sort === "year") {
+    // Popularidade no período: quantas pessoas registraram (ou mexeram em) cada obra no Orbi nesse tempo;
+    // empate pela popularidade de sempre. Ordena tudo da pasta e depois pagina.
+    const { data, count } = await query.limit(3000);
+    const all = (data ?? []) as EntryWithItem[];
+    const activity = await recentActivity(all.map((e) => e.item_id), sort);
+    all.sort(
+      (a, b) =>
+        (activity.get(b.item_id) ?? 0) - (activity.get(a.item_id) ?? 0) || (b.items.tmdb_votes ?? 0) - (a.items.tmdb_votes ?? 0),
+    );
+    entries = all.slice(from, from + PAGE_SIZE);
+    total = count ?? all.length;
+  } else {
+    const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
+    entries = (data ?? []) as EntryWithItem[];
+    total = count ?? 0;
+  }
+  return { entries: artViewerId ? await applyArtToEntries(artViewerId, entries) : entries, total };
+}
+
+// Início do período: últimos 7 dias, últimos 30 dias ou desde 1º de janeiro.
+export function periodSince(sort: "week" | "month" | "year") {
+  const now = new Date();
+  if (sort === "year") return `${now.getFullYear()}-01-01`;
+  return new Date(now.getTime() - (sort === "week" ? 7 : 30) * 86400000).toISOString();
+}
+
+// Quantas entradas (de qualquer pessoa) cada obra teve no período.
+async function recentActivity(itemIds: string[], sort: "week" | "month" | "year") {
+  const supabase = await createClient();
+  const since = periodSince(sort);
+  const ids = [...new Set(itemIds)];
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += 150) chunks.push(ids.slice(i, i + 150));
+  const results = await Promise.all(
+    chunks.map((chunk) => supabase.from("entries").select("item_id").in("item_id", chunk).gte("updated_at", since).limit(10000)),
+  );
+  const counts = new Map<string, number>();
+  for (const { data } of results) for (const r of data ?? []) counts.set(r.item_id, (counts.get(r.item_id) ?? 0) + 1);
+  return counts;
 }
 
 export type ReviewWithAuthor = EntryWithItem & {

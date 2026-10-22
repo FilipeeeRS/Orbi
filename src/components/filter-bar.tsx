@@ -68,7 +68,9 @@ export function FilterBar({ labels, decades, genres, ratings, sorts, defaultSort
           {labels.clear}
         </button>
       )}
-      <Dropdown label={labels.decade} anyLabel={labels.any} options={decades} value={params.get("decade")} onChange={(v) => update("decade", v)} />
+      {decades.length > 0 && (
+        <Dropdown label={labels.decade} anyLabel={labels.any} options={decades} value={params.get("decade")} onChange={(v) => update("decade", v)} />
+      )}
       {genres.length > 0 && (
         <Dropdown label={labels.genre} anyLabel={labels.any} options={genres} value={params.get("genre")} onChange={(v) => update("genre", v)} />
       )}

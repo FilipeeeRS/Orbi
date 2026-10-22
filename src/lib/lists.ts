@@ -2,6 +2,7 @@ import "server-only";
 import type { ListComment } from "@/app/lists/social-actions";
 import { createClient } from "./supabase/server";
 import { getViewer } from "./session";
+import { periodSince } from "./queries";
 import type { Item, MediaKind, Profile } from "./types";
 
 // Listas personalizadas (tabelas lists e list_items). A RLS esconde as de perfis invisíveis.
@@ -27,15 +28,40 @@ export type ListDetail = {
   items: Item[]; // na ordem da lista
 };
 
-export async function getUserLists(userId: string): Promise<ListSummary[]> {
+export const LIST_SORTS = ["week", "month", "year", "popular", "title", "title-desc", "recent", "recent-old"] as const;
+export type UserListSort = (typeof LIST_SORTS)[number];
+
+// Listas de um perfil. Popularidade = curtidas (no período, para semana/mês/ano; empate pelas de sempre).
+export async function getUserLists(userId: string, sort: UserListSort = "recent", q?: string): Promise<ListSummary[]> {
   const supabase = await createClient();
-  const { data: lists } = await supabase
+  let query = supabase
     .from("lists")
     .select("id, title, description, updated_at")
     .eq("user_id", userId)
-    .order("updated_at", { ascending: false })
+    .order("updated_at", { ascending: sort === "recent-old" })
     .limit(200);
+  const text = q?.trim().slice(0, 100).replace(/[%,()]/g, " ");
+  if (text) query = query.ilike("title", `%${text}%`);
+  const { data: lists } = await query;
   if (!lists?.length) return [];
+
+  if (sort === "title" || sort === "title-desc") {
+    lists.sort((a, b) => (sort === "title" ? 1 : -1) * a.title.localeCompare(b.title));
+  } else if (sort === "week" || sort === "month" || sort === "year" || sort === "popular") {
+    const { data: likes } = await supabase
+      .from("list_likes")
+      .select("list_id, created_at")
+      .in("list_id", lists.map((l) => l.id))
+      .limit(50000);
+    const since = sort === "popular" ? "" : periodSince(sort);
+    const inPeriod = new Map<string, number>();
+    const ever = new Map<string, number>();
+    for (const l of likes ?? []) {
+      ever.set(l.list_id, (ever.get(l.list_id) ?? 0) + 1);
+      if (l.created_at >= since) inPeriod.set(l.list_id, (inPeriod.get(l.list_id) ?? 0) + 1);
+    }
+    lists.sort((a, b) => (inPeriod.get(b.id) ?? 0) - (inPeriod.get(a.id) ?? 0) || (ever.get(b.id) ?? 0) - (ever.get(a.id) ?? 0));
+  }
 
   const { data: rows } = await supabase
     .from("list_items")
