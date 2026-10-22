@@ -42,6 +42,7 @@ export const zh: Dictionary = {
     welcomeSub: "看看 Orbi 上正在发生什么。",
     newFromFriends: "好友动态",
     popular: (f: string) => `本周热门${f}`,
+    mostAnticipated: (f: string) => `最受期待的${f}`,
     popularReviews: "本周热门影评",
     popularLists: "本周热门片单",
     watchlistOf: (u: string) => `${u} 的想看清单`,

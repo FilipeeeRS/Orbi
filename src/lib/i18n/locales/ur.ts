@@ -42,6 +42,7 @@ export const ur: Dictionary = {
     welcomeSub: "دیکھیں Orbi پر کیا چل رہا ہے۔",
     newFromFriends: "دوستوں کی سرگرمی",
     popular: (f: string) => `اس ہفتے مقبول ${f}`,
+    mostAnticipated: (f: string) => `سب سے زیادہ منتظر ${f}`,
     popularReviews: "اس ہفتے مقبول ریویوز",
     popularLists: "اس ہفتے کی مقبول فہرستیں",
     watchlistOf: (u: string) => `${u} کی واچ لسٹ`,

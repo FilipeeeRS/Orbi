@@ -42,6 +42,7 @@ export const de: Dictionary = {
     welcomeSub: "Das passiert gerade auf Orbi.",
     newFromFriends: "Aktivität von Freunden",
     popular: (f: string) => `Beliebte ${f} diese Woche`,
+    mostAnticipated: (f: string) => `Meisterwartete ${f}`,
     popularReviews: "Beliebte Rezensionen diese Woche",
     popularLists: "Beliebte Listen dieser Woche",
     watchlistOf: (u: string) => `Watchlist von ${u}`,

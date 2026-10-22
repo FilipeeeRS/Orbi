@@ -42,6 +42,7 @@ export const fr: Dictionary = {
     welcomeSub: "Voici ce qui se passe sur Orbi.",
     newFromFriends: "Activité des amis",
     popular: (f: string) => `${f} populaires cette semaine`,
+    mostAnticipated: (f: string) => `${f} les plus attendu${/^(Séries|Musiques)$/.test(f) ? "es" : "s"}`,
     popularReviews: "Critiques populaires cette semaine",
     popularLists: "Listes populaires cette semaine",
     watchlistOf: (u: string) => `Watchlist de ${u}`,

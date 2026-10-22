@@ -120,6 +120,7 @@ export type AnimeQuery = {
   seasonYear?: number;
   decade?: number; // 1990 = anos 90
   startFrom?: string; // "2026-09-20": só o que estreou a partir dessa data
+  status?: "NOT_YET_RELEASED"; // só o que ainda não lançou
   showAdult?: boolean;
 };
 
@@ -139,11 +140,11 @@ async function fetchAnimePage(q: AnimeQuery): Promise<{ list: AnimeCard[]; total
   {
     const data = await anilist<{ Page: { pageInfo: { total: number; hasNextPage: boolean }; media: AnimeCard[] } }>(
       `query ($page: Int, $perPage: Int, $sort: [MediaSort], $search: String, $genre: String, $season: MediaSeason,
-              $seasonYear: Int, $from: FuzzyDateInt, $to: FuzzyDateInt, $isAdult: Boolean, $type: MediaType) {
+              $seasonYear: Int, $from: FuzzyDateInt, $to: FuzzyDateInt, $isAdult: Boolean, $type: MediaType, $status: MediaStatus) {
         Page(page: $page, perPage: $perPage) {
           pageInfo { total hasNextPage }
           media(type: $type, sort: $sort, search: $search, genre: $genre, season: $season, seasonYear: $seasonYear,
-                startDate_greater: $from, startDate_lesser: $to, isAdult: $isAdult) { ${CARD} }
+                startDate_greater: $from, startDate_lesser: $to, isAdult: $isAdult, status: $status) { ${CARD} }
         }
       }`,
       {
@@ -159,6 +160,7 @@ async function fetchAnimePage(q: AnimeQuery): Promise<{ list: AnimeCard[]; total
         from: q.startFrom ? Number(q.startFrom.replace(/-/g, "")) : q.decade ? q.decade * 10000 : undefined,
         to: q.decade ? (q.decade + 10) * 10000 : undefined,
         isAdult: q.showAdult ? undefined : false,
+        status: q.status,
       },
     );
     // Clipes musicais ficam de fora (o filtro format_not_in do AniList zera a lista).

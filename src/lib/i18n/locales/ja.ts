@@ -42,6 +42,7 @@ export const ja: Dictionary = {
     welcomeSub: "Orbi で話題になっていること。",
     newFromFriends: "フレンドのアクティビティ",
     popular: (f: string) => `今週人気の${f}`,
+    mostAnticipated: (f: string) => `期待の${f}`,
     popularReviews: "今週人気のレビュー",
     popularLists: "今週の人気リスト",
     watchlistOf: (u: string) => `${u} のウォッチリスト`,

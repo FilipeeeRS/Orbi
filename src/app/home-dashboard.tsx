@@ -17,7 +17,8 @@ import { getNotifications, getReadState } from "@/lib/notifications";
 import { NotificationRow } from "@/components/notification-row";
 import { getPopularLists } from "@/lib/lists";
 import { ListCard } from "./lists/list-card";
-import { releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
+import { isAnime, releaseYear, tmdbDiscover, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
+import { animeCover, animeTitle, animeYear, browseAnime } from "@/lib/anilist";
 import { ReviewLike } from "@/components/review-like";
 import { ReviewAttachments } from "@/components/review-attachments";
 import { TranslatableText } from "@/components/translatable-text";
@@ -310,6 +311,12 @@ function FolderTab({ kind, viewer, t, locale }: TabProps & { kind: MediaKind }) 
           <ShelfRow kind={kind} title={shelfTitle} status={shelfStatus} viewer={viewer} t={t} locale={locale} />
         </Streamed>
       )}
+      {/* Ainda não lançados, dos mais aguardados (livros e músicas ainda sem fonte para isso) */}
+      {UPCOMING_KINDS.includes(kind) && (
+        <Streamed title={t.home.mostAnticipated(t.folders[kind])}>
+          <UpcomingRow kind={kind} title={t.home.mostAnticipated(t.folders[kind])} viewer={viewer} t={t} locale={locale} />
+        </Streamed>
+      )}
       <Streamed title={allTitle}>
         <SampleRow kind={kind} title={allTitle} browse={browse} viewer={viewer} t={t} locale={locale} />
       </Streamed>
@@ -347,6 +354,55 @@ async function ShelfRow({ kind, title, status, viewer, t, locale }: RowProps & {
       )}
     </Section>
   );
+}
+
+const UPCOMING_KINDS: MediaKind[] = ["movie", "series", "anime", "manga", "game"];
+
+async function UpcomingRow({ kind, title, viewer, locale }: RowProps) {
+  const list = await upcoming(kind, locale, !!viewer?.show_adult);
+  return (
+    <Section title={title}>
+      {list.length ? (
+        <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "game"} list={list} viewer={viewer} layout="row" />
+      ) : (
+        <ItemRow items={[]} kind={kind} locale={locale} viewerFor={() => null} />
+      )}
+    </Section>
+  );
+}
+
+// Mais aguardados: o que ainda não lançou, dos mais populares (TMDB, AniList, Steam).
+async function upcoming(kind: MediaKind, locale: Locale, showAdult: boolean): Promise<ExternalPoster[]> {
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  if (kind === "movie" || kind === "series") {
+    const tv = kind === "series";
+    const { results } = await tmdbDiscover(
+      { [tv ? "first_air_date.gte" : "primary_release_date.gte"]: tomorrow, sort_by: "popularity.desc" },
+      1,
+      tmdbLanguage(locale),
+      tv ? "tv" : "movie",
+    );
+    return results
+      .filter((m) => m.poster_path && (!tv || !isAnime(m)))
+      .slice(0, 6)
+      .map((m) => ({ id: m.id, title: m.title, year: releaseYear(m), poster: tmdbImage(m.poster_path, "w342"), unreleased: true }));
+  }
+  if (kind === "anime" || kind === "manga") {
+    const { list } = await browseAnime({
+      type: kind === "manga" ? "MANGA" : "ANIME",
+      page: 1,
+      perPage: 12,
+      sort: "POPULARITY_DESC",
+      status: "NOT_YET_RELEASED",
+      showAdult,
+    });
+    return list.slice(0, 6).map((a) => ({ id: a.id, title: animeTitle(a), year: animeYear(a), poster: animeCover(a), unreleased: true }));
+  }
+  if (kind === "game") {
+    const { list } = await browseGames({ page: 1, perPage: 6, sort: "upcoming" });
+    return list.map((g) => ({ ...g, unreleased: true }));
+  }
+  return [];
 }
 
 async function SampleRow({ kind, title, browse, viewer, t, locale }: RowProps & { browse: string }) {

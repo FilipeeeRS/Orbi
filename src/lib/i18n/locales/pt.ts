@@ -40,6 +40,7 @@ export const pt = {
     welcomeSub: "Veja o que está rolando no Orbi.",
     newFromFriends: "Atividade dos amigos",
     popular: (f: string) => `${f} populares esta semana`,
+    mostAnticipated: (f: string) => `${f} mais ${/^(Séries|Músicas)$/.test(f) ? "aguardadas" : "aguardados"}`,
     popularReviews: "Reviews populares esta semana",
     popularLists: "Listas populares esta semana",
     watchlistOf: (u: string) => `Watchlist de ${u}`,

@@ -42,6 +42,7 @@ export const tr: Dictionary = {
     welcomeSub: "Orbi'de neler oluyor, bak.",
     newFromFriends: "Arkadaş etkinliği",
     popular: (f: string) => `Bu haftanın popüler ${f.toLowerCase()}`,
+    mostAnticipated: (f: string) => `En çok beklenen ${f.toLowerCase()}`,
     popularReviews: "Bu haftanın popüler incelemeleri",
     popularLists: "Bu haftanın popüler listeleri",
     watchlistOf: (u: string) => `${u} kullanıcısının watchlist'i`,

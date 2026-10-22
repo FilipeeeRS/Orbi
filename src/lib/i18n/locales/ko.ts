@@ -42,6 +42,7 @@ export const ko: Dictionary = {
     welcomeSub: "지금 Orbi에서 일어나는 일이에요.",
     newFromFriends: "친구 활동",
     popular: (f: string) => `이번 주 인기 ${f}`,
+    mostAnticipated: (f: string) => `가장 기대되는 ${f}`,
     popularReviews: "이번 주 인기 리뷰",
     popularLists: "이번 주 인기 리스트",
     watchlistOf: (u: string) => `${u}님의 보고 싶어요`,

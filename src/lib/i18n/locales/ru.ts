@@ -50,6 +50,7 @@ export const ru: Dictionary = {
     welcomeSub: "Вот что происходит в Orbi.",
     newFromFriends: "Активность друзей",
     popular: (f: string) => `Популярное на этой неделе: ${f.toLowerCase()}`,
+    mostAnticipated: (f: string) => `Самое ожидаемое: ${f.toLowerCase()}`,
     popularReviews: "Популярные рецензии недели",
     popularLists: "Популярные списки недели",
     watchlistOf: (u: string) => `Watchlist пользователя ${u}`,
