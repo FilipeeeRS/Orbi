@@ -20,15 +20,15 @@ export default function ListsPage(props: PageProps<"/lists">) {
   );
 }
 
-// Todas as listas criadas no Orbi, no mesmo formato da aba Listas do perfil: título, a linha com
-// Pasta · Ordenar por · lupa, e a grade (com o "+ Nova lista" primeiro), 24 por página.
+// Todas as listas criadas no Orbi: título e Pasta · Ordenar por · lupa na mesma linha (como no Ver tudo
+// das pastas) e a grade (com o "+ Nova lista" primeiro), 24 por página.
 async function ListsContent({ searchParams }: PageProps<"/lists">) {
   const [{ t }, query, viewer] = await Promise.all([getDict(), searchParams, getViewer()]);
   const sort: UserListSort = LIST_SORTS.includes(query.sort as UserListSort) ? (query.sort as UserListSort) : "popular";
   const page = Math.max(1, Number(query.page) || 1);
   const folder = MEDIA_KINDS.includes(query.folder as MediaKind) ? (query.folder as MediaKind) : null;
   const q = typeof query.q === "string" ? query.q : undefined;
-  const { lists, pages } = await browseLists(sort, page, folder, q);
+  const { lists, pages, total } = await browseLists(sort, page, folder, q);
   const pageHref = (n: number) => {
     const s = new URLSearchParams();
     for (const key of ["sort", "folder", "q"] as const) {
@@ -41,14 +41,13 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      {/* Título e filtros na mesma linha, como no Ver tudo das pastas */}
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
+        <h1 className="font-display flex items-center gap-2 pb-2 text-2xl font-extrabold">
           <BackButton fallback="/home" label={t.common.back} />
-          <h1 className="font-display text-2xl font-extrabold">{t.lists.allTitle}</h1>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-border">
+          {t.lists.allTitle}
+          <span className="font-sans text-sm font-normal text-muted">{total}</span>
+        </h1>
         <FilterBar
           labels={t.movies.filters}
           defaultSort="popular"
