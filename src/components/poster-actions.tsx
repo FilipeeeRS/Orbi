@@ -242,8 +242,7 @@ export function PosterActions({
               className={`${button} ${state.watching ? "bg-white/15 text-white" : "text-white/70 hover:text-white"}`}
             >
               <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" aria-hidden>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M10 8.5v7l5.5-3.5z" fill="currentColor" />
+                <path d="M8.5 6.5v11l9-5.5z" fill="currentColor" strokeWidth="1.5" />
               </svg>
             </button>
           )}
