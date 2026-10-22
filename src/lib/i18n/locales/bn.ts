@@ -385,6 +385,9 @@ export const bn: Dictionary = {
     count: (n: number) => (n === 1 ? `${n}টি সিনেমা` : `${n}টি সিনেমা`),
   },
   notifications: {
+    markRead: "পড়া হয়েছে চিহ্নিত করুন",
+    delete: "বিজ্ঞপ্তি মুছুন",
+    deleteForever: "চিরতরে মুছুন",
     listLike: (t: string) => `"${t}" আপনার তালিকা পছন্দ করেছে`,
     listComment: (t: string) => `"${t}" আপনার তালিকায় মন্তব্য করেছে`,
     markAllRead: "সব পড়া হয়েছে চিহ্নিত করুন",
@@ -393,7 +396,7 @@ export const bn: Dictionary = {
     release: (t: string) => `${t} মুক্তি পেয়েছে — এটি আপনার ওয়াচলিস্টে ছিল`,
     newDevice: (d: string) => `আপনার অ্যাকাউন্টে নতুন লগইন: ${d}`,
     deviceHint: "আপনি না হলে সেটিংসে পাসওয়ার্ড বদলান।",
-    filters: { all: "সব", social: "সোশ্যাল", releases: "মুক্তি", account: "অ্যাকাউন্ট", updates: "Orbi আপডেট" },
+    filters: { all: "সব", social: "সোশ্যাল", releases: "মুক্তি", account: "অ্যাকাউন্ট", updates: "Orbi আপডেট", deleted: "মুছে ফেলা" },
     seeAll: "সব দেখুন",
     title: "নোটিফিকেশন",
     empty: "এখনো কিছু নেই। লাইক, মন্তব্য, ফলোয়ার, ওয়াচলিস্টের মুক্তি আর আপডেট এখানে দেখাবে।",

@@ -385,6 +385,9 @@ export const ko: Dictionary = {
     count: (n: number) => (n === 1 ? `영화 ${n}편` : `영화 ${n}편`),
   },
   notifications: {
+    markRead: "읽음으로 표시",
+    delete: "알림 삭제",
+    deleteForever: "영구 삭제",
     listLike: (t: string) => `"${t}" 님이 내 리스트를 좋아합니다`,
     listComment: (t: string) => `"${t}" 님이 내 리스트에 댓글을 남겼습니다`,
     markAllRead: "모두 읽음으로 표시",
@@ -393,7 +396,7 @@ export const ko: Dictionary = {
     release: (t: string) => `「${t}」이(가) 공개됐어요 — 워치리스트에 있던 작품이에요`,
     newDevice: (d: string) => `계정에 새 로그인: ${d}`,
     deviceHint: "본인이 아니라면 설정에서 비밀번호를 바꾸세요.",
-    filters: { all: "전체", social: "소셜", releases: "공개", account: "계정", updates: "Orbi 소식" },
+    filters: { all: "전체", social: "소셜", releases: "공개", account: "계정", updates: "Orbi 소식", deleted: "삭제됨" },
     seeAll: "모두 보기",
     title: "알림",
     empty: "아직 아무것도 없어요. 좋아요, 댓글, 팔로워, 워치리스트 공개 소식과 업데이트가 여기에 표시돼요.",

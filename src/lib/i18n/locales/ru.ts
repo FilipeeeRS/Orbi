@@ -393,6 +393,9 @@ export const ru: Dictionary = {
     count: (n: number) => (n === 1 ? `Фильмов: ${n}` : `Фильмов: ${n}`),
   },
   notifications: {
+    markRead: "Отметить как прочитанное",
+    delete: "Удалить уведомление",
+    deleteForever: "Удалить навсегда",
     listLike: (t: string) => `оценил(а) ваш список “${t}”`,
     listComment: (t: string) => `прокомментировал(а) ваш список “${t}”`,
     markAllRead: "Отметить всё как прочитанное",
@@ -401,7 +404,7 @@ export const ru: Dictionary = {
     release: (t: string) => `Вышло «${t}» — было в вашем списке`,
     newDevice: (d: string) => `Новый вход в аккаунт: ${d}`,
     deviceHint: "Это были не вы? Смените пароль в настройках.",
-    filters: { all: "Все", social: "Соцсеть", releases: "Премьеры", account: "Аккаунт", updates: "Новое в Orbi" },
+    filters: { all: "Все", social: "Соцсеть", releases: "Премьеры", account: "Аккаунт", updates: "Новое в Orbi", deleted: "Удалённые" },
     seeAll: "Все уведомления",
     title: "Уведомления",
     empty: "Пока пусто. Здесь появятся лайки, комментарии, подписчики, премьеры из вашего списка и новости.",

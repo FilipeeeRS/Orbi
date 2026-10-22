@@ -383,6 +383,9 @@ export const pt = {
     count: (n: number) => (n === 1 ? `${n} filme` : `${n} filmes`),
   },
   notifications: {
+    markRead: "Marcar como lida",
+    delete: "Apagar notificação",
+    deleteForever: "Apagar de vez",
     listLike: (t: string) => `curtiu sua lista “${t}”`,
     listComment: (t: string) => `comentou na sua lista “${t}”`,
     markAllRead: "Marcar tudo como lido",
@@ -391,7 +394,7 @@ export const pt = {
     release: (t: string) => `${t} estreou — estava na sua watchlist`,
     newDevice: (d: string) => `Novo acesso à sua conta: ${d}`,
     deviceHint: "Não foi você? Troque sua senha em Configurações.",
-    filters: { all: "Todas", social: "Social", releases: "Lançamentos", account: "Conta", updates: "Novidades do Orbi" },
+    filters: { all: "Todas", social: "Social", releases: "Lançamentos", account: "Conta", updates: "Novidades do Orbi", deleted: "Apagadas" },
     seeAll: "Ver todas",
     title: "Notificações",
     empty: "Nada por aqui ainda. Curtidas, comentários, seguidores, estreias da sua watchlist e novidades aparecem aqui.",

@@ -385,6 +385,9 @@ export const ja: Dictionary = {
     count: (n: number) => (n === 1 ? `${n}本` : `${n}本`),
   },
   notifications: {
+    markRead: "既読にする",
+    delete: "通知を削除",
+    deleteForever: "完全に削除",
     listLike: (t: string) => `「${t}」 があなたのリストにいいねしました`,
     listComment: (t: string) => `「${t}」 があなたのリストにコメントしました`,
     markAllRead: "すべて既読にする",
@@ -393,7 +396,7 @@ export const ja: Dictionary = {
     release: (t: string) => `「${t}」が公開されました（ウォッチリストに登録済み）`,
     newDevice: (d: string) => `アカウントへの新しいログイン：${d}`,
     deviceHint: "心当たりがない場合は設定でパスワードを変更してください。",
-    filters: { all: "すべて", social: "ソーシャル", releases: "公開", account: "アカウント", updates: "Orbiのお知らせ" },
+    filters: { all: "すべて", social: "ソーシャル", releases: "公開", account: "アカウント", updates: "Orbiのお知らせ", deleted: "削除済み" },
     seeAll: "すべて見る",
     title: "通知",
     empty: "まだ何もありません。いいね、コメント、フォロワー、ウォッチリストの公開情報、お知らせがここに表示されます。",

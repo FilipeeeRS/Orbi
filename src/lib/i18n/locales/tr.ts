@@ -385,6 +385,9 @@ export const tr: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} film` : `${n} film`),
   },
   notifications: {
+    markRead: "Okundu olarak işaretle",
+    delete: "Bildirimi sil",
+    deleteForever: "Kalıcı olarak sil",
     listLike: (t: string) => `listeni beğendi “${t}”`,
     listComment: (t: string) => `listene yorum yaptı “${t}”`,
     markAllRead: "Tümünü okundu yap",
@@ -393,7 +396,7 @@ export const tr: Dictionary = {
     release: (t: string) => `${t} çıktı — izleme listendeydi`,
     newDevice: (d: string) => `Hesabına yeni giriş: ${d}`,
     deviceHint: "Sen değil miydin? Ayarlar'dan şifreni değiştir.",
-    filters: { all: "Tümü", social: "Sosyal", releases: "Çıkanlar", account: "Hesap", updates: "Orbi yenilikleri" },
+    filters: { all: "Tümü", social: "Sosyal", releases: "Çıkanlar", account: "Hesap", updates: "Orbi yenilikleri", deleted: "Silinenler" },
     seeAll: "Tümünü gör",
     title: "Bildirimler",
     empty: "Henüz bir şey yok. Beğeniler, yorumlar, takipçiler, izleme listendeki yeni çıkanlar ve yenilikler burada görünür.",

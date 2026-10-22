@@ -385,6 +385,9 @@ export const zh: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} 部电影` : `${n} 部电影`),
   },
   notifications: {
+    markRead: "标为已读",
+    delete: "删除通知",
+    deleteForever: "永久删除",
     listLike: (t: string) => `喜欢了你的片单 “${t}”`,
     listComment: (t: string) => `评论了你的片单 “${t}”`,
     markAllRead: "全部标为已读",
@@ -393,7 +396,7 @@ export const zh: Dictionary = {
     release: (t: string) => `《${t}》已上线——在你的待看清单里`,
     newDevice: (d: string) => `你的账户有新的登录：${d}`,
     deviceHint: "不是你本人？请在设置中修改密码。",
-    filters: { all: "全部", social: "社交", releases: "上线", account: "账户", updates: "Orbi 更新" },
+    filters: { all: "全部", social: "社交", releases: "上线", account: "账户", updates: "Orbi 更新", deleted: "已删除" },
     seeAll: "查看全部",
     title: "通知",
     empty: "这里还没有内容。点赞、评论、关注者、待看清单的上线和更新都会显示在这里。",

@@ -1,7 +1,7 @@
 import { Avatar } from "@/components/header";
 import { FolderIcon } from "@/components/folder-icon";
 import { OrbiMark } from "@/components/logo";
-import { NotificationLink } from "@/components/notification-link";
+import { NotificationItem } from "@/components/notification-link";
 import { notificationKey, type Notification } from "@/lib/notifications";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { itemHref, itemTitle, type FolderKind } from "@/lib/types";
@@ -40,12 +40,14 @@ export function NotificationRow({
   t,
   locale,
   compact = false,
+  deleted = false,
 }: {
   n: Notification;
   read: boolean;
   t: Dictionary;
   locale: Locale;
   compact?: boolean; // Home: sem o texto do comentário
+  deleted?: boolean; // no filtro "Apagadas": o ✕ apaga de vez
 }) {
   const title = n.item ? itemTitle(n.item, locale) : "";
   const lang = dictionaries[locale].htmlLang;
@@ -85,12 +87,12 @@ export function NotificationRow({
   const icon = n.kind in KIND_ICON ? KIND_ICON[n.kind as keyof typeof KIND_ICON] : null;
 
   return (
-    <li>
-      <NotificationLink
+      <NotificationItem
         href={href}
         readKey={notificationKey(n.id)}
         read={read}
-        className={`relative -mx-2 flex gap-3 rounded-lg px-2 transition hover:bg-surface-2 ${compact ? "py-3" : "py-4"}`}
+        deleted={deleted}
+        className={`relative -mx-2 flex gap-3 rounded-lg ps-2 transition hover:bg-surface-2 ${compact ? "py-3" : "py-4"}`}
       >
         {n.actor ? (
           <span className="relative shrink-0">
@@ -119,7 +121,6 @@ export function NotificationRow({
         </span>
         {/* Tela de notificações: data e hora à direita, na mesma linha */}
         {!compact && when}
-      </NotificationLink>
-    </li>
+      </NotificationItem>
   );
 }

@@ -11,11 +11,11 @@ import { BackButton } from "@/components/back-button";
 
 export const metadata: Metadata = { title: "Notificações" };
 
-// Filtros do topo: tudo, social (curtidas, comentários, seguidores), lançamentos e conta.
-const FILTERS = ["all", "social", "release", "device"] as const;
+// Filtros do topo: tudo, social (curtidas, comentários, seguidores), lançamentos, conta e as apagadas.
+const FILTERS = ["all", "social", "release", "device", "deleted"] as const;
 type Filter = (typeof FILTERS)[number];
 const matches = (n: Notification, f: Filter) =>
-  f === "all" || (f === "social" ? SOCIAL_KINDS.includes(n.kind) : n.kind === f);
+  f === "all" || f === "deleted" || (f === "social" ? SOCIAL_KINDS.includes(n.kind) : n.kind === f);
 
 export default function NotificationsPage(props: PageProps<"/notifications">) {
   return (
@@ -29,17 +29,22 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
   const [viewer, { t, locale }, query] = await Promise.all([getViewer(), getDict(), searchParams]);
   if (!viewer) redirect("/login?next=/notifications");
   const filter: Filter = FILTERS.includes(query.type as Filter) ? (query.type as Filter) : "all";
-  const [all, isRead] = await Promise.all([getNotifications(viewer.id, { limit: 100 }), getReadState()]);
-  const list = all.filter((n) => matches(n, filter));
+  const [all, deleted, isRead] = await Promise.all([
+    getNotifications(viewer.id, { limit: 100 }),
+    getNotifications(viewer.id, { limit: 100, deleted: true }),
+    getReadState(),
+  ]);
+  const list = filter === "deleted" ? deleted : all.filter((n) => matches(n, filter));
   const labels: Record<Filter, string> = {
     all: t.notifications.filters.all,
     social: t.notifications.filters.social,
     release: t.notifications.filters.releases,
     device: t.notifications.filters.account,
+    deleted: t.notifications.filters.deleted,
   };
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <div className="mb-4 flex items-end justify-between gap-3">
         <div className="flex items-center gap-2">
           <BackButton fallback="/home" label={t.common.back} />
@@ -49,7 +54,7 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
       </div>
       <nav className="mb-2 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none]">
         {FILTERS.map((f) => {
-          const count = all.filter((n) => matches(n, f)).length;
+          const count = f === "deleted" ? deleted.length : all.filter((n) => matches(n, f)).length;
           return (
             <Link
               key={f}
@@ -67,9 +72,9 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
       {list.length === 0 ? (
         <p className="py-6 text-muted">{t.notifications.empty}</p>
       ) : (
-        <ul className="divide-y divide-border ps-4">
+        <ul className="divide-y divide-border">
           {list.map((n) => (
-            <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} />
+            <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} deleted={filter === "deleted"} />
           ))}
         </ul>
       )}

@@ -385,6 +385,9 @@ export const id: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} film` : `${n} film`),
   },
   notifications: {
+    markRead: "Tandai sudah dibaca",
+    delete: "Hapus notifikasi",
+    deleteForever: "Hapus permanen",
     listLike: (t: string) => `menyukai daftarmu “${t}”`,
     listComment: (t: string) => `mengomentari daftarmu “${t}”`,
     markAllRead: "Tandai semua sudah dibaca",
@@ -393,7 +396,7 @@ export const id: Dictionary = {
     release: (t: string) => `${t} sudah rilis — ada di watchlist-mu`,
     newDevice: (d: string) => `Login baru ke akunmu: ${d}`,
     deviceHint: "Bukan kamu? Ganti kata sandi di Pengaturan.",
-    filters: { all: "Semua", social: "Sosial", releases: "Rilis", account: "Akun", updates: "Kabar Orbi" },
+    filters: { all: "Semua", social: "Sosial", releases: "Rilis", account: "Akun", updates: "Kabar Orbi", deleted: "Dihapus" },
     seeAll: "Lihat semua",
     title: "Notifikasi",
     empty: "Belum ada apa-apa. Suka, komentar, pengikut, rilis dari watchlist-mu, dan kabar terbaru muncul di sini.",

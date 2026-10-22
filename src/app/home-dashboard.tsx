@@ -147,7 +147,7 @@ async function NotificationsSection({ viewer, t, locale }: TabProps & { viewer: 
   return (
     <Section title={t.notifications.title} more={{ href: "/notifications", label: t.profile.all }}>
       {notifications.length ? (
-        <ul className="divide-y divide-border ps-4">
+        <ul className="divide-y divide-border">
           {notifications.map((n) => (
             <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} compact />
           ))}

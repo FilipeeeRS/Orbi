@@ -385,6 +385,9 @@ export const hi: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} फ़िल्म` : `${n} फ़िल्में`),
   },
   notifications: {
+    markRead: "पढ़ा हुआ मार्क करें",
+    delete: "सूचना हटाएं",
+    deleteForever: "हमेशा के लिए हटाएं",
     listLike: (t: string) => `"${t}" ने आपकी लिस्ट पसंद की`,
     listComment: (t: string) => `"${t}" ने आपकी लिस्ट पर कमेंट किया`,
     markAllRead: "सभी को पढ़ा हुआ मार्क करें",
@@ -393,7 +396,7 @@ export const hi: Dictionary = {
     release: (t: string) => `${t} रिलीज़ हो गई — यह आपकी वॉचलिस्ट में थी`,
     newDevice: (d: string) => `आपके खाते में नया लॉगिन: ${d}`,
     deviceHint: "यह आप नहीं थे? सेटिंग्स में पासवर्ड बदलें।",
-    filters: { all: "सभी", social: "सोशल", releases: "रिलीज़", account: "खाता", updates: "Orbi अपडेट" },
+    filters: { all: "सभी", social: "सोशल", releases: "रिलीज़", account: "खाता", updates: "Orbi अपडेट", deleted: "हटाई गई" },
     seeAll: "सभी देखें",
     title: "सूचनाएँ",
     empty: "अभी कुछ नहीं है। लाइक, कमेंट, फ़ॉलोअर, वॉचलिस्ट की रिलीज़ और अपडेट यहाँ दिखेंगे।",

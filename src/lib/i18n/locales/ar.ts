@@ -385,6 +385,9 @@ export const ar: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} فيلم` : `${n} أفلام`),
   },
   notifications: {
+    markRead: "تعليم كمقروء",
+    delete: "حذف الإشعار",
+    deleteForever: "حذف نهائي",
     listLike: (t: string) => `أعجبته قائمتك “${t}”`,
     listComment: (t: string) => `علّق على قائمتك “${t}”`,
     markAllRead: "تعليم الكل كمقروء",
@@ -393,7 +396,7 @@ export const ar: Dictionary = {
     release: (t: string) => `صدر «${t}» — كان في قائمة المشاهدة`,
     newDevice: (d: string) => `تسجيل دخول جديد إلى حسابك: ${d}`,
     deviceHint: "ليس أنت؟ غيّر كلمة المرور من الإعدادات.",
-    filters: { all: "الكل", social: "اجتماعي", releases: "إصدارات", account: "الحساب", updates: "جديد Orbi" },
+    filters: { all: "الكل", social: "اجتماعي", releases: "إصدارات", account: "الحساب", updates: "جديد Orbi", deleted: "المحذوفة" },
     seeAll: "عرض الكل",
     title: "الإشعارات",
     empty: "لا شيء هنا بعد. ستظهر هنا الإعجابات والتعليقات والمتابعون وإصدارات قائمة المشاهدة والتحديثات.",

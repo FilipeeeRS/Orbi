@@ -385,6 +385,9 @@ export const ur: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} فلم` : `${n} فلمیں`),
   },
   notifications: {
+    markRead: "پڑھا ہوا نشان زد کریں",
+    delete: "اطلاع حذف کریں",
+    deleteForever: "ہمیشہ کے لیے حذف کریں",
     listLike: (t: string) => `"${t}" نے آپ کی فہرست پسند کی`,
     listComment: (t: string) => `"${t}" نے آپ کی فہرست پر تبصرہ کیا`,
     markAllRead: "سب کو پڑھا ہوا نشان زد کریں",
@@ -393,7 +396,7 @@ export const ur: Dictionary = {
     release: (t: string) => `${t} ریلیز ہو گئی — یہ آپ کی واچ لسٹ میں تھی`,
     newDevice: (d: string) => `آپ کے اکاؤنٹ میں نیا لاگ ان: ${d}`,
     deviceHint: "یہ آپ نہیں تھے؟ سیٹنگز میں پاس ورڈ بدلیں۔",
-    filters: { all: "سب", social: "سوشل", releases: "ریلیز", account: "اکاؤنٹ", updates: "Orbi اپ ڈیٹس" },
+    filters: { all: "سب", social: "سوشل", releases: "ریلیز", account: "اکاؤنٹ", updates: "Orbi اپ ڈیٹس", deleted: "حذف شدہ" },
     seeAll: "سب دیکھیں",
     title: "اطلاعات",
     empty: "ابھی کچھ نہیں۔ لائکس، تبصرے، فالوورز، واچ لسٹ کی ریلیز اور اپ ڈیٹس یہاں نظر آئیں گے۔",

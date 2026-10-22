@@ -47,8 +47,26 @@ export async function getNotificationsSeenAt(): Promise<string | null> {
 
 // Até 100 notificações, da mais nova para a mais antiga. Uma ida ao banco só (as consultas filtram pelo
 // dono através das junções) e uma vez por carregamento: o número do menu e a Home usam a mesma busca.
-export async function getNotifications(userId: string, opts: { limit?: number } = {}) {
-  return (await loadNotifications(userId)).slice(0, opts.limit ?? 50);
+// As apagadas (✕) saem da lista; com `deleted`, vêm só elas (o filtro "Apagadas"). Apagadas de vez
+// não aparecem em lugar nenhum.
+export async function getNotifications(userId: string, opts: { limit?: number; deleted?: boolean } = {}) {
+  const [list, keys] = await Promise.all([loadNotifications(userId), hiddenKeys()]);
+  return list
+    .filter((n) => {
+      const key = notificationKey(n.id);
+      if (keys.gone.has(key)) return false;
+      return keys.deleted.has(key) === !!opts.deleted;
+    })
+    .slice(0, opts.limit ?? 50);
+}
+
+export const NOTIFICATIONS_DELETED_COOKIE = "orbi-notif-deleted";
+export const NOTIFICATIONS_GONE_COOKIE = "orbi-notif-gone";
+
+async function hiddenKeys() {
+  const jar = await cookies();
+  const read = (name: string) => new Set(decodeURIComponent(jar.get(name)?.value ?? "").split(".").filter(Boolean));
+  return { deleted: read(NOTIFICATIONS_DELETED_COOKIE), gone: read(NOTIFICATIONS_GONE_COOKIE) };
 }
 
 const MAX = 100;

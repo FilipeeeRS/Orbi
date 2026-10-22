@@ -385,6 +385,9 @@ export const fr: Dictionary = {
     count: (n: number) => (n === 1 ? `${n} film` : `${n} films`),
   },
   notifications: {
+    markRead: "Marquer comme lue",
+    delete: "Supprimer la notification",
+    deleteForever: "Supprimer définitivement",
     listLike: (t: string) => `a aimé ta liste “${t}”`,
     listComment: (t: string) => `a commenté ta liste “${t}”`,
     markAllRead: "Tout marquer comme lu",
@@ -393,7 +396,7 @@ export const fr: Dictionary = {
     release: (t: string) => `${t} est sorti — il était dans votre watchlist`,
     newDevice: (d: string) => `Nouvelle connexion à votre compte : ${d}`,
     deviceHint: "Ce n'était pas vous ? Changez votre mot de passe dans les Paramètres.",
-    filters: { all: "Toutes", social: "Social", releases: "Sorties", account: "Compte", updates: "Nouveautés d'Orbi" },
+    filters: { all: "Toutes", social: "Social", releases: "Sorties", account: "Compte", updates: "Nouveautés d'Orbi", deleted: "Supprimées" },
     seeAll: "Tout voir",
     title: "Notifications",
     empty: "Rien pour l'instant. Les j'aime, commentaires, abonnés, sorties de votre watchlist et nouveautés apparaissent ici.",
