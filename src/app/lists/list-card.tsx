@@ -13,12 +13,11 @@ const BOOKMARK = "M6 3h12v18l-6-5-6 5z";
 
 // Cartão de uma lista (Home e Todas as listas). A fileira de pôsteres abre a lista; ao passar o mouse,
 // uma borda em volta da faixa inteira e, embaixo, ♥ curtir e o marcador salvar (como nos pôsteres).
-// Salva por você: o marcador fica no canto de cima. Embaixo: o nome, quem fez, obras, comentários e ♥.
+// Curtida/salva por você: ♥ e o marcador ficam no canto de cima. Embaixo: o nome, quem fez, obras e comentários.
 export function ListCard({ list, viewerId }: { list: PopularList; viewerId: string | null }) {
   const { t } = useI18n();
   const router = useRouter();
   const [liked, setLiked] = useState(list.liked);
-  const [likes, setLikes] = useState(list.likes);
   const [saved, setSaved] = useState(list.saved);
   const [, start] = useTransition();
   const href = `/u/${list.owner.username}/list/${list.id}`;
@@ -27,13 +26,9 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
     if (!viewerId) return router.push("/login");
     const next = !liked;
     setLiked(next);
-    setLikes((n) => n + (next ? 1 : -1));
     start(async () => {
       const { ok } = await setListLike(list.id, next);
-      if (!ok) {
-        setLiked(!next);
-        setLikes((n) => n + (next ? -1 : 1));
-      }
+      if (!ok) setLiked(!next);
     });
   }
 
@@ -47,7 +42,7 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
     });
   }
 
-  const button = "grid size-7 place-items-center rounded-full transition";
+  const button = "grid size-7 place-items-center rounded-md transition";
 
   return (
     <div className="min-w-0">
@@ -55,17 +50,28 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
         <Link href={href} aria-label={list.title} className="block rounded-md ring-2 ring-transparent transition group-hover:ring-fg">
           <ListStrip posters={list.posters} />
         </Link>
-        {/* Salva por você: o marcador branco (só o contorno) no canto, como o relógio da watchlist */}
-        {saved && (
-          <span title={t.lists.savedList} className="pointer-events-none absolute end-1.5 top-1.5 z-10 grid size-6 place-items-center rounded-md bg-black/75 text-white shadow-md">
-            <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round" aria-hidden>
-              <path d={BOOKMARK} />
-            </svg>
+        {/* No canto de cima, como os selos dos pôsteres: ♥ se você curtiu e o marcador branco se salvou */}
+        {(liked || saved) && (
+          <span className="pointer-events-none absolute end-1.5 top-1.5 z-10 flex items-center gap-1">
+            {liked && (
+              <span title={t.lists.like} className="grid size-6 place-items-center rounded-md bg-black/75 text-like shadow-md">
+                <svg viewBox="0 0 24 24" className="size-3.5" fill="currentColor" aria-hidden>
+                  <path d={HEART} />
+                </svg>
+              </span>
+            )}
+            {saved && (
+              <span title={t.lists.savedList} className="grid size-6 place-items-center rounded-md bg-black/75 text-white shadow-md">
+                <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round" aria-hidden>
+                  <path d={BOOKMARK} />
+                </svg>
+              </span>
+            )}
           </span>
         )}
         {/* Ao passar o mouse: ♥ e salvar, sem abrir a lista */}
         <div className="pointer-events-none absolute inset-x-0 bottom-2 z-10 flex justify-center opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
-          <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-black/75 px-2 py-1 shadow-lg backdrop-blur">
+          <div className="pointer-events-auto flex items-center gap-1 rounded-md bg-black/75 px-1.5 py-1 shadow-lg backdrop-blur">
             <button
               type="button"
               onClick={toggleLike}
@@ -104,18 +110,6 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
           </svg>
           {list.comments}
         </span>
-        <button
-          type="button"
-          onClick={toggleLike}
-          aria-pressed={liked}
-          title={t.lists.like}
-          className={`flex shrink-0 items-center gap-1 transition ${liked ? "text-like" : "hover:text-like"}`}
-        >
-          <svg viewBox="0 0 24 24" className="size-3.5" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" aria-hidden>
-            <path d={HEART} />
-          </svg>
-          {likes}
-        </button>
       </div>
     </div>
   );
