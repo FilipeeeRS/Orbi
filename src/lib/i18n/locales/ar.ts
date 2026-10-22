@@ -243,6 +243,7 @@ export const ar: Dictionary = {
     tabs: { watched: "المقروءة", watching: "أقرأها" },
   },
   book: {
+    by: (name: string) => `تأليف ${name}`,
     signInToLog: "سجّل الدخول لتسجيل هذا الكتاب",
     authors: "المؤلفون",
     publishers: "دور النشر",

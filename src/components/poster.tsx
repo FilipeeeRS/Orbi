@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PosterActions, type ViewerItemState } from "./poster-actions";
 import { itemHref, itemTitle, type Item } from "@/lib/types";
-import type { Locale } from "@/lib/i18n/dictionaries";
+import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 
 type Props = {
   item: Item;
@@ -34,7 +34,7 @@ export function Poster({ item, locale, eager, viewer, badge = true }: Props) {
           />
         )}
       </div>
-      <PosterCaption href={itemHref(item)} title={title} year={item.year} />
+      <PosterCaption href={itemHref(item)} title={title} year={item.year} by={item.kind === "book" && item.original_title ? dictionaries[locale].book.by(item.original_title) : null} />
     </div>
   );
 }
@@ -81,10 +81,13 @@ export function PosterGrid({ children }: { children: React.ReactNode }) {
 
 // Embaixo de todo pôster do site: nome e ano (muitas capas, como as de anime e mangá, não têm o nome escrito).
 // A nota que a pessoa deu fica no canto de cima do pôster, ao lado do selo do status.
-export function PosterCaption({ href, title, year }: { href: string; title: string; year: number | null }) {
+// by: "by James Clear" (livros), já no idioma da pessoa
+export function PosterCaption({ href, title, year, by }: { href: string; title: string; year: number | null; by?: string | null }) {
   return (
     <Link href={href} className="mt-1 line-clamp-2 block text-xs">
-      {title} {year && <span className="text-muted">{year}</span>}
+      {title} {/* Livros: o autor em cinza, do tamanho do ano, antes dele */}
+      {by && <span className="text-muted">{by} </span>}
+      {year && <span className="text-muted">{year}</span>}
     </Link>
   );
 }

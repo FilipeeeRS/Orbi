@@ -243,6 +243,7 @@ export const zh: Dictionary = {
     tabs: { watched: "已读", watching: "在读" },
   },
   book: {
+    by: (name: string) => `作者：${name}`,
     signInToLog: "登录后即可记录这本书",
     authors: "作者",
     publishers: "出版社",

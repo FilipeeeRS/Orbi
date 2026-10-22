@@ -211,7 +211,7 @@ function SearchTabs({
 
 // Busca de um tipo que não vem do TMDB: animes e mangás (catálogo do AniList), livros (Open Library), jogos (Steam).
 async function searchKind(q: string, kind: "anime" | "manga" | "book" | "game", limit: number, showAdult: boolean) {
-  if (kind === "book") return (await searchBooks(q, limit)).list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
+  if (kind === "book") return (await searchBooks(q, limit)).list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating, by: b.authors.slice(0, 2).join(", ") || null }));
   if (kind === "game") return searchGames(q, limit);
   return searchCatalog(q, kind, limit, showAdult);
 }

@@ -50,10 +50,13 @@ async function BookContent({ params }: PageProps<"/book/[id]">) {
   // Números da fonte somados aos do Orbi (Open Library: "já li" e "quero ler"); a nota mistura as duas.
   const shown = withSourceStats(stats, item, { watched: book?.alreadyRead, watchlist: book?.wantToRead });
 
+  // "Atomic Habits by James Clear 2018": até dois autores no título
+  const authors = book?.authors.length ? book.authors.slice(0, 2).join(", ") : item.original_title;
   return (
     <ItemDetail
       item={item}
       title={itemTitle(item, locale)}
+      byline={authors ? t.book.by(authors) : null}
       overview={book?.description ?? itemOverview(item, locale)}
       posterUrl={item.poster_url}
       backdropUrl={null}

@@ -64,7 +64,7 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
     const found = await browseBooks({ page, perPage: BROWSE_PAGE_SIZE, sort: sort === "anticipated" ? "popular" : sort, q, decade, subject });
     // Assuntos mais comuns da Open Library (e o que veio da ficha, se não estiver na lista)
     genres = [...new Set([...BOOK_SUBJECTS, ...(subject ? [subject] : [])])].map((g) => ({ value: g, label: g }));
-    list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
+    list = found.list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating, by: b.authors.slice(0, 2).join(", ") || null }));
     total = found.total;
   } else if (kind === "game") {
     // Jogos: a busca da loja da Steam (o catálogo inteiro, com paginação e ordenação).

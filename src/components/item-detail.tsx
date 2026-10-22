@@ -32,6 +32,7 @@ export function ItemDetail({
   t,
   above,
   sourceLine,
+  byline,
   editor,
   details,
   side,
@@ -47,12 +48,14 @@ export function ItemDetail({
   t: Dictionary;
   above?: React.ReactNode; // ex.: link para a série acima do título da temporada
   sourceLine?: React.ReactNode; // no lugar da nota da fonte embaixo do título (jogos: "Muito positivas na Steam")
+  byline?: string | null; // livros: "by James Clear", entre o título e o ano, em cinza do mesmo tamanho
   editor: React.ReactNode;
   details?: React.ReactNode;
   side?: React.ReactNode; // abaixo dos números do pôster (trailer, trocar arte)
   children?: React.ReactNode; // seções entre a ficha e as reviews (temporadas, episódios)
 }) {
-  const hasOriginal = !!item.original_title && item.original_title !== title;
+  // Livros guardam os autores no título original: eles aparecem no "by", não embaixo.
+  const hasOriginal = !byline && !!item.original_title && item.original_title !== title;
   // Nota original da fonte, como referência embaixo do título (a nota grande já é a mistura com o Orbi).
   const SOURCE_LABEL: Record<string, string> = { tmdb: "TMDB", anilist: "AniList", openlibrary: "Open Library", steam: "Metacritic" };
   const sourceRating =
@@ -65,9 +68,9 @@ export function ItemDetail({
 
   return (
     <div className="mx-auto max-w-[58rem] space-y-10">
-      {/* O espaço do fundo existe sempre; sem imagem ele só fica vazio (igual ao perfil) */}
-      <div className="backdrop-fade relative -mt-6 ml-[calc(50%-min(50vw,650px))] h-70 w-[min(100vw,1300px)] overflow-hidden sm:-mt-8 sm:h-120">
-        {backdropUrl && (
+      {/* Fundo: só quando há imagem (livros não têm; aí o título começa no topo, sem espaço vazio) */}
+      {backdropUrl && (
+        <div className="backdrop-fade relative -mt-6 ml-[calc(50%-min(50vw,650px))] h-70 w-[min(100vw,1300px)] overflow-hidden sm:-mt-8 sm:h-120">
           <Image
             src={backdropUrl}
             alt=""
@@ -76,16 +79,17 @@ export function ItemDetail({
             loading="eager"
             sizes="(max-width: 1300px) 100vw, 1300px"
           />
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className={`relative grid grid-cols-[minmax(0,1fr)] items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] -mt-24 sm:-mt-40`}>
+      <div className={`relative grid grid-cols-[minmax(0,1fr)] items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${backdropUrl ? "-mt-24 sm:-mt-40" : ""}`}>
         <div className="space-y-5">
           {above}
           {/* Grade de 2 colunas: título alinhado com a nota do Orbi; embaixo, TMDB + título original com o "no Orbi" */}
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1">
             <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl">
               {title}{" "}
+              {byline && <span className="font-sans text-xl font-normal tracking-normal text-muted">{byline} </span>}
               {item.year && <span className="font-sans text-xl font-normal tracking-normal text-muted">{item.year}</span>}
             </h1>
             <p

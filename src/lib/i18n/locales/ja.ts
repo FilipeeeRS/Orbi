@@ -243,6 +243,7 @@ export const ja: Dictionary = {
     tabs: { watched: "読了", watching: "読書中" },
   },
   book: {
+    by: (name: string) => `著：${name}`,
     signInToLog: "ログインしてこの本を記録",
     authors: "著者",
     publishers: "出版社",

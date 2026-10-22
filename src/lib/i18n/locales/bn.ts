@@ -243,6 +243,7 @@ export const bn: Dictionary = {
     tabs: { watched: "পড়া হয়েছে", watching: "পড়ছি" },
   },
   book: {
+    by: (name: string) => `লেখক: ${name}`,
     signInToLog: "এই বইটি লগ করতে সাইন ইন করুন",
     authors: "লেখক",
     publishers: "প্রকাশক",

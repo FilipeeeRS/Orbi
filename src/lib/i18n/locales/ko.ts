@@ -243,6 +243,7 @@ export const ko: Dictionary = {
     tabs: { watched: "읽음", watching: "읽는 중" },
   },
   book: {
+    by: (name: string) => `지은이: ${name}`,
     signInToLog: "로그인하고 이 책을 기록하세요",
     authors: "저자",
     publishers: "출판사",

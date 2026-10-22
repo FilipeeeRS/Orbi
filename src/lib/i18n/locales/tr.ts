@@ -243,6 +243,7 @@ export const tr: Dictionary = {
     tabs: { watched: "Okunanlar", watching: "Okunuyor" },
   },
   book: {
+    by: (name: string) => `yazar: ${name}`,
     signInToLog: "Bu kitabı kaydetmek için giriş yap",
     authors: "Yazarlar",
     publishers: "Yayınevleri",

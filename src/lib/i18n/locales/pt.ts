@@ -241,6 +241,7 @@ export const pt = {
     tabs: { watched: "Lidos", watching: "Lendo" },
   },
   book: {
+    by: (name: string) => `de ${name}`,
     signInToLog: "Entre para registrar este livro",
     authors: "Autores",
     publishers: "Editoras",

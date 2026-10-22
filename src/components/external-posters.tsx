@@ -2,11 +2,13 @@ import Link from "next/link";
 import { PosterCaption, PosterImage, PosterGrid } from "@/components/poster";
 import { PosterActions } from "@/components/poster-actions";
 import { getViewerStates } from "@/lib/queries";
+import { getDict } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { MediaKind, Profile } from "@/lib/types";
 
 // Pôster de uma obra que vem de fora (TMDB ou AniList) e talvez ainda não esteja no catálogo.
 export type ExternalPoster = {
+  by?: string | null; // livros: autor(es), mostrado como "by Fulano" na legenda
   id: number | string; // id na fonte (TMDB, AniList, Steam; livro: "OL45804W" da Open Library)
   itemId?: string; // já no catálogo (lido do banco): dispensa a consulta
   title: string;
@@ -42,6 +44,7 @@ export async function ExternalPosters({
   eager?: number; // quantos pôsteres carregam na hora
 }) {
   const { source, type } = SOURCE[kind]!;
+  const { t } = await getDict();
   const itemIds = new Map<number | string, string>();
   let states: Awaited<ReturnType<typeof getViewerStates>> = new Map();
   for (const m of list) if (m.itemId) itemIds.set(m.id, m.itemId);
@@ -80,7 +83,7 @@ export async function ExternalPosters({
             />
           )}
         </div>
-        <PosterCaption href={href} title={m.title} year={m.year} />
+        <PosterCaption href={href} title={m.title} year={m.year} by={m.by ? t.book.by(m.by) : null} />
         {m.label && <p className="text-[11px] text-muted">{m.label}</p>}
       </div>
     );

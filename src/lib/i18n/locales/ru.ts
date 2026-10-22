@@ -251,6 +251,7 @@ export const ru: Dictionary = {
     tabs: { watched: "Прочитано", watching: "Читаю" },
   },
   book: {
+    by: (name: string) => `автор: ${name}`,
     signInToLog: "Войдите, чтобы отметить эту книгу",
     authors: "Авторы",
     publishers: "Издательства",

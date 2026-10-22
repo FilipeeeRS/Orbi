@@ -243,6 +243,7 @@ export const ur: Dictionary = {
     tabs: { watched: "پڑھے ہوئے", watching: "پڑھ رہے ہیں" },
   },
   book: {
+    by: (name: string) => `مصنف: ${name}`,
     signInToLog: "یہ کتاب درج کرنے کے لیے سائن ان کریں",
     authors: "مصنفین",
     publishers: "ناشرین",

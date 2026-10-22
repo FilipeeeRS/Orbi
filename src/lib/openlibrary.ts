@@ -154,9 +154,10 @@ export async function browseBooks(opts: {
     | undefined;
   if (period && !opts.q && !opts.decade && !opts.subject) {
     const list = await trendingBooks(period, opts.perPage, opts.page);
-    return { list, total: list.length < opts.perPage ? (opts.page - 1) * opts.perPage + list.length : 1000 };
+    if (list.length) return { list, total: list.length < opts.perPage ? (opts.page - 1) * opts.perPage + list.length : 1000 };
+    // Ranking da Open Library fora do ar: cai para os mais registrados (lidos/quero ler) da busca.
   }
-  const sort = { week: "", month: "", year: "", popular: "", top: "rating", "top-asc": "rating asc", release: "new", "release-old": "old", title: "title", "title-desc": "title" }[opts.sort];
+  const sort = { week: "readinglog", month: "readinglog", year: "readinglog", popular: "readinglog", top: "rating", "top-asc": "rating asc", release: "new", "release-old": "old", title: "title", "title-desc": "title" }[opts.sort];
   const filters = [
     opts.q?.trim() ? opts.q.trim() : "ratings_count:[20 TO *]",
     opts.decade ? `first_publish_year:[${opts.decade} TO ${opts.decade + 9}]` : "",

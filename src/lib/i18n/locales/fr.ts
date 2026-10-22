@@ -243,6 +243,7 @@ export const fr: Dictionary = {
     tabs: { watched: "Lus", watching: "En cours" },
   },
   book: {
+    by: (name: string) => `de ${name}`,
     signInToLog: "Connectez-vous pour enregistrer ce livre",
     authors: "Auteurs",
     publishers: "Éditeurs",

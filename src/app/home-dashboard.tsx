@@ -434,7 +434,7 @@ async function catalogSample(kind: MediaKind, locale: Locale, showAdult: boolean
   }
   if (kind === "book") {
     const { list } = await browseBooks({ page: 1, perPage: 6, sort: "top" });
-    return list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating }));
+    return list.map((b) => ({ id: b.id, title: b.title, year: b.year, poster: b.cover, rating: b.rating, by: b.authors.slice(0, 2).join(", ") || null }));
   }
   if (kind === "game") return (await browseGames({ page: 1, perPage: 6, sort: "popular" })).list;
   return [];

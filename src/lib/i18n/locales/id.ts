@@ -243,6 +243,7 @@ export const id: Dictionary = {
     tabs: { watched: "Sudah dibaca", watching: "Sedang dibaca" },
   },
   book: {
+    by: (name: string) => `oleh ${name}`,
     signInToLog: "Masuk untuk mencatat buku ini",
     authors: "Penulis",
     publishers: "Penerbit",

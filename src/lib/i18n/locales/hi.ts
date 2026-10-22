@@ -243,6 +243,7 @@ export const hi: Dictionary = {
     tabs: { watched: "पढ़े हुए", watching: "पढ़ रहे हैं" },
   },
   book: {
+    by: (name: string) => `लेखक: ${name}`,
     signInToLog: "इस किताब को दर्ज करने के लिए साइन इन करें",
     authors: "लेखक",
     publishers: "प्रकाशक",
