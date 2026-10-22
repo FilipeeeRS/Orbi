@@ -218,7 +218,7 @@ async function PopularListsSection({ t, viewer }: { t: Dictionary; viewer: V }) 
     <Section title={t.home.popularLists} more={{ href: "/lists", label: t.profile.all }}>
       <div className="grid gap-6 sm:grid-cols-3">
         {lists.map((list) => (
-          <ListCard key={list.id} list={list} t={t} viewerId={viewer?.id ?? null} />
+          <ListCard key={list.id} list={list} viewerId={viewer?.id ?? null} />
         ))}
       </div>
     </Section>
