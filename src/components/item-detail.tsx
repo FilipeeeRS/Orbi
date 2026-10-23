@@ -1,6 +1,10 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import { SectionSkeleton } from "@/components/skeletons";
+import { SectionHeading } from "@/components/section";
+import { BackButton } from "@/components/back-button";
+import { EmptyState } from "@/components/page-header";
+import { StatusIcon } from "@/components/status-icon";
 import Link from "next/link";
 import { Avatar } from "@/components/header";
 import { PosterImage } from "@/components/poster";
@@ -67,7 +71,9 @@ export function ItemDetail({
     ) : null;
 
   return (
-    <div className="mx-auto max-w-[58rem] space-y-10">
+    <div className="relative mx-auto max-w-[58rem] space-y-10">
+      {/* Seta de voltar: por cima do fundo; sem fundo (livros), acima do título */}
+      {backdropUrl && <BackButton fallback="/home" className="absolute start-0 top-2 z-10 grid size-9 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65" />}
       {/* Fundo: só quando há imagem (livros não têm; aí o título começa no topo, sem espaço vazio) */}
       {backdropUrl && (
         <div className="backdrop-fade relative -mt-6 ml-[calc(50%-min(50vw,650px))] h-70 w-[min(100vw,1300px)] overflow-hidden sm:-mt-8 sm:h-120">
@@ -84,6 +90,7 @@ export function ItemDetail({
 
       <div className={`relative grid grid-cols-[minmax(0,1fr)] items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${backdropUrl ? "-mt-24 sm:-mt-40" : ""}`}>
         <div className="space-y-5">
+          {!backdropUrl && <BackButton fallback="/home" className="-ms-2 grid size-8 place-items-center rounded-full text-muted hover:bg-surface-2 hover:text-fg" />}
           {above}
           {/* Grade de 2 colunas: título alinhado com a nota do Orbi; embaixo, TMDB + título original com o "no Orbi" */}
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1">
@@ -174,9 +181,7 @@ async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsPro
     {/* Atividade dos amigos (só para quem está logado): nota, like e status de quem você segue */}
     {friends && (
       <section>
-        <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
-          {t.movie.friendsActivity}
-        </h2>
+        <SectionHeading>{t.movie.friendsActivity}</SectionHeading>
         {friends.length ? (
           <ul className="flex flex-wrap gap-4">
             {friends.map((f) => (
@@ -190,9 +195,7 @@ async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsPro
                   {f.rating ? (
                     <StarsDisplay rating={f.rating} />
                   ) : (
-                    <span className="text-[11px] text-muted">
-                      {f.status === "watchlist" ? "🕐" : f.status === "watching" ? "▶" : "✓"}
-                    </span>
+                    <StatusIcon status={f.status === "watchlist" ? "watchlist" : f.status === "watching" ? "watching" : "watched"} />
                   )}
                   {f.liked && <span className="-mt-1 text-xs text-like">♥</span>}
                 </Link>
@@ -200,14 +203,12 @@ async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsPro
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted">{t.movie.noFriendsActivity}</p>
+          <EmptyState>{t.movie.noFriendsActivity}</EmptyState>
         )}
       </section>
     )}
     <section>
-      <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
-        {t.movie.reviews}
-      </h2>
+      <SectionHeading count={reviews.length || undefined}>{t.movie.reviews}</SectionHeading>
       {reviews.length ? (
         <ul className="divide-y divide-border">
           {reviews.map((r) => (
@@ -232,6 +233,7 @@ async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsPro
                   initialCount={commentCounts.get(r.id) ?? 0}
                   actions={
                     <ReviewLike
+                      key={r.id}
                       entryId={r.id}
                       viewerId={viewerId}
                       initialLiked={reviewLikes.mine.has(r.id)}
@@ -245,7 +247,7 @@ async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsPro
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-muted">{t.movie.noReviews}</p>
+        <EmptyState>{t.movie.noReviews}</EmptyState>
       )}
     </section>
     </>

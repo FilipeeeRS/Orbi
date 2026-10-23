@@ -12,6 +12,7 @@ import { getViewerStates } from "@/lib/queries";
 import { applyArtToItems } from "@/lib/art";
 import { ListEditor } from "@/app/lists/list-editor";
 import { BackButton } from "@/components/back-button";
+import { EmptyState } from "@/components/page-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]/list/[id]">): Promise<Metadata> {
   const list = await getList((await params).id);
@@ -77,7 +78,7 @@ async function ListContent({ params }: PageProps<"/u/[username]/list/[id]">) {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-muted">{t.lists.emptyList}</p>
+        <EmptyState>{t.lists.emptyList}</EmptyState>
       ) : (
         <PosterGrid>
           {items.map((item, i) => (

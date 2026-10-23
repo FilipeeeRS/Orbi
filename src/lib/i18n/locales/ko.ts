@@ -37,6 +37,7 @@ export const ko: Dictionary = {
     playingNow: "플레이 중",
     newsTab: "새 소식",
     newsSoon: "곧 추가: 내 폴더의 신작, 알림, 이번 주 하이라이트.",
+    guestNews: "로그인하면 알림, 워치리스트, 친구들이 보고 읽고 플레이하는 것을 볼 수 있어요.",
     yourWatchlist: "내 워치리스트",
     watchingNow: "보는 중",
     welcome: (n: string) => `다시 오신 걸 환영해요, ${n}님!`,
@@ -243,6 +244,7 @@ export const ko: Dictionary = {
     tabs: { watched: "읽음", watching: "읽는 중" },
   },
   book: {
+    moreBy: (n: string) => `더 보기: ${n}`,
     by: (name: string) => `지은이: ${name}`,
     signInToLog: "로그인하고 이 책을 기록하세요",
     authors: "저자",
@@ -251,6 +253,7 @@ export const ko: Dictionary = {
     published: (y: number) => `${y}년 출간`,
   },
   game: {
+    moreFrom: (n: string) => `더 보기: ${n}`,
     tabs: { watched: "플레이함", watching: "플레이 중" },
     reviewsOnSteam: (n: string) => `Steam 평가 ${n}개`,
     play: "플레이",

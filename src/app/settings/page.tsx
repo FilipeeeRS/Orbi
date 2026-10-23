@@ -6,9 +6,13 @@ import { getDict, getViewer } from "@/lib/session";
 import { SettingsForm } from "./settings-form";
 import { getItemsByIds } from "@/lib/queries";
 import { itemTitle } from "@/lib/types";
-import { BackButton } from "@/components/back-button";
+import { PageHeader } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Configurações" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.settings.title };
+}
 
 export default function SettingsPage() {
   return (
@@ -30,9 +34,8 @@ async function SettingsPageContent() {
   return (
     <div className="mx-auto max-w-5xl">
       {/* Seta para voltar (sem histórico, o perfil) */}
-      <div className="mb-6 flex items-center gap-3">
-        <BackButton fallback={`/u/${viewer.username}`} label={t.common.back} />
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.settings.title}</h1>
+      <div className="mb-6">
+        <PageHeader back={`/u/${viewer.username}`} title={t.settings.title} />
       </div>
       <SettingsForm profile={viewer} favorites={favorites} />
     </div>

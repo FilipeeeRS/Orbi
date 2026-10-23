@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Section } from "@/components/section";
 import { RowSkeleton } from "@/components/skeletons";
 import { ExternalPosters, type ExternalPoster } from "@/components/external-posters";
 import { adultMovieIds } from "@/lib/catalog";
@@ -51,10 +52,5 @@ async function RecommendationsContent({ type, tmdbId, language, viewer, t }: Rec
 }
 
 export function PosterSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">{title}</h2>
-      {children}
-    </section>
-  );
+  return <Section title={title}>{children}</Section>;
 }

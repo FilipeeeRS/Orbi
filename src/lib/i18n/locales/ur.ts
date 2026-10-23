@@ -37,6 +37,7 @@ export const ur: Dictionary = {
     playingNow: "ابھی کھیل رہے ہیں",
     newsTab: "نیا کیا ہے",
     newsSoon: "جلد آ رہا ہے: آپ کے فولڈرز کی نئی ریلیز، اطلاعات اور ہفتے کی جھلکیاں۔",
+    guestNews: "اپنی اطلاعات، واچ لسٹ اور یہ دیکھنے کے لیے کہ دوست کیا دیکھ، پڑھ اور کھیل رہے ہیں، سائن ان کریں۔",
     yourWatchlist: "آپ کی واچ لسٹ",
     watchingNow: "ابھی دیکھ رہے ہیں",
     welcome: (n: string) => `واپسی پر خوش آمدید، ${n}!`,
@@ -243,6 +244,7 @@ export const ur: Dictionary = {
     tabs: { watched: "پڑھے ہوئے", watching: "پڑھ رہے ہیں" },
   },
   book: {
+    moreBy: (n: string) => `مزید از ${n}`,
     by: (name: string) => `مصنف: ${name}`,
     signInToLog: "یہ کتاب درج کرنے کے لیے سائن ان کریں",
     authors: "مصنفین",
@@ -251,6 +253,7 @@ export const ur: Dictionary = {
     published: (y: number) => `${y} میں شائع ہوئی`,
   },
   game: {
+    moreFrom: (n: string) => `مزید از ${n}`,
     tabs: { watched: "کھیلی گئیں", watching: "کھیل رہے ہیں" },
     reviewsOnSteam: (n: string) => `Steam پر ${n} ریویوز`,
     play: "کھیلیں",

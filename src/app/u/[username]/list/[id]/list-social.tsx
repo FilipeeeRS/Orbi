@@ -6,6 +6,7 @@ import { Avatar } from "@/components/avatar";
 import { useI18n } from "@/components/i18n";
 import { TranslatableText } from "@/components/translatable-text";
 import { ContentMenu } from "@/components/content-menu";
+import { SectionHeading } from "@/components/section";
 import { timeAgo } from "@/components/review-comments";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { addListComment, deleteListComment, setListLike, setListSave, type ListComment } from "@/app/lists/social-actions";
@@ -141,9 +142,7 @@ export function ListComments({
 
   return (
     <section id="comments" className="scroll-mt-24">
-      <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
-        {t.lists.comments} <span className="font-normal tabular-nums">{comments.length}</span>
-      </h2>
+      <SectionHeading count={comments.length}>{t.lists.comments}</SectionHeading>
       {comments.length === 0 && <p className="mb-4 text-sm text-muted">{t.lists.noComments}</p>}
       <ul className="mb-4 space-y-4">
         {comments.map((c) => (

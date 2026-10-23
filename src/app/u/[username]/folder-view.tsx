@@ -26,7 +26,7 @@ import { TranslatableText } from "@/components/translatable-text";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 import { getUserLists, LIST_SORTS, type UserListSort } from "@/lib/lists";
 import { ListsGrid } from "@/app/lists/lists-grid";
-import { BackButton } from "@/components/back-button";
+import { EmptyState, PageHeader, TabNav } from "@/components/page-header";
 
 // Listagem de uma pasta (filmes, séries, músicas, jogos ou livros) do perfil, com abas e ordenação.
 export async function FolderView({
@@ -96,46 +96,39 @@ export async function FolderView({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          {/* No perfil de outra pessoa, o @ mostra de quem é a pasta */}
-          <BackButton
-            fallback={`/u/${profile.username}`}
-            label={t.common.back}
-            className="flex items-center gap-1 rounded-full p-1.5 text-sm text-muted hover:bg-surface-2 hover:text-fg"
-          >
-            {viewer?.id !== profile.id && <span className="pe-1">@{profile.username}</span>}
-          </BackButton>
-          {/* As suas pastas: "Seus filmes", "Suas séries", "Seu tudo"; as dos outros: "Filmes" (com o @ ao lado) */}
-          <h1 className="font-display text-2xl font-extrabold">
-            {viewer?.id === profile.id ? (kind === "all" ? t.folders.yourAll : t.folders.yours[kind]) : t.folders[kind]}
-          </h1>
-        </div>
-        <span className="text-sm text-muted">{t.profile.items(total)}</span>
-      </div>
+      {/* As suas pastas: "Seus filmes", "Suas séries", "Seu tudo"; as dos outros: "@fulano · Filmes" */}
+      <PageHeader
+        back={`/u/${profile.username}`}
+        border={false}
+        icon={
+          viewer?.id !== profile.id && (
+            <Link href={`/u/${profile.username}`} className="font-sans text-sm font-normal text-muted hover:text-fg">
+              @{profile.username}
+            </Link>
+          )
+        }
+        title={viewer?.id === profile.id ? (kind === "all" ? t.folders.yourAll : t.folders.yours[kind]) : t.folders[kind]}
+        count={tab === "lists" ? undefined : t.profile.items(total)}
+      />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border">
-        <nav className="-mb-px flex gap-1 overflow-x-auto">
-          {TABS.filter((key) => key !== "watching" || kind !== "movie").map((key) => (
-            <Link
-              key={key}
-              href={href({ tab: key })}
-              className={`border-b-2 px-3 py-2 text-sm whitespace-nowrap ${
-                key === tab ? "border-accent font-semibold text-fg" : "border-transparent text-muted hover:text-fg"
-              }`}
-            >
-              {/* Mangá: "Lidos" e "Lendo" no lugar de "Vistos" e "Assistindo" */}
-              {/* Livros e mangás: Lidos/Lendo; jogos: Jogados/Jogando; o resto: Vistos/Assistindo */}
-              {key === "watched" || key === "watching"
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
+        {/* Livros e mangás: Lidos/Lendo; jogos: Jogados/Jogando; o resto: Vistos/Assistindo */}
+        <TabNav
+          bordered={false}
+          tabs={TABS.filter((key) => key !== "watching" || kind !== "movie").map((key) => ({
+            key,
+            href: href({ tab: key }),
+            active: key === tab,
+            label:
+              key === "watched" || key === "watching"
                 ? kind === "manga" || kind === "book"
                   ? t.manga.tabs[key]
                   : kind === "game"
                     ? t.game.tabs[key]
                     : t.movies.tabs[key]
-                : t.movies.tabs[key]}
-            </Link>
-          ))}
-        </nav>
+                : t.movies.tabs[key],
+          }))}
+        />
         {/* Listas: só ordenar (popularidade pelas curtidas, nome, data) e a lupa */}
         {tab === "lists" && (
           <FilterBar
@@ -172,7 +165,7 @@ export async function FolderView({
       {lists ? (
         <ListsGrid lists={lists} canCreate={viewer?.id === profile.id} username={profile.username} viewerId={viewer?.id ?? null} t={t} />
       ) : entries.length === 0 ? (
-        <p className="text-sm text-muted">{t.profile.empty}</p>
+        <EmptyState>{t.profile.empty}</EmptyState>
       ) : tab === "reviews" ? (
         <ul className="divide-y divide-border">
           {entries.map((e) => (

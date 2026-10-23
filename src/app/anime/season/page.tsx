@@ -8,9 +8,13 @@ import { ExternalPosters } from "@/components/external-posters";
 import { ANIME_SEASONS, seasonOf, shiftSeason, type AnimeSeason } from "@/lib/anilist";
 import { browseCatalog } from "@/lib/anime-db";
 import { getDict, getViewer } from "@/lib/session";
-import { BackButton } from "@/components/back-button";
+import { EmptyState, PageHeader } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Anime" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.folders.anime };
+}
 
 // Temporada de anime (como a "Seasonal Anime" do MyAnimeList): o que estreou naquela temporada,
 // dos mais populares para os menos, com setas para a anterior e a próxima. Sem parâmetros, a atual.
@@ -56,13 +60,9 @@ async function SeasonContent({ searchParams }: PageProps<"/anime/season">) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-2">
-        <h1 className="font-display flex items-center gap-2 text-2xl font-extrabold">
-          <BackButton fallback="/home?folder=anime" label={t.common.back} />
-          <FolderIcon kind="anime" className="size-6 text-accent" />
-          {label(current)}
-        </h1>
-        <nav className="flex items-center gap-4 text-sm">
+      <PageHeader back="/home?folder=anime" icon={<FolderIcon kind="anime" className="size-6 text-accent" />} title={label(current)}>
+        {/* Temporada anterior e a próxima */}
+        <nav className="flex items-center gap-4 pb-2 text-sm">
           <Link href={href(prev)} className="text-muted hover:text-fg" title={t.anime.prevSeason}>
             ← {label(prev)}
           </Link>
@@ -70,11 +70,11 @@ async function SeasonContent({ searchParams }: PageProps<"/anime/season">) {
             {label(next)} →
           </Link>
         </nav>
-      </div>
+      </PageHeader>
       {list.length ? (
         <ExternalPosters kind="anime" list={list} viewer={viewer} eager={8} />
       ) : (
-        <p className="text-sm text-muted">{t.profile.empty}</p>
+        <EmptyState>{t.profile.empty}</EmptyState>
       )}
     </div>
   );

@@ -45,6 +45,7 @@ export const ru: Dictionary = {
     playingNow: "Играю сейчас",
     newsTab: "Новое",
     newsSoon: "Скоро: новинки из ваших папок, уведомления и главное за неделю.",
+    guestNews: "Войдите, чтобы видеть уведомления, свой список «Посмотреть» и то, что смотрят, читают и во что играют друзья.",
     yourWatchlist: "Ваш список",
     watchingNow: "Смотрю сейчас",
     welcome: (n: string) => `С возвращением, ${n}!`,
@@ -251,6 +252,7 @@ export const ru: Dictionary = {
     tabs: { watched: "Прочитано", watching: "Читаю" },
   },
   book: {
+    moreBy: (n: string) => `Ещё от автора ${n}`,
     by: (name: string) => `автор: ${name}`,
     signInToLog: "Войдите, чтобы отметить эту книгу",
     authors: "Авторы",
@@ -259,6 +261,7 @@ export const ru: Dictionary = {
     published: (y: number) => `Издана в ${y}`,
   },
   game: {
+    moreFrom: (n: string) => `Ещё от ${n}`,
     tabs: { watched: "Пройдено", watching: "Играю" },
     reviewsOnSteam: (n: string) => `Обзоров в Steam: ${n}`,
     play: "Играть",

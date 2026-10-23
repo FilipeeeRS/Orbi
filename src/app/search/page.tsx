@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { GridSkeleton } from "@/components/skeletons";
-import { PosterGrid, PosterImage } from "@/components/poster";
 import { getDict, getViewer } from "@/lib/session";
 import { type Sort } from "@/lib/queries";
 import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
+import { EmptyState, PageHeader, TabNav } from "@/components/page-header";
+import { Section } from "@/components/section";
+import { FolderIcon } from "@/components/folder-icon";
 import { ExternalPosters } from "@/components/external-posters";
 import { searchCatalog } from "@/lib/anime-db";
 import { animeCover, animeTitle, animeYear, getCharacterWorks, getStaffWorks, getStudioWorks } from "@/lib/anilist";
@@ -25,7 +27,11 @@ import {
   tmdbLanguage,
 } from "@/lib/tmdb";
 
-export const metadata: Metadata = { title: "Busca" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.footer.search };
+}
 
 const SEARCH_TABS = ["all", "movie", "series", "book", "anime", "manga", "game"] as const;
 type SearchTab = (typeof SEARCH_TABS)[number];
@@ -79,7 +85,14 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
   const country = typeof params.country === "string" && /^[A-Z]{2}$/.test(params.country) ? params.country : undefined;
   const browsing = !!(person || genre || company || network || country);
 
-  if (!q && !browsing) return <p className="text-muted">{t.search.prompt}</p>;
+  if (!q && !browsing)
+    return (
+      <div className="space-y-6">
+        <PageHeader back="/home" title={q ? t.search.title(q) : t.footer.search} border={false} />
+        <SearchTabs current={tab} hrefFor={(to) => `/search?${new URLSearchParams(to === "all" ? {} : { type: to })}`} t={t} />
+        <EmptyState>{t.search.prompt}</EmptyState>
+      </div>
+    );
 
   const [found, viewer] = await Promise.all([
     person
@@ -140,13 +153,12 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
     return `/search?${next}`;
   };
 
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <div className="space-y-6">
+      <PageHeader back="/home" title={q ? t.search.title(q) : t.footer.search} border={false} />
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
-        <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
-          <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
-          <SearchTabs current={tab} hrefFor={tabHref} t={t} />
-        </div>
+        <SearchTabs current={tab} hrefFor={tabHref} t={t} bordered={false} />
         <FilterBar
           labels={t.movies.filters}
           defaultSort="popular"
@@ -158,21 +170,22 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
         />
       </div>
       {results.length ? (
-        <PosterGrid>
-          {results.map((m, i) => {
-            const year = releaseYear(m);
-            return (
-              <Link key={m.id} href={`/${tab}/${m.id}`} className="group block">
-                <PosterImage url={tmdbImage(m.poster_path, "w342")} title={m.title} eager={i < 8} />
-                <p className="mt-1 line-clamp-2 text-xs">
-                  {m.title} {year && <span className="text-muted">{year}</span>}
-                </p>
-              </Link>
-            );
-          })}
-        </PosterGrid>
+        // Os mesmos pôsteres das outras listagens (com os atalhos ✓ ▶ ♥ 🕐 ao passar o mouse)
+        <ExternalPosters
+          kind={series ? "series" : "movie"}
+          list={results.map((m) => ({
+            id: m.id,
+            title: m.title,
+            year: releaseYear(m),
+            poster: tmdbImage(m.poster_path, "w342"),
+            rating: m.vote_average ? m.vote_average / 2 : null,
+            unreleased: !!m.release_date && m.release_date > today,
+          }))}
+          viewer={viewer}
+          eager={8}
+        />
       ) : (
-        <p className="text-muted">{t.search.empty}</p>
+        <EmptyState>{t.search.empty}</EmptyState>
       )}
       {!browsing && !series && (
         <Link href={`/movie/new?title=${encodeURIComponent(q)}`} className="inline-block text-sm text-accent hover:underline">
@@ -187,25 +200,24 @@ function SearchTabs({
   current,
   hrefFor,
   t,
+  bordered = true,
 }: {
   current: SearchTab;
   hrefFor: (to: SearchTab) => string;
   t: Dictionary;
+  bordered?: boolean;
 }) {
   return (
-    <nav className="flex max-w-full gap-4 overflow-x-auto text-sm [scrollbar-width:none]">
-      {SEARCH_TABS.map((to) => (
-        <Link
-          key={to}
-          href={hrefFor(to)}
-          className={`-mb-px border-b-2 pb-2 font-semibold ${
-            to === current ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"
-          }`}
-        >
-          {to === "all" ? t.folders.all : t.folders[to]}
-        </Link>
-      ))}
-    </nav>
+    <TabNav
+      bordered={bordered}
+      tabs={SEARCH_TABS.map((to) => ({
+        key: to,
+        href: hrefFor(to),
+        label: to === "all" ? t.folders.all : t.folders[to],
+        active: to === current,
+        icon: to === "all" ? undefined : <FolderIcon kind={to} className="size-3.5" />,
+      }))}
+    />
   );
 }
 
@@ -224,14 +236,12 @@ async function CatalogResults({ q, kind }: { q: string; kind: "anime" | "manga" 
   const list = q ? await searchKind(q, kind, 50, !!viewer?.show_adult) : [];
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
-        <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
-        <SearchTabs current={kind} hrefFor={hrefFor} t={t} />
-      </div>
+      <PageHeader back="/home" title={q ? t.search.title(q) : t.footer.search} border={false} />
+      <SearchTabs current={kind} hrefFor={hrefFor} t={t} />
       {list.length ? (
         <ExternalPosters kind={kind} list={list} viewer={viewer} eager={8} />
       ) : (
-        <p className="text-muted">{q ? t.search.empty : t.search.prompt}</p>
+        <EmptyState>{q ? t.search.empty : t.search.prompt}</EmptyState>
       )}
     </div>
   );
@@ -244,12 +254,18 @@ async function AllResults({ q }: { q: string }) {
   const language = tmdbLanguage(locale);
   const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ q, ...(to === "all" ? {} : { type: to }) })}`;
   const header = (
-    <div className="flex flex-wrap items-end gap-x-6 gap-y-2 border-b border-border">
-      <h1 className="pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+    <>
+      <PageHeader back="/home" title={q ? t.search.title(q) : t.footer.search} border={false} />
       <SearchTabs current="all" hrefFor={hrefFor} t={t} />
-    </div>
+    </>
   );
-  if (!q) return <div className="space-y-6">{header}<p className="text-muted">{t.search.prompt}</p></div>;
+  if (!q)
+    return (
+      <div className="space-y-6">
+        {header}
+        <EmptyState>{t.search.prompt}</EmptyState>
+      </div>
+    );
 
   const showAdult = !!viewer?.show_adult;
   const [movies, shows, books, animes, mangas, games] = await Promise.all([
@@ -282,19 +298,13 @@ async function AllResults({ q }: { q: string }) {
       {header}
       {groups.length ? (
         groups.map((g) => (
-          <section key={g.kind}>
-            <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
-              <h2 className="text-xs font-semibold tracking-widest text-muted uppercase">{t.folders[g.kind]}</h2>
-              <Link href={hrefFor(g.kind)} className="text-[11px] tracking-wider text-muted uppercase hover:text-accent">
-                {t.search.more}
-              </Link>
-            </div>
-            {/* Mesmo padrão da Home: uma fileira de pôsteres com título e ano embaixo */}
+          // Mesmo padrão da Home: uma fileira de pôsteres com título e ano embaixo
+          <Section key={g.kind} title={t.folders[g.kind]} more={{ href: hrefFor(g.kind), label: t.profile.all }}>
             <ExternalPosters kind={g.kind} list={g.list} viewer={viewer} layout="row" />
-          </section>
+          </Section>
         ))
       ) : (
-        <p className="text-muted">{t.search.empty}</p>
+        <EmptyState>{t.search.empty}</EmptyState>
       )}
     </div>
   );
@@ -314,18 +324,15 @@ async function AniListPersonResults({ q, kind, id }: { q: string; kind: "anistaf
     .filter((g) => g.list.length);
   return (
     <div className="space-y-8">
-      <h1 className="border-b border-border pb-2 text-xl font-semibold">{t.search.title(q)}</h1>
+      <PageHeader back="/home" title={q ? t.search.title(q) : t.footer.search} />
       {groups.length ? (
         groups.map((g) => (
-          <section key={g.kind}>
-            <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">
-              {t.folders[g.kind]}
-            </h2>
+          <Section key={g.kind} title={t.folders[g.kind]} count={g.list.length}>
             <ExternalPosters kind={g.kind} list={g.list} viewer={viewer} eager={8} />
-          </section>
+          </Section>
         ))
       ) : (
-        <p className="text-muted">{t.search.empty}</p>
+        <EmptyState>{t.search.empty}</EmptyState>
       )}
     </div>
   );

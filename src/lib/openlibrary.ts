@@ -123,6 +123,18 @@ export async function searchBooks(q: string, limit = 20, page = 1): Promise<{ li
   }
 }
 
+// Livros de um autor, dos mais lidos para os menos. Só os com algumas avaliações: assim traduções e
+// cadastros repetidos da mesma obra (que quase nunca têm nota) ficam de fora.
+export async function booksByAuthor(name: string, limit = 6): Promise<BookCard[]> {
+  const author = name.replace(/"/g, "").trim();
+  if (!author) return [];
+  try {
+    return (await fetchSearch(`author:"${author}" AND ratings_count:[5 TO *]&sort=readinglog`, limit, 1, true)).list;
+  } catch {
+    return [];
+  }
+}
+
 // raw = a consulta já vem montada (com filtros e &sort=...).
 async function fetchSearch(q: string, limit: number, page: number, raw = false) {
   "use cache";

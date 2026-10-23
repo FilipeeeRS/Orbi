@@ -11,6 +11,7 @@ import { itemOverview, itemTitle, type Entry } from "@/lib/types";
 import { MovieInfo } from "../../movie/[id]/movie-info";
 import { EntryEditor } from "../../movie/[id]/entry-editor";
 import { ExternalLink, ItemDetail, ItemStats, ReviewsSection, SignInToLog } from "@/components/item-detail";
+import { MoreFrom } from "@/components/more-from";
 
 export async function generateMetadata({ params }: PageProps<"/book/[id]">): Promise<Metadata> {
   const item = await getBookByRouteId((await params).id);
@@ -98,6 +99,10 @@ async function BookContent({ params }: PageProps<"/book/[id]">) {
       side={<ItemStats stats={shown} t={t} locale={locale} />}
     >
       <ReviewsSection itemId={item.id} viewerId={viewer?.id ?? null} t={t} locale={locale} />
+      {/* Outros livros do (primeiro) autor */}
+      {book?.authors[0] && (
+        <MoreFrom kind="book" name={book.authors[0]} excludeId={id} title={t.book.moreBy(book.authors[0])} viewer={viewer} />
+      )}
     </ItemDetail>
   );
 }

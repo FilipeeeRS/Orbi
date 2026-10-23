@@ -3,6 +3,7 @@
 import { startTransition, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useI18n } from "./i18n";
 
 // Histórico desta aba dentro do site (cada entrada = uma URL, com o caminho separado). Trocar de aba,
 // filtro ou página na mesma tela cria entradas com o mesmo caminho; a seta pula todas elas.
@@ -63,11 +64,13 @@ export function BackButton({
   children,
 }: {
   fallback: string;
-  label: string;
+  label?: string; // padrão: "Voltar"
   className?: string;
   children?: React.ReactNode;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
+  label ??= t.common.back;
   return (
     <Link
       href={fallback}

@@ -3,14 +3,18 @@ import type { Metadata } from "next";
 import { GridSkeleton } from "@/components/skeletons";
 import { Pagination } from "@/components/pagination";
 import { FilterBar } from "@/components/filter-bar";
-import { BackButton } from "@/components/back-button";
 import { getDict, getViewer } from "@/lib/session";
 import { browseLists, LIST_SORTS, type UserListSort } from "@/lib/lists";
 import { sortOptions } from "@/lib/sort-options";
 import { MEDIA_KINDS, type MediaKind } from "@/lib/types";
 import { ListsGrid } from "./lists-grid";
+import { EmptyState, PageHeader } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Listas" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.lists.allTitle };
+}
 
 export default function ListsPage(props: PageProps<"/lists">) {
   return (
@@ -42,12 +46,7 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
   return (
     <div className="space-y-6">
       {/* Título e filtros na mesma linha, como no Ver tudo das pastas */}
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
-        <h1 className="font-display flex items-center gap-2 pb-2 text-2xl font-extrabold">
-          <BackButton fallback="/home" label={t.common.back} />
-          {t.lists.allTitle}
-          <span className="font-sans text-sm font-normal text-muted">{total}</span>
-        </h1>
+      <PageHeader back="/home" title={t.lists.allTitle} count={total}>
         <FilterBar
           labels={t.movies.filters}
           defaultSort="popular"
@@ -57,10 +56,10 @@ async function ListsContent({ searchParams }: PageProps<"/lists">) {
           genres={[]}
           ratings={[]}
         />
-      </div>
+      </PageHeader>
 
       {lists.length === 0 && !viewer ? (
-        <p className="py-6 text-muted">{t.lists.noLists}</p>
+        <EmptyState>{t.lists.noLists}</EmptyState>
       ) : (
         <ListsGrid
           lists={lists}

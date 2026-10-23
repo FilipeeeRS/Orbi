@@ -37,6 +37,7 @@ export const ja: Dictionary = {
     playingNow: "プレイ中",
     newsTab: "新着",
     newsSoon: "近日公開：フォルダの新作、通知、今週のハイライト。",
+    guestNews: "ログインすると、通知やウォッチリスト、友だちが観て・読んで・遊んでいるものが見られます。",
     yourWatchlist: "あなたのウォッチリスト",
     watchingNow: "視聴中",
     welcome: (n: string) => `おかえりなさい、${n}さん！`,
@@ -243,6 +244,7 @@ export const ja: Dictionary = {
     tabs: { watched: "読了", watching: "読書中" },
   },
   book: {
+    moreBy: (n: string) => `ほかの作品： ${n}`,
     by: (name: string) => `著：${name}`,
     signInToLog: "ログインしてこの本を記録",
     authors: "著者",
@@ -251,6 +253,7 @@ export const ja: Dictionary = {
     published: (y: number) => `${y}年刊行`,
   },
   game: {
+    moreFrom: (n: string) => `ほかのゲーム： ${n}`,
     tabs: { watched: "プレイ済み", watching: "プレイ中" },
     reviewsOnSteam: (n: string) => `Steamのレビュー ${n}件`,
     play: "プレイ",

@@ -12,6 +12,7 @@ import { itemTitle, type Entry } from "@/lib/types";
 import { MovieInfo } from "../../movie/[id]/movie-info";
 import { EntryEditor } from "../../movie/[id]/entry-editor";
 import { ExternalLink, ItemDetail, ItemStats, ReviewsSection, SignInToLog } from "@/components/item-detail";
+import { MoreFrom } from "@/components/more-from";
 
 export async function generateMetadata({ params }: PageProps<"/game/[id]">): Promise<Metadata> {
   const item = await getGameByRouteId((await params).id);
@@ -129,6 +130,10 @@ async function GameContent({ params }: PageProps<"/game/[id]">) {
       side={<ItemStats stats={shown} t={t} locale={locale} unreleased={!!game?.comingSoon} />}
     >
       <ReviewsSection itemId={item.id} viewerId={viewer?.id ?? null} t={t} locale={locale} />
+      {/* Outros jogos da (primeira) desenvolvedora */}
+      {game?.developers[0] && (
+        <MoreFrom kind="game" name={game.developers[0]} excludeId={id} title={t.game.moreFrom(game.developers[0])} viewer={viewer} />
+      )}
     </ItemDetail>
   );
 }

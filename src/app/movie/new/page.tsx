@@ -4,8 +4,13 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getDict, getViewer } from "@/lib/session";
 import { ManualMovieForm } from "./manual-movie-form";
+import { PageHeader } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Adicionar filme" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.manual.title };
+}
 
 export default function NewMoviePage(props: PageProps<"/movie/new">) {
   return (
@@ -21,7 +26,7 @@ async function NewMoviePageContent({ searchParams }: PageProps<"/movie/new">) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-2xl font-bold">{t.manual.title}</h1>
+      <PageHeader back="/search" title={t.manual.title} />
       <p className="text-sm text-muted">{t.manual.hint}</p>
       <ManualMovieForm userId={viewer.id} initialTitle={String(query.title ?? "").slice(0, 300)} />
     </div>

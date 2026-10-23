@@ -37,6 +37,7 @@ export const tr: Dictionary = {
     playingNow: "Şu an oynananlar",
     newsTab: "Yenilikler",
     newsSoon: "Yakında: klasörlerindeki yeni çıkanlar, bildirimler ve haftanın öne çıkanları.",
+    guestNews: "Bildirimlerini, izleme listeni ve arkadaşlarının ne izleyip okuduğunu ve oynadığını görmek için giriş yap.",
     yourWatchlist: "İzleme listen",
     watchingNow: "Şu an izlenenler",
     welcome: (n: string) => `Tekrar hoş geldin, ${n}!`,
@@ -243,6 +244,7 @@ export const tr: Dictionary = {
     tabs: { watched: "Okunanlar", watching: "Okunuyor" },
   },
   book: {
+    moreBy: (n: string) => `Yazarın diğer kitapları: ${n}`,
     by: (name: string) => `yazar: ${name}`,
     signInToLog: "Bu kitabı kaydetmek için giriş yap",
     authors: "Yazarlar",
@@ -251,6 +253,7 @@ export const tr: Dictionary = {
     published: (y: number) => `${y} yılında yayımlandı`,
   },
   game: {
+    moreFrom: (n: string) => `Diğer oyunları: ${n}`,
     tabs: { watched: "Oynananlar", watching: "Oynuyor" },
     reviewsOnSteam: (n: string) => `Steam'de ${n} inceleme`,
     play: "Oyna",

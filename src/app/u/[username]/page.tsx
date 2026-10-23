@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { SectionHeading } from "@/components/section";
 import { notFound } from "next/navigation";
 import Loading from "../../loading";
 import { FolderIcon } from "@/components/folder-icon";
@@ -28,6 +29,7 @@ import { StarsDisplay } from "@/components/stars";
 import { dictionaries, type Dictionary, type Locale } from "@/lib/i18n/dictionaries";
 import { MEDIA_KINDS, itemHref, itemTitle, type EntryWithItem, type FolderKind, type MediaKind } from "@/lib/types";
 import { ProfileHeader } from "./profile-header";
+import { EmptyState } from "@/components/page-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]">): Promise<Metadata> {
   const profile = await getProfileByUsername((await params).username);
@@ -196,6 +198,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                           initialCount={commentCounts.get(r.id) ?? 0}
                           actions={
                             <ReviewLike
+                              key={r.id}
                               entryId={r.id}
                               viewerId={viewer?.id ?? null}
                               initialLiked={reviewLikes.mine.has(r.id)}
@@ -234,7 +237,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-muted">{t.profile.noFriends}</p>
+                <EmptyState>{t.profile.noFriends}</EmptyState>
               )}
             </section>
           </div>
@@ -289,19 +292,12 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
   );
 }
 
+// Título de seção do perfil: com link ("Ver tudo") ou só um número ao lado (watchlist, notas).
 function SectionTitle({ children, href, more }: { children: React.ReactNode; href?: string; more?: string }) {
   return (
-    <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
-      <h2 className="text-xs font-semibold tracking-widest text-muted uppercase">{children}</h2>
-      {more &&
-        (href ? (
-          <Link href={href} className="text-[11px] tracking-wider text-muted uppercase hover:text-accent">
-            {more}
-          </Link>
-        ) : (
-          <span className="text-[11px] tracking-wider text-muted">{more}</span>
-        ))}
-    </div>
+    <SectionHeading more={more && href ? { href, label: more } : undefined} count={more && !href ? more : undefined}>
+      {children}
+    </SectionHeading>
   );
 }
 

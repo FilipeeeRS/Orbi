@@ -1,15 +1,18 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import Loading from "../loading";
 import { getDict, getViewer } from "@/lib/session";
 import { getNotifications, getReadState, SOCIAL_KINDS, type Notification } from "@/lib/notifications";
 import { NotificationRow } from "@/components/notification-row";
 import { MarkAllRead } from "./mark-all-read";
-import { BackButton } from "@/components/back-button";
+import { EmptyState, PageHeader, TabNav } from "@/components/page-header";
 
-export const metadata: Metadata = { title: "Notificações" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.notifications.title };
+}
 
 // Filtros do topo: tudo, social (curtidas, comentários, seguidores), lançamentos, conta e as apagadas.
 const FILTERS = ["all", "social", "release", "device", "deleted"] as const;
@@ -45,32 +48,27 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
 
   return (
     <div>
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <BackButton fallback="/home" label={t.common.back} />
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">{t.notifications.title}</h1>
+      <PageHeader back="/home" title={t.notifications.title} border={false}>
+        <div className="pb-2">
+          <MarkAllRead label={t.notifications.markAllRead} />
         </div>
-        <MarkAllRead label={t.notifications.markAllRead} />
+      </PageHeader>
+      {/* Filtros como abas, iguais às do perfil e da busca */}
+      <div className="mb-2">
+        <TabNav
+          tabs={FILTERS.map((f) => ({
+            key: f,
+            href: f === "all" ? "/notifications" : `/notifications?type=${f}`,
+            label: labels[f],
+            active: f === filter,
+            count: f === "deleted" ? deleted.length : all.filter((n) => matches(n, f)).length,
+          }))}
+        />
       </div>
-      <nav className="mb-2 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none]">
-        {FILTERS.map((f) => {
-          const count = f === "deleted" ? deleted.length : all.filter((n) => matches(n, f)).length;
-          return (
-            <Link
-              key={f}
-              href={f === "all" ? "/notifications" : `/notifications?type=${f}`}
-              scroll={false}
-              className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                f === filter ? "border-fg bg-fg text-bg" : "border-border text-muted hover:border-fg hover:text-fg"
-              }`}
-            >
-              {labels[f]} <span className="font-normal opacity-70">{count}</span>
-            </Link>
-          );
-        })}
-      </nav>
       {list.length === 0 ? (
-        <p className="py-6 text-muted">{t.notifications.empty}</p>
+        <div className="pt-4">
+          <EmptyState>{t.notifications.empty}</EmptyState>
+        </div>
       ) : (
         <ul className="divide-y divide-border">
           {list.map((n) => (

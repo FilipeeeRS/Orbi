@@ -35,6 +35,7 @@ export const pt = {
     playingNow: "Jogando agora",
     newsTab: "Novidades",
     newsSoon: "Em breve: lançamentos das suas pastas, notificações e destaques da semana.",
+    guestNews: "Entre para ver suas notificações, sua watchlist e o que seus amigos estão vendo, lendo e jogando.",
     yourWatchlist: "Sua watchlist",
     watchingNow: "Assistindo agora",
     welcome: (n: string) => `Bem-vindo de volta, ${n}!`,
@@ -241,6 +242,7 @@ export const pt = {
     tabs: { watched: "Lidos", watching: "Lendo" },
   },
   book: {
+    moreBy: (n: string) => `Mais de ${n}`,
     by: (name: string) => `de ${name}`,
     signInToLog: "Entre para registrar este livro",
     authors: "Autores",
@@ -249,6 +251,7 @@ export const pt = {
     published: (y: number) => `Publicado em ${y}`,
   },
   game: {
+    moreFrom: (n: string) => `Mais de ${n}`,
     tabs: { watched: "Jogados", watching: "Jogando" },
     reviewsOnSteam: (n: string) => `${n} avaliações na Steam`,
     play: "Jogar",

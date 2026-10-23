@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { Section } from "@/components/section";
+import { EmptyState, TabNav } from "@/components/page-header";
 import Link from "next/link";
 import { RowSkeleton, SectionSkeleton } from "@/components/skeletons";
 import { Avatar } from "@/components/header";
@@ -57,22 +59,16 @@ export async function HomeDashboard({
         {viewer && <p className="mt-1 text-muted">{t.home.welcomeSub}</p>}
       </header>
 
-      {/* Abas: Novidades + uma por pasta (mesma ordem do resto do site) */}
-      <nav className="flex gap-5 overflow-x-auto border-b border-border [scrollbar-width:none]">
-        {(["news", ...MEDIA_KINDS] as Tab[]).map((key) => (
-          <Link
-            key={key}
-            href={key === "news" ? "?" : `?folder=${key}`}
-            scroll={false}
-            className={`-mb-px flex items-center gap-1.5 border-b-2 pb-2 text-xs font-semibold tracking-widest whitespace-nowrap uppercase transition ${
-              key === tab ? "border-accent text-fg" : "border-transparent text-muted hover:text-fg"
-            }`}
-          >
-            {key !== "news" && <FolderIcon kind={key} className="size-3.5" />}
-            {key === "news" ? t.home.newsTab : t.folders[key]}
-          </Link>
-        ))}
-      </nav>
+      {/* Abas: Novidades + uma por pasta (mesma ordem do resto do site), no padrão de abas do site */}
+      <TabNav
+        tabs={(["news", ...MEDIA_KINDS] as Tab[]).map((key) => ({
+          key,
+          href: key === "news" ? "?" : `?folder=${key}`,
+          label: key === "news" ? t.home.newsTab : t.folders[key],
+          active: key === tab,
+          icon: key === "news" ? undefined : <FolderIcon kind={key} className="size-3.5" />,
+        }))}
+      />
 
       {tab === "news" ? (
         <NewsTab viewer={viewer} t={t} locale={locale} />
@@ -109,7 +105,7 @@ function Streamed({ title, rows, children }: { title: string; rows?: boolean; ch
 }
 
 // Novidades: as últimas notificações (para quem está logado), a atividade dos amigos, a watchlist,
-// as listas e as reviews populares.
+// os filmes e séries mais aguardados, as listas e as reviews populares.
 function NewsTab({ viewer, t, locale }: TabProps) {
   return (
     <div className="space-y-12">
@@ -119,9 +115,15 @@ function NewsTab({ viewer, t, locale }: TabProps) {
           <NotificationsSection viewer={viewer} t={t} locale={locale} />
         </Streamed>
       ) : (
-        <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-          {t.home.newsSoon}
-        </div>
+        <EmptyState
+          action={
+            <Link href="/login" className="inline-block rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90">
+              {t.nav.signIn}
+            </Link>
+          }
+        >
+          {t.home.guestNews}
+        </EmptyState>
       )}
       {viewer && (
         <Streamed title={t.home.newFromFriends}>
@@ -133,6 +135,13 @@ function NewsTab({ viewer, t, locale }: TabProps) {
           <WatchlistSection viewer={viewer} t={t} locale={locale} />
         </Streamed>
       )}
+      {/* O que ainda vai lançar: filmes e séries mais aguardados */}
+      <Streamed title={t.home.mostAnticipated(t.folders.movie)}>
+        <UpcomingRow kind="movie" title={t.home.mostAnticipated(t.folders.movie)} browse="/browse/movies" viewer={viewer} t={t} locale={locale} />
+      </Streamed>
+      <Streamed title={t.home.mostAnticipated(t.folders.series)}>
+        <UpcomingRow kind="series" title={t.home.mostAnticipated(t.folders.series)} browse="/browse/series" viewer={viewer} t={t} locale={locale} />
+      </Streamed>
       <Streamed title={t.home.popularLists}>
         <PopularListsSection t={t} viewer={viewer} />
       </Streamed>
@@ -154,9 +163,7 @@ async function NotificationsSection({ viewer, t, locale }: TabProps & { viewer: 
           ))}
         </ul>
       ) : (
-        <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-          {t.notifications.empty}
-        </p>
+        <EmptyState>{t.notifications.empty}</EmptyState>
       )}
     </Section>
   );
@@ -203,9 +210,7 @@ async function WatchlistSection({ viewer, t, locale }: TabProps & { viewer: Prof
           ))}
         </Row>
       ) : (
-        <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-          {t.home.emptyWatchlist}
-        </p>
+        <EmptyState>{t.home.emptyWatchlist}</EmptyState>
       )}
     </Section>
   );
@@ -268,6 +273,7 @@ async function PopularReviewsSection({ viewer, t, locale }: TabProps) {
                 initialCount={commentCounts.get(r.id) ?? 0}
                 actions={
                   <ReviewLike
+                    key={r.id}
                     entryId={r.id}
                     viewerId={viewer?.id ?? null}
                     initialLiked={reviewLikes.mine.has(r.id)}
@@ -348,9 +354,7 @@ async function ShelfRow({ kind, title, status, viewer, t, locale }: RowProps & {
       {shelf.length ? (
         <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
       ) : (
-        <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-          {status === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}
-        </p>
+        <EmptyState>{status === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}</EmptyState>
       )}
     </Section>
   );
@@ -466,30 +470,6 @@ function ItemRow({
         </div>
       ))}
     </Row>
-  );
-}
-
-function Section({
-  title,
-  more,
-  children,
-}: {
-  title: string;
-  more?: { href: string; label: string };
-  children: React.ReactNode;
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
-        <h2 className="text-xs font-semibold tracking-widest text-muted uppercase">{title}</h2>
-        {more && (
-          <Link href={more.href} className="text-[11px] tracking-wider text-muted uppercase hover:text-accent">
-            {more.label}
-          </Link>
-        )}
-      </div>
-      {children}
-    </section>
   );
 }
 

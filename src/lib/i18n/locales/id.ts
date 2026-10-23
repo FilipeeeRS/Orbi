@@ -37,6 +37,7 @@ export const id: Dictionary = {
     playingNow: "Sedang dimainkan",
     newsTab: "Terbaru",
     newsSoon: "Segera hadir: rilis baru dari foldermu, notifikasi, dan sorotan minggu ini.",
+    guestNews: "Masuk untuk melihat notifikasi, watchlist, dan apa yang sedang ditonton, dibaca, dan dimainkan temanmu.",
     yourWatchlist: "Watchlist-mu",
     watchingNow: "Sedang ditonton",
     welcome: (n: string) => `Selamat datang kembali, ${n}!`,
@@ -243,6 +244,7 @@ export const id: Dictionary = {
     tabs: { watched: "Sudah dibaca", watching: "Sedang dibaca" },
   },
   book: {
+    moreBy: (n: string) => `Lainnya dari ${n}`,
     by: (name: string) => `oleh ${name}`,
     signInToLog: "Masuk untuk mencatat buku ini",
     authors: "Penulis",
@@ -251,6 +253,7 @@ export const id: Dictionary = {
     published: (y: number) => `Terbit ${y}`,
   },
   game: {
+    moreFrom: (n: string) => `Lainnya dari ${n}`,
     tabs: { watched: "Dimainkan", watching: "Sedang dimainkan" },
     reviewsOnSteam: (n: string) => `${n} ulasan di Steam`,
     play: "Main",

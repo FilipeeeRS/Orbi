@@ -37,6 +37,7 @@ export const hi: Dictionary = {
     playingNow: "अभी खेल रहे हैं",
     newsTab: "नया क्या है",
     newsSoon: "जल्द आ रहा है: आपके फ़ोल्डरों की नई रिलीज़, सूचनाएँ और हफ़्ते की खास बातें।",
+    guestNews: "अपनी सूचनाएं, वॉचलिस्ट और आपके दोस्त क्या देख, पढ़ और खेल रहे हैं, यह देखने के लिए साइन इन करें।",
     yourWatchlist: "आपकी वॉचलिस्ट",
     watchingNow: "अभी देख रहे हैं",
     welcome: (n: string) => `वापसी पर स्वागत है, ${n}!`,
@@ -243,6 +244,7 @@ export const hi: Dictionary = {
     tabs: { watched: "पढ़े हुए", watching: "पढ़ रहे हैं" },
   },
   book: {
+    moreBy: (n: string) => `और किताबें: ${n}`,
     by: (name: string) => `लेखक: ${name}`,
     signInToLog: "इस किताब को दर्ज करने के लिए साइन इन करें",
     authors: "लेखक",
@@ -251,6 +253,7 @@ export const hi: Dictionary = {
     published: (y: number) => `${y} में प्रकाशित`,
   },
   game: {
+    moreFrom: (n: string) => `और गेम: ${n}`,
     tabs: { watched: "खेले गए", watching: "खेल रहे हैं" },
     reviewsOnSteam: (n: string) => `Steam पर ${n} रिव्यू`,
     play: "खेलें",

@@ -1,3 +1,5 @@
+import { SectionHeading } from "./section";
+
 // Esqueletos de carregamento: blocos cinza pulsando no formato do que vai aparecer,
 // para a página não "pular" quando o conteúdo chega.
 
@@ -35,9 +37,7 @@ export function GridSkeleton({ count = 18 }: { count?: number }) {
 export function SectionSkeleton({ title, rows = 3 }: { title?: string; rows?: number }) {
   return (
     <section aria-busy="true">
-      {title && (
-        <h2 className="mb-3 border-b border-border pb-2 text-xs font-semibold tracking-widest text-muted uppercase">{title}</h2>
-      )}
+      {title && <SectionHeading>{title}</SectionHeading>}
       <div className="space-y-4">
         {Array.from({ length: rows }, (_, i) => (
           <div key={i} className="flex gap-3">

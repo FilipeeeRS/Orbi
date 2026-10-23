@@ -27,6 +27,21 @@ export function SearchSuggest({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const boxRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Atalho: "/" em qualquer lugar da página (fora de um campo de texto) vai para a busca do topo.
+  useEffect(() => {
+    if (size !== "sm") return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [size]);
 
   // Busca as sugestões 200 ms depois da última tecla; respostas antigas são descartadas.
   useEffect(() => {
@@ -116,6 +131,7 @@ export function SearchSuggest({
         </svg>
       )}
       <input
+        ref={inputRef}
         name="q"
         type="search"
         value={query}
@@ -134,9 +150,14 @@ export function SearchSuggest({
         className={
           lg
             ? "w-full rounded-full border border-border bg-surface py-3.5 ps-13 pe-5 text-base outline-none placeholder:text-muted focus:border-accent"
-            : "w-full rounded-full border border-border bg-surface px-4 py-1.5 text-sm outline-none placeholder:text-muted focus:border-accent"
+            : "w-full rounded-full border border-border bg-surface px-4 py-1.5 pe-9 text-sm outline-none placeholder:text-muted focus:border-accent"
         }
       />
+      {!lg && !query && (
+        <kbd className="pointer-events-none absolute end-3 top-1/2 hidden -translate-y-1/2 rounded border border-border px-1.5 font-sans text-[10px] leading-4 text-muted sm:block">
+          /
+        </kbd>
+      )}
 
       {showList && (
         <ul

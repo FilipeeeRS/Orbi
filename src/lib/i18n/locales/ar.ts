@@ -37,6 +37,7 @@ export const ar: Dictionary = {
     playingNow: "ألعبه الآن",
     newsTab: "الجديد",
     newsSoon: "قريبًا: الإصدارات الجديدة من مجلداتك والإشعارات وأبرز ما في الأسبوع.",
+    guestNews: "سجّل الدخول لترى إشعاراتك وقائمة المشاهدة وما يشاهده أصدقاؤك ويقرؤونه ويلعبونه.",
     yourWatchlist: "قائمة المشاهدة",
     watchingNow: "أشاهده الآن",
     welcome: (n: string) => `مرحبًا بعودتك يا ${n}!`,
@@ -243,6 +244,7 @@ export const ar: Dictionary = {
     tabs: { watched: "المقروءة", watching: "أقرأها" },
   },
   book: {
+    moreBy: (n: string) => `المزيد من ${n}`,
     by: (name: string) => `تأليف ${name}`,
     signInToLog: "سجّل الدخول لتسجيل هذا الكتاب",
     authors: "المؤلفون",
@@ -251,6 +253,7 @@ export const ar: Dictionary = {
     published: (y: number) => `نُشر عام ${y}`,
   },
   game: {
+    moreFrom: (n: string) => `المزيد من ${n}`,
     tabs: { watched: "لُعبت", watching: "ألعبها الآن" },
     reviewsOnSteam: (n: string) => `${n} مراجعة على Steam`,
     play: "العب",

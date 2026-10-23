@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { GridSkeleton } from "@/components/skeletons";
@@ -14,7 +15,7 @@ import { sortOptions } from "@/lib/sort-options";
 import { getDict, getViewer } from "@/lib/session";
 import { getMovieGenres, releaseYear, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
 import type { MediaKind } from "@/lib/types";
-import { BackButton } from "@/components/back-button";
+import { EmptyState, PageHeader } from "@/components/page-header";
 
 // "Ver tudo" da Home: /browse/movies, /browse/series (TMDB), /browse/anime e /browse/manga (AniList)...
 const SLUGS: Record<string, MediaKind> = {
@@ -32,6 +33,13 @@ const BOOK_SUBJECTS = [
   "Young adult fiction", "Children's fiction", "Biography", "History", "Philosophy", "Poetry", "Comics & graphic novels",
 ];
 const DEFAULT_SORT: BrowseSort = "popular";
+
+// Título da aba: "Todos os filmes", "Todas as séries"... no idioma da pessoa
+export async function generateMetadata({ params }: PageProps<"/browse/[folder]">): Promise<Metadata> {
+  const [{ folder }, { t }] = await Promise.all([params, getDict()]);
+  const kind = SLUGS[folder];
+  return { title: kind ? t.folders.allOf(t.folders[kind]) : undefined };
+}
 
 export default function BrowsePage(props: PageProps<"/browse/[folder]">) {
   return (
@@ -124,16 +132,15 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
 
   return (
     <div className="space-y-6">
-      {/* Título e filtros na mesma linha, como nas pastas do perfil */}
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border">
-        <h1 className="font-display flex items-center gap-2 pb-2 text-2xl font-extrabold">
-          <BackButton fallback={`/home?folder=${kind}`} label={t.common.back} />
-          <FolderIcon kind={kind} className="size-6 text-accent" />
-          {t.folders.allOf(t.folders[kind])}
-          {/* Filtro vindo da ficha de um jogo (desenvolvedora, distribuidora, gênero, plataforma) */}
-          {typeof query.label === "string" && <span className="font-sans text-base font-semibold text-accent">· {query.label}</span>}
-          <span className="font-sans text-sm font-normal text-muted">{count}</span>
-        </h1>
+      {/* Título e filtros na mesma linha (o cabeçalho padrão das listagens) */}
+      <PageHeader
+        back={`/home?folder=${kind}`}
+        icon={<FolderIcon kind={kind} className="size-6 text-accent" />}
+        title={t.folders.allOf(t.folders[kind])}
+        // Filtro vindo da ficha de um jogo (desenvolvedora, distribuidora, gênero, plataforma)
+        extra={typeof query.label === "string" && <span className="font-sans text-base font-semibold text-accent">· {query.label}</span>}
+        count={browsable ? count : undefined}
+      >
         {browsable && (
           <FilterBar
             labels={t.movies.filters}
@@ -144,12 +151,12 @@ async function BrowseContent({ params, searchParams }: PageProps<"/browse/[folde
             ratings={[]}
           />
         )}
-      </div>
+      </PageHeader>
 
       {list.length && browsable ? (
         <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "book" | "game"} list={list} viewer={viewer} eager={8} />
       ) : (
-        <p className="text-sm text-muted">{t.profile.empty}</p>
+        <EmptyState>{browsable ? t.profile.empty : t.folders.soon}</EmptyState>
       )}
 
       <Pagination page={page} pages={pages} hrefFor={pageHref} t={t} />

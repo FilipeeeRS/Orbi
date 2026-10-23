@@ -159,11 +159,22 @@ function Dropdown({
           selected && !showValue ? "text-accent" : "text-muted"
         }`}
       >
-        {showValue && selected
-          ? `${label}: ${selected.group ? `${selected.group} · ${selected.label}` : selected.label}`
-          : selected
-            ? selected.label
-            : label}
+        {showValue && selected ? (
+          <>
+            {/* No celular: um ícone de ordenar no lugar de "Ordenar por: Grupo ·", para caber numa linha */}
+            <svg viewBox="0 0 24 24" className="size-3.5 sm:hidden" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3" />
+            </svg>
+            <span className="hidden sm:inline">
+              {label}: {selected.group && `${selected.group} · `}
+            </span>
+            {selected.label}
+          </>
+        ) : selected ? (
+          selected.label
+        ) : (
+          label
+        )}
         <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden>
           <path d="M6 9l6 6 6-6" />
         </svg>

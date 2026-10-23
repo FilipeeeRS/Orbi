@@ -37,6 +37,7 @@ export const zh: Dictionary = {
     playingNow: "正在玩",
     newsTab: "最新动态",
     newsSoon: "即将推出：你的分类中的新作、通知和本周精选。",
+    guestNews: "登录后即可查看通知、你的待看清单，以及好友正在看、读和玩的内容。",
     yourWatchlist: "你的待看清单",
     watchingNow: "正在看",
     welcome: (n: string) => `欢迎回来，${n}！`,
@@ -243,6 +244,7 @@ export const zh: Dictionary = {
     tabs: { watched: "已读", watching: "在读" },
   },
   book: {
+    moreBy: (n: string) => `更多作品： ${n}`,
     by: (name: string) => `作者：${name}`,
     signInToLog: "登录后即可记录这本书",
     authors: "作者",
@@ -251,6 +253,7 @@ export const zh: Dictionary = {
     published: (y: number) => `${y} 年出版`,
   },
   game: {
+    moreFrom: (n: string) => `更多游戏： ${n}`,
     tabs: { watched: "已玩", watching: "在玩" },
     reviewsOnSteam: (n: string) => `Steam 上 ${n} 篇评测`,
     play: "玩",

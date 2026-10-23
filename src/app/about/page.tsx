@@ -5,7 +5,11 @@ import { GITHUB_URL } from "@/components/site-footer";
 import { getDict } from "@/lib/session";
 import { AboutNav } from "./about-nav";
 
-export const metadata: Metadata = { title: "About" };
+// Título da aba do navegador no idioma da pessoa
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.footer.about };
+}
 
 // Ordem das seções (os textos ficam no dicionário, em about.sections).
 const SECTIONS = ["what", "how", "import", "profile", "data", "news", "source"] as const;

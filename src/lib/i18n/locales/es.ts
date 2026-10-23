@@ -37,6 +37,7 @@ export const es: Dictionary = {
     playingNow: "Jugando ahora",
     newsTab: "Novedades",
     newsSoon: "Próximamente: estrenos de tus carpetas, notificaciones y destacados de la semana.",
+    guestNews: "Inicia sesión para ver tus notificaciones, tu watchlist y lo que tus amigos están viendo, leyendo y jugando.",
     yourWatchlist: "Tu watchlist",
     watchingNow: "Viendo ahora",
     welcome: (n: string) => `¡Hola de nuevo, ${n}!`,
@@ -243,6 +244,7 @@ export const es: Dictionary = {
     tabs: { watched: "Leídos", watching: "Leyendo" },
   },
   book: {
+    moreBy: (n: string) => `Más de ${n}`,
     by: (name: string) => `de ${name}`,
     signInToLog: "Inicia sesión para registrar este libro",
     authors: "Autores",
@@ -251,6 +253,7 @@ export const es: Dictionary = {
     published: (y: number) => `Publicado en ${y}`,
   },
   game: {
+    moreFrom: (n: string) => `Más de ${n}`,
     tabs: { watched: "Jugados", watching: "Jugando" },
     reviewsOnSteam: (n: string) => `${n} reseñas en Steam`,
     play: "Jugar",

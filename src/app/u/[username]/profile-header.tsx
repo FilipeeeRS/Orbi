@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/header";
 import { ringBackground } from "@/lib/avatar-ring";
 import { CopyLinkButton } from "./copy-link-button";
+import { BackButton } from "@/components/back-button";
 import { ExportImageButton } from "./export-image-button";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Profile } from "@/lib/types";
@@ -27,6 +28,8 @@ export function ProfileHeader({
 }) {
   return (
     <div className="relative">
+      {/* Seta de voltar por cima da capa (sem tela anterior, vai para a Home) */}
+      <BackButton fallback="/home" className="absolute start-0 top-2 z-10 grid size-9 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65" />
       {/* O espaço da capa existe sempre; sem capa ele só fica vazio */}
       <div className="backdrop-fade relative -mt-6 ml-[calc(50%-min(50vw,700px))] h-56 w-[min(100vw,1400px)] overflow-hidden sm:-mt-8 sm:h-96">
         {backdrop && (
