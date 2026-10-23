@@ -54,7 +54,7 @@ const FIELDS = "key,title,author_name,first_publish_year,cover_i,ratings_average
 const toCard = (d: SearchDoc): BookCard => ({
   id: workId(d.key),
   title: d.title,
-  authors: d.author_name ?? [],
+  authors: [...new Set(d.author_name ?? [])], // a Open Library às vezes repete o mesmo nome
   year: d.first_publish_year ?? null,
   cover: coverUrl(d.cover_i),
   rating: d.ratings_average ?? null,

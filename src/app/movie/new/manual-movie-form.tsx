@@ -92,7 +92,7 @@ export function ManualMovieForm({ userId, initialTitle }: { userId: string; init
           <span className="text-danger">{error}</span>
           <button
             disabled={status !== "idle"}
-            className="rounded-lg bg-accent px-5 py-2 font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
           >
             {status === "uploading" ? t.manual.uploading : status === "saving" ? t.common.loading : t.manual.submit}
           </button>

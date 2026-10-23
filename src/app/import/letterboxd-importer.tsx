@@ -72,7 +72,7 @@ export function LetterboxdImporter({ username }: { username: string }) {
           <button
             onClick={() => run(state.films)}
             disabled={!state.films.length}
-            className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
           >
             {t.import.start}
           </button>

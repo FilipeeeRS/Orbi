@@ -47,28 +47,24 @@ async function NotificationsContent({ searchParams }: PageProps<"/notifications"
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       <PageHeader back="/home" title={t.notifications.title} border={false}>
         <div className="pb-2">
           <MarkAllRead label={t.notifications.markAllRead} />
         </div>
       </PageHeader>
       {/* Filtros como abas, iguais às do perfil e da busca */}
-      <div className="mb-2">
-        <TabNav
-          tabs={FILTERS.map((f) => ({
-            key: f,
-            href: f === "all" ? "/notifications" : `/notifications?type=${f}`,
-            label: labels[f],
-            active: f === filter,
-            count: f === "deleted" ? deleted.length : all.filter((n) => matches(n, f)).length,
-          }))}
-        />
-      </div>
+      <TabNav
+        tabs={FILTERS.map((f) => ({
+          key: f,
+          href: f === "all" ? "/notifications" : `/notifications?type=${f}`,
+          label: labels[f],
+          active: f === filter,
+          count: f === "deleted" ? deleted.length : all.filter((n) => matches(n, f)).length,
+        }))}
+      />
       {list.length === 0 ? (
-        <div className="pt-4">
-          <EmptyState>{t.notifications.empty}</EmptyState>
-        </div>
+        <EmptyState>{t.notifications.empty}</EmptyState>
       ) : (
         <ul className="divide-y divide-border">
           {list.map((n) => (

@@ -292,8 +292,10 @@ async function PopularReviewsSection({ viewer, t, locale }: TabProps) {
 
 // Uma pasta: populares da semana (anime: a temporada), a prateleira pessoal e uma amostra de tudo.
 function FolderTab({ kind, viewer, t, locale }: TabProps & { kind: MediaKind }) {
-  // Em andamento (assistindo, lendo, jogando) onde faz sentido; filmes e músicas: a watchlist.
-  const shelfStatus = kind === "movie" || kind === "music" ? "watchlist" : "watching";
+  // Músicas ainda não têm fonte de dados: um aviso no lugar de fileiras vazias.
+  if (kind === "music") return <EmptyState>{t.folders.soon}</EmptyState>;
+  // Em andamento (assistindo, lendo, jogando) onde faz sentido; filmes: a watchlist.
+  const shelfStatus = kind === "movie" ? "watchlist" : "watching";
   const browse = `/browse/${BROWSE_PATHS[kind]}`;
   const popularTitle = kind === "anime" ? t.anime.thisSeason : t.home.popular(t.folders[kind]);
   const shelfTitle =

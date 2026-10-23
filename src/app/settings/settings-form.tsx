@@ -131,7 +131,7 @@ export function SettingsForm({ profile, favorites }: { profile: Profile; favorit
             <span className="text-danger">{message}</span>
             <button
               disabled={pending}
-              className="rounded-lg bg-accent px-5 py-2 font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
+              className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
             >
               {t.settings.save}
             </button>
@@ -192,7 +192,7 @@ function PasswordForm() {
           type="button"
           onClick={send}
           disabled={pending || !email}
-          className="shrink-0 rounded-lg bg-accent px-5 py-2 font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
+          className="shrink-0 rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
         >
           {status === "sent" ? t.settings.passwordResend : t.settings.passwordSend}
         </button>

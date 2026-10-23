@@ -497,7 +497,7 @@ export function EntryEditor({
                 type="button"
                 onClick={saveDetails}
                 disabled={uploading || !dirty}
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
+                className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-40"
               >
                 {t.movie.save}
               </button>
