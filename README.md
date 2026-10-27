@@ -2,160 +2,84 @@
 
 # 🪐 Orbi
 
-**Listas para tudo.** Tudo o que você assiste, ouve, joga e lê, em um só lugar.
+Social diary for movies, series, anime, manga, books and games, inspired by Letterboxd. Users log what they've watched, read or played, rate and review titles, build lists and follow friends' activity.
 
-Um diário social no estilo do Letterboxd, só que para **filmes, séries, animes, mangás, livros e jogos**:
-registre o que viu, dê nota com meia estrela, escreva reviews, monte listas e acompanhe o que seus amigos andam curtindo.
-
-[Funcionalidades](#-funcionalidades) · [Stack](#-stack) · [Rodando localmente](#-rodando-localmente) · [Fontes de dados](#-fontes-de-dados) · [Estrutura](#-estrutura)
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 
 </div>
 
----
+## Features
 
-## ✨ Funcionalidades
-
-### Catálogo de tudo
-
-| Pasta | Fonte | O que dá para fazer |
+| Media | Source | Highlights |
 | --- | --- | --- |
-| 🎬 Filmes | TMDB | ficha completa (elenco, equipe, lançamentos, onde assistir), trailer, recomendações |
-| 📺 Séries | TMDB | tabela de notas por episódio, lista de episódios com "próximo episódio", "Parei em" |
-| ⛩️ Animes | AniList | cada temporada é um anime (como no MyAnimeList), temporada atual, relacionados |
-| 📖 Mangás | AniList | capítulos, volumes, autores e adaptações em anime |
-| 📚 Livros | Open Library | autores, páginas, assuntos, "Ler / Lido / Lendo" |
-| 🎮 Jogos | Steam | desenvolvedora, plataformas, "Jogar / Jogado / Jogando" |
-| 🎵 Músicas | — | em breve |
+| Movies | TMDB | cast, crew, releases, where to watch, recommendations |
+| Series | TMDB | per-episode ratings, episode progress tracking |
+| Anime | AniList | one entry per season, related titles |
+| Manga | AniList | chapters, volumes, anime adaptations |
+| Books | Open Library | authors, pages, reading status |
+| Games | Steam | developer, platforms, play status |
 
-### Seu diário
+- Per-title status, half-star ratings, reviews with threaded comments and notifications
+- Custom lists, favorites, user profiles and friends' activity feed
+- Letterboxd import (diary, ratings, reviews and watchlist)
+- Typo-tolerant search with live suggestions, filters by decade, genre and rating
+- 16 languages, including right-to-left support, plus light and dark themes
 
-- **Status** por obra: visto, assistindo/lendo/jogando e watchlist, com nota de ½ a 5 estrelas, like e review com anexos
-- **Reviews sociais**: curtidas, comentários com respostas e notificações
-- **Atividade dos amigos** em cada obra e na Home
-- **Listas personalizadas** e **favoritos** no perfil
-- **Perfil** com capa, anel no avatar, sticker, diário, distribuição de notas e cartão para compartilhar
-- **Importação do Letterboxd** (diário, notas, likes, reviews e watchlist)
+## Stack
 
-### Descoberta
-
-- **Home com abas**: Novidades e uma aba por pasta (populares da semana, sua prateleira e o melhor de cada catálogo)
-- **Busca com sugestões** enquanto digita, tolerante a erro de digitação ("breking bad", "atack on titan")
-- **Busca "Tudo"** com um tópico por tipo, e fichas clicáveis: ator, diretor, estúdio, gênero ou país levam a tudo em que aparecem
-- **Ordenação por tópicos** (como no Letterboxd) e filtros por década, gênero e nota
-
-### Para o mundo todo
-
-- **16 idiomas** (incluindo árabe e urdu, da direita para a esquerda), com títulos e sinopses traduzidos
-- Temas claro e escuro, cores de destaque e conteúdo +18 opcional
-
----
-
-## 🧱 Stack
-
-- **[Next.js 16](https://nextjs.org)** (App Router, Cache Components, `"use cache"`) e **React 19**
-- **[Supabase](https://supabase.com)**: Postgres com RLS, autenticação (e-mail, usuário ou Google) e Storage
+- **Next.js 16** (App Router, Cache Components, `"use cache"`) and **React 19**
+- **Supabase**: Postgres with Row Level Security, authentication (email, username or Google) and Storage
 - **Tailwind CSS 4**
-- `pg_trgm` para a busca tolerante a erro no próprio banco
+- **pg_trgm** for fuzzy search directly in the database
+- Handmade UI components, no UI libraries
 
-Sem bibliotecas de UI: os componentes são feitos à mão.
-
----
-
-## 🚀 Rodando localmente
-
-### 1. Dependências
+## Running locally
 
 ```bash
 npm install
 ```
 
-### 2. Variáveis de ambiente
-
-Crie um `.env.local` na raiz:
+Create a `.env.local` file at the root:
 
 ```bash
-# Supabase: Project Settings > API Keys
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
-SUPABASE_SECRET_KEY=sb_secret_...   # só no servidor: grava o catálogo
-
-# TMDB: themoviedb.org > Settings > API (Read Access Token v4 ou API key v3)
+SUPABASE_SECRET_KEY=sb_secret_...   # server only
 TMDB_API_KEY=...
-
-# Protege as rotas de sincronização do catálogo (/api/sync/...)
-CRON_SECRET=uma-string-aleatória
+CRON_SECRET=a-random-string         # protects /api/sync/* routes
 ```
 
-AniList, Open Library e Steam não precisam de chave.
-
-### 3. Banco de dados
-
-Rode os arquivos de `supabase/migrations/` em ordem no **SQL Editor** do Supabase (ou `supabase db push` com o CLI).
-
-### 4. Subir
+Run the migrations in `supabase/migrations/` in order (SQL Editor or `supabase db push`), then:
 
 ```bash
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
-
-### 5. (Opcional) Cópia do catálogo de animes e mangás
-
-As listagens de anime e mangá funcionam direto da API do AniList, mas ficam mais rápidas e sem limite com a cópia no banco:
+Optionally, sync the AniList catalog into the database for faster listings:
 
 ```bash
-# carga completa (repita até "done": true)
 curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/sync/anilist?type=anime&mode=full&pages=50"
 curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/sync/anilist?type=manga&mode=full&pages=50"
-
-# depois, uma vez por dia (agendador do Vercel ou do Supabase)
-curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/sync/anilist?mode=recent"
 ```
 
----
-
-## 📡 Fontes de dados
-
-| Fonte | Uso |
-| --- | --- |
-| [TMDB](https://www.themoviedb.org) | filmes e séries |
-| [AniList](https://anilist.co) | animes e mangás (com o id do MyAnimeList) |
-| [Open Library](https://openlibrary.org) | livros |
-| [Steam](https://store.steampowered.com) | jogos |
-| [JustWatch](https://www.justwatch.com) (via TMDB) | onde assistir |
-
-> Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.
-> Uso comercial exige licença ou acordo com cada fonte.
-
-O catálogo é salvo no banco conforme as obras são abertas ou marcadas (e, para animes e mangás, pela sincronização), então as páginas não dependem da fonte a cada visita.
-
----
-
-## 🗂️ Estrutura
+## Project structure
 
 ```
 src/
-├── app/                    rotas (App Router)
-│   ├── movie/ series/ anime/ manga/ book/ game/   página de cada obra
-│   ├── browse/[folder]/    "Ver tudo" de cada pasta
-│   ├── search/             busca (Tudo, por tipo, pessoas, gêneros...)
-│   ├── u/[username]/       perfil, pastas, listas e cartão
-│   ├── api/                sugestões, importação e sincronização
-│   └── home-dashboard.tsx  Home com abas
-├── components/             pôster, editor de nota/review, ficha, filtros...
-└── lib/
-    ├── tmdb.ts anilist.ts openlibrary.ts steam.ts   clientes das fontes
-    ├── catalog.ts          garante cada obra no banco
-    ├── queries.ts home.ts  consultas do diário e da Home
-    └── i18n/locales/       os 16 idiomas
-supabase/migrations/        esquema, políticas (RLS) e funções
+├── app/            routes: title pages, browse, search, profiles, API
+├── components/     poster, review editor, filters
+└── lib/            source clients, catalog cache, queries, i18n
+supabase/
+└── migrations/     schema, RLS policies and functions
 ```
 
----
+## Data sources
 
-<div align="center">
+TMDB, AniList, Open Library, Steam and JustWatch (via TMDB).
 
-Feito com ☕ por [Filipe](https://github.com/FilipeeeRS)
-
-</div>
+This product uses the TMDB API but is not endorsed or certified by TMDB.
