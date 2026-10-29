@@ -1,0 +1,50 @@
+# Testes a cada push: confere tipos e lint, compila o site e roda os testes de ponta a ponta (Playwright).
+# O relatório (com fotos das falhas) fica nos "Artifacts" da execução por 14 dias.
+# Precisa dos secrets do repositório: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+# SUPABASE_SECRET_KEY e TMDB_API_KEY (opcional: E2E_EMAIL e E2E_PASSWORD, para os testes de quem está logado).
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI: true
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tipos e lint
+        run: npx tsc --noEmit && npm run lint
+      - name: Compilar o site
+        run: npm run build
+      - name: Navegador dos testes
+        run: npx playwright install --with-deps chromium
+      - name: Testes de ponta a ponta
+        run: npx playwright test
+      - name: Guardar o relatório
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-dos-testes
+          path: playwright-report/
+          retention-days: 14

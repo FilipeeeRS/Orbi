@@ -30,9 +30,10 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  // Usa o servidor que já estiver rodando; se não houver, sobe o "npm run dev".
+  // Usa o servidor que já estiver rodando; se não houver, sobe o "npm run dev" (no GitHub, o site
+  // já compilado: "npm run start", bem mais rápido).
   webServer: {
-    command: "npm run dev",
+    command: process.env.CI ? "npm run start" : "npm run dev",
     url: baseURL,
     reuseExistingServer: true,
     timeout: 180_000,

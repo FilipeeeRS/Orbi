@@ -1,0 +1,69 @@
+# Cópia do catálogo do AniList no nosso banco: animes e mangás deixam de depender do AniList no ar.
+# - Todo dia: traz o que mudou desde a última vez (lançamentos, episódios novos, notas).
+# - Manual ("Run workflow" com modo full): a carga completa, retomando de onde parou (animes ~15 min,
+#   mangás ~1 h; pode rodar de novo se parar no meio).
+# Sobe o site compilado aqui mesmo e chama /api/sync/anilist (protegida pelo CRON_SECRET).
+# Precisa dos secrets: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY,
+# TMDB_API_KEY e CRON_SECRET.
+name: Sincronizar AniList
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "recent = só o que mudou; full = catálogo completo"
+        type: choice
+        options: [recent, full]
+        default: recent
+
+concurrency:
+  group: anilist-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      MODE: ${{ github.event.inputs.mode || 'recent' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Subir o site
+        run: |
+          npm run start > server.log 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:3000/about && exit 0; sleep 2; done
+          cat server.log; exit 1
+      - name: Sincronizar
+        run: |
+          call() {
+            curl -sS --fail-with-body --max-time 3600 -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/sync/anilist?$1"
+            echo
+          }
+          if [ "$MODE" = "full" ]; then
+            for type in anime manga; do
+              # Cada chamada importa até 50 páginas e guarda onde parou; repete até chegar ao fim
+              for round in $(seq 1 200); do
+                out=$(call "type=$type&mode=full&pages=50")
+                echo "$type #$round: $out"
+                echo "$out" | grep -q '"done":true' && break
+              done
+            done
+          else
+            call "mode=recent"
+          fi
+      - name: Log do site (se der erro)
+        if: failure()
+        run: tail -100 server.log
