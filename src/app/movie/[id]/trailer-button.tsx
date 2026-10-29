@@ -1,9 +1,11 @@
 "use client";
 
+import { useI18n } from "@/components/i18n";
 import { useEffect, useState } from "react";
 
 // "▶ Trailer" abaixo do pôster: abre o vídeo do YouTube numa janela por cima da página.
 export function TrailerButton({ videoId, label }: { videoId: string; label: string }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   // Esc fecha; a página não rola por trás enquanto o vídeo está aberto.
@@ -43,7 +45,7 @@ export function TrailerButton({ videoId, label }: { videoId: string; label: stri
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Close"
+              aria-label={t.report.close}
               className="absolute -top-10 right-0 grid size-8 place-items-center rounded-full text-white/80 hover:bg-white/10 hover:text-white"
             >
               <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>

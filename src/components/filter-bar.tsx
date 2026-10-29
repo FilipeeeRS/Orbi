@@ -135,6 +135,8 @@ function Dropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // Com mouse o menu já abriu ao passar por cima: o clique não pode fechá-lo de novo.
+  const hovering = useRef(false);
   const selected = options.find((o) => o.value === value);
 
   useEffect(() => {
@@ -150,10 +152,21 @@ function Dropdown({
   };
 
   return (
-    <div ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => {
+        hovering.current = true;
+        setOpen(true);
+      }}
+      onMouseLeave={() => {
+        hovering.current = false;
+        setOpen(false);
+      }}
+    >
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(hovering.current || !open)}
         aria-expanded={open}
         className={`flex items-center gap-1 rounded-md px-2 py-1 tracking-wider uppercase transition hover:text-fg ${
           selected && !showValue ? "text-accent" : "text-muted"

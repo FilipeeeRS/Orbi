@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { LoginForm } from "./login-form";
 import { getDict } from "@/lib/session";
 
@@ -12,6 +14,15 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-sm py-8">
       <LoginForm />
+      {/* O título da aba depende do idioma da pessoa (cookies): avisa o Next que a página é dinâmica */}
+      <Suspense>
+        <DynamicMarker />
+      </Suspense>
     </div>
   );
+}
+
+async function DynamicMarker() {
+  await connection();
+  return null;
 }

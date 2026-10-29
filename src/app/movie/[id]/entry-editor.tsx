@@ -584,6 +584,7 @@ function Toggle({
   return (
     <button
       type="button"
+      aria-pressed={on}
       {...props}
       className={`group flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition disabled:opacity-60 ${
         on ? `${active} bg-surface-2` : "border-border text-muted hover:text-fg"

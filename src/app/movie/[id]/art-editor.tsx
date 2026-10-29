@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/components/i18n";
 import { useEffect, useState, useTransition } from "react";
 import { listMovieImages, saveItemArt } from "./art-actions";
 
@@ -20,6 +21,7 @@ export function ArtEditor({
   currentBackdrop: string | null;
   labels: Labels;
 }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"poster" | "backdrop">("poster");
   const [images, setImages] = useState<{ posters: string[]; backdrops: string[] } | null>(null);
@@ -104,7 +106,7 @@ export function ArtEditor({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Close"
+                  aria-label={t.report.close}
                   className="grid size-8 place-items-center rounded-full text-muted hover:bg-surface-2 hover:text-fg"
                 >
                   <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
