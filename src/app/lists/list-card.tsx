@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/avatar";
 import { useI18n } from "@/components/i18n";
+import { useToast } from "@/components/toast";
 import type { PopularList } from "@/lib/lists";
 import { setListLike, setListSave } from "./social-actions";
 
@@ -17,6 +18,7 @@ const BOOKMARK = "M6 3h12v18l-6-5-6 5z";
 export function ListCard({ list, viewerId }: { list: PopularList; viewerId: string | null }) {
   const { t } = useI18n();
   const router = useRouter();
+  const toast = useToast();
   const [liked, setLiked] = useState(list.liked);
   const [saved, setSaved] = useState(list.saved);
   const [, start] = useTransition();
@@ -28,7 +30,10 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
     setLiked(next);
     start(async () => {
       const { ok } = await setListLike(list.id, next);
-      if (!ok) setLiked(!next);
+      if (!ok) {
+        setLiked(!next);
+        toast({ message: t.toast.error, tone: "error" });
+      } else toast({ message: next ? t.toast.liked : t.toast.unliked });
     });
   }
 
@@ -38,7 +43,10 @@ export function ListCard({ list, viewerId }: { list: PopularList; viewerId: stri
     setSaved(next);
     start(async () => {
       const { ok } = await setListSave(list.id, next);
-      if (!ok) setSaved(!next);
+      if (!ok) {
+        setSaved(!next);
+        toast({ message: t.toast.error, tone: "error" });
+      } else toast({ message: next ? t.toast.listSaved : t.toast.listUnsaved });
     });
   }
 

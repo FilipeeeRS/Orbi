@@ -55,7 +55,8 @@ export function PosterImage({
 }) {
   return (
     <div
-      className={`relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition ${
+      // select-none / touch-callout: segurar o dedo no celular abre os atalhos, não o menu de "salvar imagem"
+      className={`relative aspect-[2/3] overflow-hidden rounded-md bg-surface-2 ring-1 ring-border transition select-none [-webkit-touch-callout:none] ${
         hoverRing ? `group-hover:ring-2 ${watched ? "group-hover:ring-ok" : "group-hover:ring-fg"}` : ""
       }`}
     >

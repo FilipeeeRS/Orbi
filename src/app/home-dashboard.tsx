@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { Section } from "@/components/section";
-import { EmptyState, TabNav } from "@/components/page-header";
+import { GettingStarted } from "@/components/getting-started";
+import { PersonCard } from "@/components/person-card";
+import { whoToFollow } from "@/lib/people";
+import { EmptyAction, EmptyState, TabNav } from "@/components/page-header";
 import Link from "next/link";
 import { RowSkeleton, SectionSkeleton } from "@/components/skeletons";
 import { Avatar } from "@/components/header";
@@ -107,34 +110,9 @@ function Streamed({ title, rows, children }: { title: string; rows?: boolean; ch
 // Novidades: as últimas notificações (para quem está logado), a atividade dos amigos, a watchlist,
 // os filmes e séries mais aguardados, as listas e as reviews populares.
 function NewsTab({ viewer, t, locale }: TabProps) {
-  return (
-    <div className="space-y-12">
-      {/* Logado: as últimas notificações (lançamentos da watchlist, seguidores, curtidas, novidades do Orbi) */}
-      {viewer ? (
-        <Streamed title={t.notifications.title} rows={false}>
-          <NotificationsSection viewer={viewer} t={t} locale={locale} />
-        </Streamed>
-      ) : (
-        <EmptyState
-          action={
-            <Link href="/login" className="inline-block rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90">
-              {t.nav.signIn}
-            </Link>
-          }
-        >
-          {t.home.guestNews}
-        </EmptyState>
-      )}
-      {viewer && (
-        <Streamed title={t.home.newFromFriends}>
-          <FriendsSection viewer={viewer} t={t} locale={locale} />
-        </Streamed>
-      )}
-      {viewer && (
-        <Streamed title={t.home.yourWatchlist}>
-          <WatchlistSection viewer={viewer} t={t} locale={locale} />
-        </Streamed>
-      )}
+  // O que vale para todo mundo: o que vem aí, listas e reviews populares
+  const general = (
+    <>
       {/* O que ainda vai lançar: filmes e séries mais aguardados */}
       <Streamed title={t.home.mostAnticipated(t.folders.movie)}>
         <UpcomingRow kind="movie" title={t.home.mostAnticipated(t.folders.movie)} browse="/browse/movies" viewer={viewer} t={t} locale={locale} />
@@ -148,23 +126,95 @@ function NewsTab({ viewer, t, locale }: TabProps) {
       <Streamed title={t.home.popularReviews} rows={false}>
         <PopularReviewsSection viewer={viewer} t={t} locale={locale} />
       </Streamed>
+    </>
+  );
+
+  if (!viewer)
+    return (
+      <div className="space-y-12">
+        <EmptyState
+          action={
+            <Link href="/login" className="inline-block rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-fg hover:opacity-90">
+              {t.nav.signIn}
+            </Link>
+          }
+        >
+          {t.home.guestNews}
+        </EmptyState>
+        {general}
+      </div>
+    );
+
+  // Logado: primeiro o que é seu (primeiros passos, o que está em andamento, amigos, avisos novos,
+  // watchlist, quem seguir), depois o geral. Seções que podem não existir não mostram esqueleto.
+  return (
+    <div className="space-y-12">
+      <Suspense fallback={null}>
+        <GettingStarted viewer={viewer} t={t} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ContinueSection viewer={viewer} t={t} locale={locale} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <FriendsSection viewer={viewer} t={t} locale={locale} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <NotificationsSection viewer={viewer} t={t} locale={locale} />
+      </Suspense>
+      <Streamed title={t.home.yourWatchlist}>
+        <WatchlistSection viewer={viewer} t={t} locale={locale} />
+      </Streamed>
+      <Suspense fallback={null}>
+        <WhoToFollowSection viewer={viewer} t={t} />
+      </Suspense>
+      {general}
     </div>
   );
 }
 
-async function NotificationsSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
-  const [notifications, isRead] = await Promise.all([getNotifications(viewer.id, { limit: 5 }), getReadState()]);
+// Continuar de onde parou: o que está assistindo, lendo ou jogando (todas as pastas).
+async function ContinueSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
+  const items = await getViewerShelf(viewer.id, "all", "watching");
+  if (!items.length) return null;
+  const viewerFor = await viewerStates(viewer, items.map((i) => i.id));
   return (
-    <Section title={t.notifications.title} more={{ href: "/notifications", label: t.profile.all }}>
-      {notifications.length ? (
-        <ul className="divide-y divide-border">
-          {notifications.map((n) => (
-            <NotificationRow key={n.id} n={n} read={isRead(n)} t={t} locale={locale} compact />
-          ))}
-        </ul>
-      ) : (
-        <EmptyState>{t.notifications.empty}</EmptyState>
-      )}
+    <Section title={t.home.continue} more={{ href: `/u/${viewer.username}/all?tab=watching`, label: t.profile.all }}>
+      <Row>
+        {items.map((item, i) => (
+          <Poster key={item.id} item={item} locale={locale} eager={i < 6} viewer={viewerFor(item.id)} />
+        ))}
+      </Row>
+    </Section>
+  );
+}
+
+// Quem seguir: os mais seguidos do Orbi que você ainda não segue.
+async function WhoToFollowSection({ viewer, t }: { viewer: Profile; t: Dictionary }) {
+  const people = await whoToFollow(viewer.id, 3);
+  if (!people.length) return null;
+  return (
+    <Section title={t.people.whoToFollow} more={{ href: "/search?type=people", label: t.profile.all }}>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {people.map((p) => (
+          <PersonCard key={p.id} person={p} viewerId={viewer.id} t={t} />
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+// Avisos novos: só os não lidos (até 3), com o total ao lado; sem nada novo, a seção some.
+async function NotificationsSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
+  const [notifications, isRead] = await Promise.all([getNotifications(viewer.id, { limit: 50 }), getReadState()]);
+  const unread = notifications.filter((n) => !isRead(n));
+  if (!unread.length) return null;
+  return (
+    <Section title={t.notifications.title} count={unread.length} more={{ href: "/notifications", label: t.profile.all }}>
+      <ul className="divide-y divide-border">
+        {unread.slice(0, 3).map((n) => (
+          <NotificationRow key={n.id} n={n} read={false} t={t} locale={locale} compact />
+        ))}
+      </ul>
     </Section>
   );
 }
@@ -210,7 +260,7 @@ async function WatchlistSection({ viewer, t, locale }: TabProps & { viewer: Prof
           ))}
         </Row>
       ) : (
-        <EmptyState>{t.home.emptyWatchlist}</EmptyState>
+        <EmptyState action={<EmptyAction href="/browse/movies">{t.home.explore}</EmptyAction>}>{t.home.emptyWatchlist}</EmptyState>
       )}
     </Section>
   );
@@ -356,7 +406,9 @@ async function ShelfRow({ kind, title, status, viewer, t, locale }: RowProps & {
       {shelf.length ? (
         <ItemRow items={shelf} kind={kind} locale={locale} viewerFor={viewerFor} />
       ) : (
-        <EmptyState>{status === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}</EmptyState>
+        <EmptyState action={<EmptyAction href={`/browse/${BROWSE_PATHS[kind]}`}>{t.home.explore}</EmptyAction>}>
+          {status === "watchlist" ? t.home.emptyWatchlist : t.home.emptyInProgress}
+        </EmptyState>
       )}
     </Section>
   );

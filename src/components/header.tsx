@@ -6,6 +6,7 @@ import { MEDIA_KINDS, type MediaKind, type Profile } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { countUnreadNotifications } from "@/lib/notifications";
 import { Avatar } from "./avatar";
+import { QuickLogButton } from "./quick-log";
 
 // Avatar mora em ./avatar (componentes do navegador importam de lá; este arquivo busca notificações no servidor).
 export { Avatar };
@@ -23,6 +24,8 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <Logo slogan={t.slogan} />
         <SearchBox placeholder={t.nav.search} hideOnLanding={!viewer} />
+        {/* "+ Registrar" no topo só no computador (no celular fica na barra de baixo) */}
+        {viewer && <QuickLogButton className="hidden sm:flex" />}
         {viewer ? (
           <UserMenu
             avatar={<Avatar profile={viewer} size={30} ring={viewer.avatar_ring} />}

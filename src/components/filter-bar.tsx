@@ -142,8 +142,14 @@ function Dropdown({
   useEffect(() => {
     if (!open) return;
     const close = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    // Esc fecha (quem navega por teclado não fica preso no menu)
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", esc);
+    };
   }, [open]);
 
   const pick = (v: string | null) => {

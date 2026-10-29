@@ -75,3 +75,12 @@ export function EmptyState({ children, action }: { children: React.ReactNode; ac
     </div>
   );
 }
+
+// Botão dentro do aviso de vazio ("Explorar filmes", "Encontrar pessoas").
+export function EmptyAction({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className="inline-block rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-fg hover:border-fg">
+      {children}
+    </Link>
+  );
+}

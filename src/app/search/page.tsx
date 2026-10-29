@@ -8,6 +8,8 @@ import { sortOptions } from "@/lib/sort-options";
 import { FilterBar } from "@/components/filter-bar";
 import { EmptyState, PageHeader, TabNav } from "@/components/page-header";
 import { Section } from "@/components/section";
+import { PersonCard } from "@/components/person-card";
+import { searchPeople, whoToFollow } from "@/lib/people";
 import { FolderIcon } from "@/components/folder-icon";
 import { ExternalPosters } from "@/components/external-posters";
 import { searchCatalog } from "@/lib/anime-db";
@@ -33,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.footer.search };
 }
 
-const SEARCH_TABS = ["all", "movie", "series", "book", "anime", "manga", "game"] as const;
+const SEARCH_TABS = ["all", "movie", "series", "book", "anime", "manga", "game", "people"] as const;
 type SearchTab = (typeof SEARCH_TABS)[number];
 
 // Ordenações possíveis com o que a busca do TMDB devolve (não há duração nem nota sua aqui).
@@ -62,7 +64,7 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
   const tab: SearchTab =
     params.type === "anime"
       ? "anime"
-      : params.type === "manga" || params.type === "book" || params.type === "game"
+      : params.type === "manga" || params.type === "book" || params.type === "game" || params.type === "people"
         ? params.type
         : series
           ? "series"
@@ -75,6 +77,7 @@ async function SearchResults({ searchParams }: PageProps<"/search">) {
     if (id > 0) return <AniListPersonResults q={q} kind={key} id={id} />;
   }
   if (tab === "all") return <AllResults q={q} />;
+  if (tab === "people") return <PeopleResults q={q} />;
   if (tab === "anime" || tab === "manga" || tab === "book" || tab === "game") return <CatalogResults q={q} kind={tab} />;
 
   // Vindo da ficha: obras de uma pessoa, de um gênero, estúdio, emissora ou país.
@@ -213,11 +216,43 @@ function SearchTabs({
       tabs={SEARCH_TABS.map((to) => ({
         key: to,
         href: hrefFor(to),
-        label: to === "all" ? t.folders.all : t.folders[to],
+        label: to === "all" ? t.folders.all : to === "people" ? t.people.tab : t.folders[to],
         active: to === current,
-        icon: to === "all" ? undefined : <FolderIcon kind={to} className="size-3.5" />,
+        icon:
+          to === "all" ? undefined : to === "people" ? (
+            <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" />
+            </svg>
+          ) : (
+            <FolderIcon kind={to} className="size-3.5" />
+          ),
       }))}
     />
+  );
+}
+
+// Aba Pessoas: gente do Orbi pelo nome ou @, com o botão de seguir (e "Quem seguir" quando não há busca).
+async function PeopleResults({ q }: { q: string }) {
+  const [{ t }, viewer] = await Promise.all([getDict(), getViewer()]);
+  const hrefFor = (to: SearchTab) => `/search?${new URLSearchParams({ ...(q ? { q } : {}), ...(to === "all" ? {} : { type: to }) })}`;
+  const people = q ? await searchPeople(q, viewer?.id ?? null) : viewer ? await whoToFollow(viewer.id, 12) : [];
+  return (
+    <div className="space-y-6">
+      <PageHeader back="/home" title={q ? t.search.title(q) : t.people.find} border={false} />
+      <SearchTabs current="people" hrefFor={hrefFor} t={t} />
+      {!q && <p className="text-sm text-muted">{t.people.prompt}</p>}
+      {people.length ? (
+        <Section title={q ? t.people.tab : t.people.whoToFollow} count={q ? people.length : undefined}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {people.map((p) => (
+              <PersonCard key={p.id} person={p} viewerId={viewer?.id ?? null} t={t} />
+            ))}
+          </div>
+        </Section>
+      ) : (
+        q && <EmptyState>{t.people.empty}</EmptyState>
+      )}
+    </div>
   );
 }
 
@@ -268,13 +303,14 @@ async function AllResults({ q }: { q: string }) {
     );
 
   const showAdult = !!viewer?.show_adult;
-  const [movies, shows, books, animes, mangas, games] = await Promise.all([
+  const [movies, shows, books, animes, mangas, games, people] = await Promise.all([
     searchMoviesPages(q, language, 1, "movie"),
     searchMoviesPages(q, language, 1, "tv"),
     searchKind(q, "book", 6, showAdult),
     searchKind(q, "anime", 6, showAdult),
     searchKind(q, "manga", 6, showAdult),
     searchKind(q, "game", 6, showAdult),
+    searchPeople(q, viewer?.id ?? null, 6),
   ]);
   const adult = showAdult ? null : await adultMovieIds(movies.slice(0, 6).map((m) => m.id));
   const card = (m: { id: number; title: string; release_date?: string; poster_path: string | null; vote_average?: number }) => ({
@@ -296,7 +332,17 @@ async function AllResults({ q }: { q: string }) {
   return (
     <div className="space-y-8">
       {header}
-      {groups.length ? (
+      {/* Pessoas do Orbi com esse nome ou @ */}
+      {people.length > 0 && (
+        <Section title={t.people.tab} more={{ href: hrefFor("people"), label: t.profile.all }}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {people.slice(0, 3).map((p) => (
+              <PersonCard key={p.id} person={p} viewerId={viewer?.id ?? null} t={t} />
+            ))}
+          </div>
+        </Section>
+      )}
+      {groups.length || people.length ? (
         groups.map((g) => (
           // Mesmo padrão da Home: uma fileira de pôsteres com título e ano embaixo
           <Section key={g.kind} title={t.folders[g.kind]} more={{ href: hrefFor(g.kind), label: t.profile.all }}>

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { useI18n } from "@/components/i18n";
+import { useToast } from "@/components/toast";
 import { TranslatableText } from "@/components/translatable-text";
 import { ContentMenu } from "@/components/content-menu";
 import { SectionHeading } from "@/components/section";
@@ -30,6 +31,7 @@ export function ListActions({
   initialSaved: boolean;
 }) {
   const { t } = useI18n();
+  const toast = useToast();
   const [liked, setLiked] = useState(initialLiked);
   const [likes, setLikes] = useState(initialLikes);
   const [saved, setSaved] = useState(initialSaved);
@@ -50,7 +52,8 @@ export function ListActions({
       if (!ok) {
         setLiked(!next);
         setLikes((n) => n + (next ? -1 : 1));
-      }
+        toast({ message: t.toast.error, tone: "error" });
+      } else toast({ message: next ? t.toast.liked : t.toast.unliked });
     });
   }
 
@@ -59,7 +62,10 @@ export function ListActions({
     setSaved(next);
     start(async () => {
       const { ok } = await setListSave(listId, next);
-      if (!ok) setSaved(!next);
+      if (!ok) {
+        setSaved(!next);
+        toast({ message: t.toast.error, tone: "error" });
+      } else toast({ message: next ? t.toast.listSaved : t.toast.listUnsaved });
     });
   }
 

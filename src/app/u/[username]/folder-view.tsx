@@ -26,7 +26,7 @@ import { TranslatableText } from "@/components/translatable-text";
 import { dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 import { getUserLists, LIST_SORTS, type UserListSort } from "@/lib/lists";
 import { ListsGrid } from "@/app/lists/lists-grid";
-import { EmptyState, PageHeader, TabNav } from "@/components/page-header";
+import { EmptyAction, EmptyState, PageHeader, TabNav } from "@/components/page-header";
 
 // Listagem de uma pasta (filmes, séries, músicas, jogos ou livros) do perfil, com abas e ordenação.
 export async function FolderView({
@@ -165,7 +165,16 @@ export async function FolderView({
       {lists ? (
         <ListsGrid lists={lists} canCreate={viewer?.id === profile.id} username={profile.username} viewerId={viewer?.id ?? null} t={t} />
       ) : entries.length === 0 ? (
-        <EmptyState>{t.profile.empty}</EmptyState>
+        // Na sua própria pasta vazia, um atalho para achar o que registrar
+        <EmptyState
+          action={
+            viewer?.id === profile.id ? (
+              <EmptyAction href={`/browse/${kind === "all" ? "movies" : path}`}>{t.home.explore}</EmptyAction>
+            ) : undefined
+          }
+        >
+          {t.profile.empty}
+        </EmptyState>
       ) : tab === "reviews" ? (
         <ul className="divide-y divide-border">
           {entries.map((e) => (

@@ -39,8 +39,8 @@ test.describe("Páginas de obra", () => {
 
   test("série: temporadas e a página de uma temporada com link de volta para a série", async ({ page }) => {
     await open(page, "/series/1399");
-    // As temporadas aparecem como abas ("Temporada 1", "Temporada 2"...)
-    await expect(page.getByText(t.series.season(1), { exact: true }).first()).toBeVisible();
+    // Notas dos episódios (tabela) e a lista de episódios por temporada
+    await expect(page.getByRole("tab", { name: t.series.ratingsTitle })).toBeVisible();
     await open(page, "/series/1399/season/1");
     await expect(page.locator('main a[href="/series/1399"]').first()).toBeVisible();
   });

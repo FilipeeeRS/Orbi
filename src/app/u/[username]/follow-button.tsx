@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/components/i18n";
+import { useToast } from "@/components/toast";
 
 type Labels = { add: string; is: string; remove: string };
 
@@ -12,13 +14,17 @@ export function FollowButton({
   profileId,
   initial,
   labels,
+  name,
 }: {
   viewerId: string;
   profileId: string;
   initial: boolean;
   labels: Labels;
+  name?: string; // para o aviso "Seguindo fulano"
 }) {
   const router = useRouter();
+  const { t } = useI18n();
+  const toast = useToast();
   const [following, setFollowing] = useState(initial);
   const [hover, setHover] = useState(false);
   const [pending, start] = useTransition();
@@ -31,7 +37,10 @@ export function FollowButton({
       const { error } = next
         ? await supabase.from("follows").insert({ follower_id: viewerId, followee_id: profileId })
         : await supabase.from("follows").delete().eq("follower_id", viewerId).eq("followee_id", profileId);
-      if (error) setFollowing(!next);
+      if (error) {
+        setFollowing(!next);
+        toast({ message: t.toast.error, tone: "error" });
+      } else if (name) toast({ message: next ? t.toast.following(name) : t.toast.unfollowed(name) });
       router.refresh();
     });
   }

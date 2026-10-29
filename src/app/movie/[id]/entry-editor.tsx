@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState } from "react";
 import { useSaveQueue } from "@/lib/use-save-queue";
+import { useToast } from "@/components/toast";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
 import { StarIcon } from "@/components/stars";
@@ -61,6 +62,7 @@ export function EntryEditor({
   const [error, setError] = useState(false);
   // Gravações em fila: os botões não travam enquanto o servidor responde.
   const enqueue = useSaveQueue();
+  const toast = useToast();
 
   const watched = entry?.status === "watched";
   const onWatchlist = entry?.status === "watchlist";
@@ -124,8 +126,28 @@ export function EntryEditor({
       if (error) {
         setEntry(previous);
         setError(true);
+        toast({ message: t.toast.error, tone: "error" });
         return;
       }
+      // Aviso do que mudou (status e like); salvar a review mostra "Salvo"
+      const done = playing ? t.game.played : reading ? t.manga.readDone : t.movie.watched;
+      const doing = playing ? t.game.playing : reading ? t.manga.reading : t.movies.tabs.watching;
+      const message = !next
+        ? t.toast.removed
+        : next.status !== previous?.status
+          ? next.status === "watched"
+            ? t.toast.markedAs(done)
+            : next.status === "watching"
+              ? t.toast.markedAs(doing)
+              : t.toast.watchlistAdded
+          : next.liked !== previous?.liked
+            ? next.liked
+              ? t.toast.liked
+              : t.toast.unliked
+            : onSaved
+              ? t.movie.saved
+              : null;
+      if (message) toast({ message });
       onSaved?.();
     });
   }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSaveQueue } from "@/lib/use-save-queue";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "./i18n";
+import { useToast } from "./toast";
 import { dictionaries } from "@/lib/i18n/dictionaries";
 import { ensureTmdbItemId } from "@/app/actions";
 
@@ -68,7 +69,52 @@ export function PosterActions({
   // Desmarcar um filme com nota/review pede um segundo clique (em vez de um confirm do navegador).
   const [confirming, setConfirming] = useState(false);
   const enqueue = useSaveQueue();
+  const toast = useToast();
   const idRef = useRef(itemId);
+
+  // Celular: segurar o dedo no pôster mostra os atalhos (não existe "passar o mouse").
+  const anchor = useRef<HTMLSpanElement>(null);
+  const [touchOpen, setTouchOpen] = useState(false);
+  useEffect(() => {
+    const host = anchor.current?.parentElement;
+    if (!host) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let longPressed = false;
+    const start = () => {
+      longPressed = false;
+      timer = setTimeout(() => {
+        longPressed = true;
+        setTouchOpen(true);
+        navigator.vibrate?.(15);
+      }, 450);
+    };
+    const cancel = () => clearTimeout(timer);
+    // Depois de segurar, o toque não abre a obra; o menu do navegador também não aparece.
+    const blockClick = (e: Event) => {
+      if (longPressed) {
+        e.preventDefault();
+        e.stopPropagation();
+        longPressed = false;
+      }
+    };
+    const blockMenu = (e: Event) => longPressed && e.preventDefault();
+    const outside = (e: TouchEvent) => !host.contains(e.target as Node) && setTouchOpen(false);
+    host.addEventListener("touchstart", start, { passive: true });
+    host.addEventListener("touchend", cancel);
+    host.addEventListener("touchmove", cancel, { passive: true });
+    host.addEventListener("click", blockClick, true);
+    host.addEventListener("contextmenu", blockMenu);
+    document.addEventListener("touchstart", outside, { passive: true });
+    return () => {
+      cancel();
+      host.removeEventListener("touchstart", start);
+      host.removeEventListener("touchend", cancel);
+      host.removeEventListener("touchmove", cancel);
+      host.removeEventListener("click", blockClick, true);
+      host.removeEventListener("contextmenu", blockMenu);
+      document.removeEventListener("touchstart", outside);
+    };
+  }, []);
 
   useEffect(() => {
     if (!confirming) return;
@@ -76,13 +122,36 @@ export function PosterActions({
     return () => clearTimeout(timer);
   }, [confirming]);
 
-  function save(next: ViewerItemState) {
+  // Aviso do que mudou, com "Desfazer" (menos ao apagar nota/review: aí não tem volta).
+  function announce(previous: ViewerItemState, next: ViewerItemState) {
+    const message =
+      next.watched && !previous.watched
+        ? t.toast.markedAs(words.done)
+        : next.liked !== previous.liked && next.watched
+          ? next.liked
+            ? t.toast.liked
+            : t.toast.unliked
+          : next.watching && !previous.watching
+            ? t.toast.markedAs(words.doing)
+            : next.watchlist && !previous.watchlist
+              ? t.toast.watchlistAdded
+              : previous.watchlist && !next.watchlist
+                ? t.toast.watchlistRemoved
+                : t.toast.removed;
+    const canUndo = !(previous.hasDetails && !next.watched);
+    toast({ message, action: canUndo ? { label: t.toast.undo, onClick: () => save(previous, true) } : undefined });
+  }
+
+  function save(next: ViewerItemState, silent = false) {
     const previous = state;
     setState(next);
+    setTouchOpen(false);
+    if (!silent) announce(previous, next);
     enqueue(async () => {
       const id = idRef.current ?? (tmdb ? await ensureTmdbItemId(tmdb.type, tmdb.id) : null);
       if (!id) {
         setState(previous);
+        toast({ message: t.toast.error, tone: "error" });
         return;
       }
       idRef.current = id;
@@ -140,6 +209,7 @@ export function PosterActions({
       if (result.error) {
         console.error("Orbi: não foi possível salvar", result.error);
         setState(previous);
+        toast({ message: t.toast.error, tone: "error" });
       }
     });
   }
@@ -181,6 +251,8 @@ export function PosterActions({
 
   return (
     <>
+      {/* Âncora para achar o pôster (o toque longo do celular é escutado nele) */}
+      <span ref={anchor} hidden />
       {/* Canto de cima: a nota que você deu (4,5 ★) ao lado do selo do status. Sem nota sua, só o selo. */}
       {((showBadge && badge) || (state.watched && state.rating)) && (
         <span className="pointer-events-none absolute end-1.5 top-1.5 flex items-center gap-1">
@@ -201,11 +273,15 @@ export function PosterActions({
       )}
       <div
         aria-hidden
-        className={`pointer-events-none absolute inset-0 rounded-md opacity-0 ring-2 transition group-hover:opacity-100 ${
-          state.watched ? "ring-ok" : "ring-fg"
-        }`}
+        className={`pointer-events-none absolute inset-0 rounded-md ring-2 transition group-hover:opacity-100 ${
+          touchOpen ? "opacity-100" : "opacity-0"
+        } ${state.watched ? "ring-ok" : "ring-fg"}`}
       />
-      <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
+      <div
+        className={`pointer-events-none absolute inset-x-0 bottom-2 flex justify-center transition group-hover:opacity-100 group-focus-within:opacity-100 ${
+          touchOpen ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="pointer-events-auto flex items-center gap-1 rounded-full bg-black/75 px-2 py-1 shadow-lg backdrop-blur">
           {/* Ainda não lançado: sem assistido, assistindo e like, só a watchlist */}
           {!unreleased && (

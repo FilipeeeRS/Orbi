@@ -18,12 +18,51 @@ const pressed = (l: Locator) => expect(l).toHaveAttribute("aria-pressed", "true"
 const notPressed = (l: Locator) => expect(l).toHaveAttribute("aria-pressed", "false");
 
 test.describe("Logado", () => {
-  test("Home: boas-vindas pelo nome, notificações e watchlist", async ({ page }) => {
+  test("Home: boas-vindas pelo nome, watchlist e o botão Registrar no topo", async ({ page }) => {
     await open(page, "/home");
     await expect(page.locator("main h1")).toContainText(t.home.welcome("").replace(/!$/, "").trim());
-    await expect(page.getByRole("heading", { name: t.notifications.title })).toBeVisible();
     await expect(page.getByRole("heading", { name: t.home.yourWatchlist })).toBeVisible();
     await expect(page.getByText(t.home.guestNews)).toHaveCount(0);
+    await expect(page.locator("header").getByRole("button", { name: t.quickLog.button })).toBeVisible();
+  });
+
+  test("Registrar rápido: busca, nota, salva, aviso com 'Ver' e desfaz pela página da obra", async ({ page }) => {
+    page.on("dialog", (d) => d.accept());
+    await open(page, "/home");
+    await page.locator("header").getByRole("button", { name: t.quickLog.button }).click();
+    const dialog = page.getByRole("dialog", { name: t.quickLog.title });
+    await dialog.getByPlaceholder(t.quickLog.search).fill("The Matrix");
+    await dialog.locator("ul button").first().click();
+    await dialog.getByRole("radio", { name: "4", exact: true }).click();
+    await dialog.getByRole("button", { name: t.movie.save }).click();
+    // Aviso "… registrado" com o atalho "Ver"
+    const toast = page.getByRole("status").filter({ hasText: t.quickLog.view });
+    await expect(toast).toBeVisible();
+    await toast.getByRole("button", { name: t.quickLog.view }).click();
+    await expect(page.getByRole("radio", { name: "4", exact: true })).toHaveAttribute("aria-checked", "true");
+    // Desfaz: tira o "visto" (apaga a nota)
+    await page.getByRole("button", { name: new RegExp(`^(${t.movie.watched}|${t.manga.readDone}|${t.game.played})$`) }).first().click();
+    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
+  });
+
+  test("pôster: o atalho mostra o aviso com 'Desfazer', e desfazer volta ao que era", async ({ page }) => {
+    await open(page, "/browse/movies");
+    const card = page.locator("main .group").filter({ has: page.locator('a[href^="/movie/"]') }).nth(1);
+    await card.hover();
+    const watchlist = card.getByRole("button", { name: t.movies.tabs.watchlist });
+    const before = await watchlist.getAttribute("aria-pressed");
+    await watchlist.click();
+    const toast = page.getByRole("status").filter({ hasText: t.toast.undo });
+    await expect(toast).toBeVisible();
+    await toast.getByRole("button", { name: t.toast.undo }).click();
+    await expect(watchlist).toHaveAttribute("aria-pressed", before!);
+    await page.waitForTimeout(1500);
+  });
+
+  test("busca de pessoas e 'Quem seguir'", async ({ page }) => {
+    await open(page, "/search?type=people");
+    await expect(page.locator("main h1")).toContainText(t.people.find);
+    await expect(page.getByText(t.people.prompt)).toBeVisible();
   });
 
   test("menu da foto: Seus filmes, Seu tudo, notificações, configurações e sair", async ({ page }) => {

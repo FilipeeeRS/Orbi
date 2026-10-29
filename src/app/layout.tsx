@@ -8,6 +8,10 @@ import { NavigationProgress } from "@/components/navigation-progress";
 import { I18nProvider } from "@/components/i18n";
 import { themeScript } from "@/components/theme-toggle";
 import { SiteFooter } from "@/components/site-footer";
+import { ToastProvider } from "@/components/toast";
+import { QuickLogProvider } from "@/components/quick-log";
+import { BottomNav } from "@/components/bottom-nav";
+import { countUnreadNotifications } from "@/lib/notifications";
 import { getDict, getViewer } from "@/lib/session";
 import "./globals.css";
 
@@ -45,16 +49,25 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 async function AppShell({ children }: { children: React.ReactNode }) {
   await connection(); // o cliente do Supabase lê a hora atual (validade da sessão)
   const [viewer, { locale, t }] = await Promise.all([getViewer(), getDict()]);
+  // Número de notificações não lidas (chega depois, sem segurar a página)
+  const unread = viewer ? countUnreadNotifications(viewer.id).catch(() => 0) : Promise.resolve(0);
 
   return (
     <I18nProvider locale={locale}>
-      <Suspense fallback={null}>
-        <NavigationTracker />
-        <NavigationProgress />
-      </Suspense>
-      <Header viewer={viewer} t={t} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
-      <SiteFooter t={t} username={viewer?.username ?? null} />
+      <ToastProvider>
+        <QuickLogProvider signedIn={!!viewer}>
+          <Suspense fallback={null}>
+            <NavigationTracker />
+            <NavigationProgress />
+          </Suspense>
+          <Header viewer={viewer} t={t} />
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">{children}</main>
+          <SiteFooter t={t} username={viewer?.username ?? null} />
+          {/* Celular: barra fixa embaixo (e um espaço para ela não cobrir o rodapé) */}
+          <div className="h-16 sm:hidden" aria-hidden />
+          <BottomNav username={viewer?.username ?? null} unread={unread} />
+        </QuickLogProvider>
+      </ToastProvider>
     </I18nProvider>
   );
 }

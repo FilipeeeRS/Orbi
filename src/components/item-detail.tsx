@@ -3,7 +3,7 @@ import Image from "next/image";
 import { SectionSkeleton } from "@/components/skeletons";
 import { SectionHeading } from "@/components/section";
 import { BackButton } from "@/components/back-button";
-import { EmptyState } from "@/components/page-header";
+import { EmptyAction, EmptyState } from "@/components/page-header";
 import { StatusIcon } from "@/components/status-icon";
 import Link from "next/link";
 import { Avatar } from "@/components/header";
@@ -88,12 +88,19 @@ export function ItemDetail({
         </div>
       )}
 
-      <div className={`relative grid grid-cols-[minmax(0,1fr)] items-start gap-8 sm:grid-cols-[minmax(0,1fr)_220px] ${backdropUrl ? "-mt-24 sm:-mt-40" : ""}`}>
-        <div className="space-y-5">
+      {/* Celular: as duas colunas viram uma só (display: contents) e a ordem muda — título com pôster
+          pequeno ao lado, depois o registro (nota, ✓, ♥), os números, o resumo e a ficha. */}
+      <div className={`relative grid grid-cols-[minmax(0,1fr)] items-start gap-5 sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-8 ${backdropUrl ? "-mt-24 sm:-mt-40" : ""}`}>
+        <div className="max-sm:contents sm:space-y-5">
           {!backdropUrl && <BackButton fallback="/home" className="-ms-2 grid size-8 place-items-center rounded-full text-muted hover:bg-surface-2 hover:text-fg" />}
           {above}
+          <div className="flex items-end gap-4">
+          {/* Celular: pôster pequeno ao lado do título */}
+          <div className={`w-24 shrink-0 shadow-2xl sm:hidden ${hideAdult ? "overflow-hidden rounded-md [&_img]:scale-110 [&_img]:blur-xl" : ""}`}>
+            <PosterImage url={posterUrl} title={title} eager />
+          </div>
           {/* Grade de 2 colunas: título alinhado com a nota do Orbi; embaixo, TMDB + título original com o "no Orbi" */}
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1">
+          <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1">
             <h1 className="font-display text-3xl leading-tight font-extrabold tracking-tight text-balance sm:text-4xl">
               {title}{" "}
               {byline && <span className="font-sans text-xl font-normal tracking-normal text-muted">{byline} </span>}
@@ -117,6 +124,7 @@ export function ItemDetail({
             </p>
             <p className="text-end text-xs text-muted">{t.movie.onSource("Orbi")}</p>
           </div>
+          </div>
           {hideAdult && (
             <p className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted">
               <span className="rounded border border-danger px-1.5 text-[11px] font-bold text-danger">18</span>
@@ -125,17 +133,17 @@ export function ItemDetail({
               </Link>
             </p>
           )}
-          {overview && <p className="leading-relaxed text-muted">{overview}</p>}
+          {overview && <p className="leading-relaxed text-muted max-sm:order-3">{overview}</p>}
 
-          {editor}
-          {details}
+          <div className="max-sm:order-1">{editor}</div>
+          {details && <div className="max-sm:order-4">{details}</div>}
         </div>
 
-        <div className="order-first mx-auto w-40 space-y-3 sm:order-none sm:w-full">
-          <div className={`shadow-2xl ${hideAdult ? "overflow-hidden rounded-md [&_img]:scale-110 [&_img]:blur-xl" : ""}`}>
+        <div className="max-sm:contents sm:space-y-3">
+          <div className={`hidden shadow-2xl sm:block ${hideAdult ? "overflow-hidden rounded-md [&_img]:scale-110 [&_img]:blur-xl" : ""}`}>
             <PosterImage url={posterUrl} title={title} eager />
           </div>
-          {side}
+          {side && <div className="max-sm:order-2">{side}</div>}
         </div>
       </div>
 
@@ -203,7 +211,7 @@ async function ReviewsSectionContent({ itemId, viewerId, t, locale }: ReviewsPro
             ))}
           </ul>
         ) : (
-          <EmptyState>{t.movie.noFriendsActivity}</EmptyState>
+          <EmptyState action={<EmptyAction href="/search?type=people">{t.people.find}</EmptyAction>}>{t.movie.noFriendsActivity}</EmptyState>
         )}
       </section>
     )}

@@ -117,6 +117,7 @@ async function ProfilePageContent({ params }: PageProps<"/u/[username]">) {
               profileId={profile.id}
               initial={following}
               labels={{ add: t.profile.addFriend, is: t.profile.isFriend, remove: t.profile.removeFriend }}
+              name={profile.display_name || profile.username}
             />
           ) : null
         }

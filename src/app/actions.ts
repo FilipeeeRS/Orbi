@@ -206,3 +206,40 @@ export async function ensureSeasonId(showTmdbId: number, season: number): Promis
   if (!(await getViewer()) || !Number.isInteger(showTmdbId) || !Number.isInteger(season)) return null;
   return (await ensureSeason(showTmdbId, season))?.season.id ?? null;
 }
+
+// "+ Registrar" (janela rápida de qualquer tela): garante a obra no catálogo e grava a entrada da pessoa.
+// Devolve o endereço da obra para o aviso "Ver".
+export async function quickLog(input: {
+  type: "movie" | "series" | "anime" | "manga" | "book" | "game";
+  id: number | string;
+  status: "watched" | "watching" | "watchlist";
+  rating: number | null; // 1..10 (meias estrelas)
+  liked: boolean;
+  watchedOn: string | null; // AAAA-MM-DD
+  review: string;
+}): Promise<{ ok: boolean; href?: string }> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false };
+  const itemId = await ensureTmdbItemId(input.type === "series" ? "tv" : input.type, input.id);
+  if (!itemId) return { ok: false };
+  const watched = input.status === "watched";
+  const rating = watched && input.rating && input.rating >= 1 && input.rating <= 10 ? Math.round(input.rating) : null;
+  const review = watched ? input.review.trim().slice(0, 10000) : "";
+  const supabase = await createClient();
+  const { error } = await supabase.from("entries").upsert(
+    {
+      user_id: viewer.id,
+      item_id: itemId,
+      status: input.status,
+      rating,
+      liked: watched ? input.liked : false,
+      watched_on: watched ? (/^\d{4}-\d{2}-\d{2}$/.test(input.watchedOn ?? "") ? input.watchedOn : null) : null,
+      // Só manda a review quando escrita (não apaga uma review que já existia)
+      ...(review ? { review } : {}),
+    },
+    { onConflict: "user_id,item_id" },
+  );
+  if (error) return { ok: false };
+  const base = { movie: "/movie", series: "/series", anime: "/anime", manga: "/manga", book: "/book", game: "/game" }[input.type];
+  return { ok: true, href: `${base}/${input.id}` };
+}
