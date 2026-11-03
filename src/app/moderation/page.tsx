@@ -8,9 +8,10 @@ import { isAdmin, openReportCases } from "@/lib/moderation";
 import { PageHeader, EmptyState } from "@/components/page-header";
 import { CaseActions } from "./case-actions";
 
+// Para quem não é moderador nem o título da aba entrega que a página existe
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getDict();
-  return { title: t.moderation.title };
+  const [viewer, { t }] = await Promise.all([getViewer(), getDict()]);
+  return isAdmin(viewer) ? { title: t.moderation.title } : { title: t.errors.notFoundTitle, robots: { index: false } };
 }
 
 export default function ModerationPage() {
