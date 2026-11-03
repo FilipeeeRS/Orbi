@@ -18,10 +18,10 @@ export type SeasonView = {
 // Faixas da legenda, da melhor para a pior (nota mínima de cada uma).
 const SCALE = [
   { key: "awesome", min: 9, className: "bg-[#1e7a46] text-white" },
-  { key: "great", min: 8, className: "bg-[#3fae5f] text-white" },
+  { key: "great", min: 8, className: "bg-[#3fae5f] text-black" },
   { key: "good", min: 7, className: "bg-[#e8c33a] text-black" },
   { key: "regular", min: 6, className: "bg-[#ec8f2e] text-black" },
-  { key: "bad", min: 0, className: "bg-[#d9443f] text-white" },
+  { key: "bad", min: 0, className: "bg-[#c4302b] text-white" },
 ] as const;
 
 const band = (rating: number) => SCALE.find((b) => rating >= b.min)!;

@@ -62,8 +62,9 @@ test.describe("Home", () => {
     });
   }
 
-  test("aba Músicas mostra 'Em breve' no lugar de fileiras vazias", async ({ page }) => {
-    await open(page, "/home?folder=music");
-    await expect(page.getByText(t.folders.soon)).toBeVisible();
+  test("Músicas fica escondida até ficar pronta (sem aba e sem link)", async ({ page }) => {
+    await open(page, "/home");
+    await expect(page.getByRole("link", { name: t.folders.music, exact: true })).toHaveCount(0);
+    await expect(page.locator('a[href*="folder=music"], a[href="/browse/music"]')).toHaveCount(0);
   });
 });

@@ -31,6 +31,8 @@ export const id: Dictionary = {
     soon: "Segera hadir",
   },
   home: {
+    startHere: "Mulai beri rating",
+    startHereHint: "Arahkan kursor atau tekan lama sebuah poster untuk menandainya sudah ditonton, memberi rating, atau menyimpannya ke watchlist.",
     continue: "Lanjutkan dari terakhir kali",
     explore: "Jelajahi",
     emptyWatchlist: "Belum ada apa pun di watchlist-mu.",
@@ -435,6 +437,19 @@ export const id: Dictionary = {
     original: "Lihat asli",
     error: "Gagal menerjemahkan",
   },
+  moderation: {
+    title: "Moderasi",
+    empty: "Tidak ada laporan terbuka.",
+    types: { review: "Ulasan", review_comment: "Komentar", list: "Daftar", list_comment: "Komentar daftar" },
+    reports: (n: number) => (n === 1 ? "1 laporan" : `${n} laporan`),
+    open: "Buka",
+    gone: "Konten ini sudah dihapus.",
+    remove: "Hapus konten",
+    dismiss: "Abaikan",
+    confirmRemove: "Hapus konten ini untuk semua orang? Tidak bisa dibatalkan.",
+    removed: "Konten dihapus",
+    dismissed: "Laporan diabaikan",
+  },
   report: {
     more: "Opsi lainnya",
     report: "Laporkan",
@@ -473,7 +488,6 @@ export const id: Dictionary = {
   onboarding: {
     title: "Selamat datang di Orbi",
     intro: "Tempat untuk mencatat semua yang kamu tonton, baca, mainkan, dan dengarkan, serta melihat apa yang disukai teman-temanmu. Semuanya punya foldernya sendiri:",
-    soon: "segera",
     howTitle: "Cara kerjanya",
     how: [
       "Tandai setiap karya sebagai sudah ditonton (dibaca, dimainkan), sedang berjalan, atau di watchlist untuk nanti.",

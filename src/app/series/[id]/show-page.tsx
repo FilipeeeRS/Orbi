@@ -95,7 +95,7 @@ export async function ShowPageContent({ id }: { id: string }) {
               <Certification certifications={info.certifications} locale={locale} label={t.info.ageRating} />
               {info.runtime && (
                 <span>
-                  {info.runtime} min <span className="text-muted/80">({hoursAndMinutes(info.runtime)})</span>
+                  {info.runtime} min <span className="text-muted">({hoursAndMinutes(info.runtime)})</span>
                 </span>
               )}
               {/* Próximo episódio com data marcada (some em série encerrada) */}

@@ -47,8 +47,9 @@ test.describe("Páginas públicas abrem sem erro", () => {
 });
 
 // Endereços que não existem mostram a tela de "não encontrado" (e não uma página quebrada).
+// A Moderação também: para quem não é moderador, ela não existe.
 test.describe("Endereços inválidos mostram 'não encontrado'", () => {
-  for (const path of ["/movie/999999999", "/series/999999999", "/book/nao-existe", "/game/0", "/u/usuario-que-nao-existe-123", "/browse/lixo", "/u/usuario-que-nao-existe-123/movies"]) {
+  for (const path of ["/movie/999999999", "/series/999999999", "/book/nao-existe", "/game/0", "/u/usuario-que-nao-existe-123", "/browse/lixo", "/u/usuario-que-nao-existe-123/movies", "/moderation"]) {
     test(path, async ({ page }) => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("heading", { name: t.errors.notFoundTitle })).toBeVisible();

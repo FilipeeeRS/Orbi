@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getViewer } from "@/lib/session";
+import { overLimit } from "@/lib/rate-limit";
 import type { Profile } from "@/lib/types";
 
 export type ReviewComment = {
@@ -67,6 +68,8 @@ export async function addReviewComment(
   const text = body.trim().slice(0, 2000);
   // Precisa ter algo além de menções ("@fulano" sozinho não vale)
   if (!viewer || !text.replace(/@[a-z0-9_]+/gi, "").trim()) return { comment: null };
+  // No máximo 8 comentários por minuto
+  if (await overLimit("review_comments", "user_id", viewer.id, 8, 60)) return { comment: null };
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("review_comments")

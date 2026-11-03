@@ -31,6 +31,8 @@ export const tr: Dictionary = {
     soon: "Yakında",
   },
   home: {
+    startHere: "Puanlamaya başla",
+    startHereHint: "Bir afişin üzerine gel veya basılı tut; izlendi olarak işaretle, puan ver ya da izleme listene ekle.",
     continue: "Kaldığın yerden devam et",
     explore: "Keşfet",
     emptyWatchlist: "İzleme listende henüz bir şey yok.",
@@ -435,6 +437,19 @@ export const tr: Dictionary = {
     original: "Orijinali gör",
     error: "Çevrilemedi",
   },
+  moderation: {
+    title: "Moderasyon",
+    empty: "Açık şikâyet yok.",
+    types: { review: "İnceleme", review_comment: "Yorum", list: "Liste", list_comment: "Liste yorumu" },
+    reports: (n: number) => (n === 1 ? "1 şikâyet" : `${n} şikâyet`),
+    open: "Aç",
+    gone: "Bu içerik zaten silinmiş.",
+    remove: "İçeriği kaldır",
+    dismiss: "Yok say",
+    confirmRemove: "Bu içerik herkes için kaldırılsın mı? Geri alınamaz.",
+    removed: "İçerik kaldırıldı",
+    dismissed: "Şikâyetler yok sayıldı",
+  },
   report: {
     more: "Diğer seçenekler",
     report: "Şikâyet et",
@@ -473,7 +488,6 @@ export const tr: Dictionary = {
   onboarding: {
     title: "Orbi'ye hoş geldin",
     intro: "İzlediğin, okuduğun, oynadığın ve dinlediğin her şeyi kaydedip arkadaşlarının nelerden hoşlandığını görebileceğin bir yer. Her şeyin kendi klasörü var:",
-    soon: "yakında",
     howTitle: "Nasıl çalışır",
     how: [
       "Her eseri izlendi (okundu, oynandı), devam ediyor veya sonrası için izleme listende olarak işaretle.",

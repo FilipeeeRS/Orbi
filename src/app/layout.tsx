@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/share";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Syne } from "next/font/google";
@@ -21,8 +22,10 @@ const syne = Syne({ variable: "--font-syne", subsets: ["latin"], weight: ["800"]
 const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], weight: ["600", "700", "800"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "Orbi", template: "%s · Orbi" },
-  description: "Filmes, séries, músicas, jogos e livros em um só lugar.",
+  description: "Filmes, séries, livros, animes, mangás e jogos em um só lugar.",
+  openGraph: { siteName: "Orbi", type: "website" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,3 +1,4 @@
+import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { Section } from "@/components/section";
 import { Welcome } from "@/components/welcome";
@@ -150,6 +151,9 @@ function NewsTab({ viewer, t, locale }: TabProps) {
         <Welcome viewer={viewer} />
       </Suspense>
       <Suspense fallback={null}>
+        <StartHereSection viewer={viewer} t={t} locale={locale} />
+      </Suspense>
+      <Suspense fallback={null}>
         <ContinueSection viewer={viewer} t={t} locale={locale} />
       </Suspense>
       <Suspense fallback={null}>
@@ -166,6 +170,26 @@ function NewsTab({ viewer, t, locale }: TabProps) {
       </Suspense>
       {general}
     </div>
+  );
+}
+
+// Conta sem nenhum registro: obras populares de várias pastas para avaliar logo de cara
+// (o hover/toque longo dos pôsteres já marca visto, nota e watchlist).
+async function StartHereSection({ viewer, t, locale }: TabProps & { viewer: Profile }) {
+  const supabase = await createClient();
+  const { count } = await supabase.from("entries").select("id", { count: "exact", head: true }).eq("user_id", viewer.id);
+  if (count) return null;
+  const kinds: MediaKind[] = ["movie", "series", "game", "book", "anime"];
+  const lists = await Promise.all(kinds.map((k) => catalogSample(k, locale, viewer.show_adult).catch(() => [])));
+  const mixed: ExternalPoster[] = [];
+  for (let i = 0; mixed.length < 12 && lists.some((l) => l[i]); i++)
+    lists.forEach((l, k) => l[i] && mixed.length < 12 && mixed.push({ ...l[i], kind: kinds[k] as ExternalPoster["kind"] }));
+  if (!mixed.length) return null;
+  return (
+    <Section title={t.home.startHere}>
+      <p className="-mt-1 mb-3 text-sm text-muted">{t.home.startHereHint}</p>
+      <ExternalPosters kind="movie" list={mixed} viewer={viewer} />
+    </Section>
   );
 }
 

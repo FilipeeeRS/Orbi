@@ -29,6 +29,8 @@ export const pt = {
     soon: "Em breve",
   },
   home: {
+    startHere: "Comece avaliando",
+    startHereHint: "Passe o mouse ou segure o dedo num pôster para marcar como visto, dar nota ou guardar na watchlist.",
     continue: "Continuar de onde parou",
     explore: "Explorar",
     emptyWatchlist: "Nada na sua watchlist ainda.",
@@ -433,6 +435,19 @@ export const pt = {
     original: "Ver original",
     error: "Não foi possível traduzir",
   },
+  moderation: {
+    title: "Moderação",
+    empty: "Nenhuma denúncia aberta.",
+    types: { review: "Review", review_comment: "Comentário", list: "Lista", list_comment: "Comentário de lista" },
+    reports: (n: number) => (n === 1 ? "1 denúncia" : `${n} denúncias`),
+    open: "Abrir",
+    gone: "Esse conteúdo já foi apagado.",
+    remove: "Remover conteúdo",
+    dismiss: "Descartar",
+    confirmRemove: "Remover esse conteúdo para todo mundo? Não dá para desfazer.",
+    removed: "Conteúdo removido",
+    dismissed: "Denúncias descartadas",
+  },
   report: {
     more: "Mais opções",
     report: "Denunciar",
@@ -471,7 +486,6 @@ export const pt = {
   onboarding: {
     title: "Bem-vindo ao Orbi",
     intro: "Um lugar para registrar tudo o que você assiste, lê, joga e ouve, e ver o que seus amigos estão curtindo. Cada coisa fica na sua pasta:",
-    soon: "em breve",
     howTitle: "Como funciona",
     how: [
       "Marque cada obra como vista (lida, jogada), em andamento ou na watchlist, para ver depois.",

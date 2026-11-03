@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { shareMeta } from "@/lib/share";
 import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -28,7 +29,9 @@ import {
 
 export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Promise<Metadata> {
   const item = await getMovieByRouteId((await params).id);
-  return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
+  if (!item) return {};
+  // Prévia do link: título (ano), sinopse e pôster
+  return shareMeta({ title: `${item.title}${item.year ? ` (${item.year})` : ""}`, description: item.overview, image: item.poster_url });
 }
 
 export default function MoviePage(props: PageProps<"/movie/[id]">) {
@@ -98,7 +101,7 @@ async function MoviePageContent({ params }: PageProps<"/movie/[id]">) {
               <Certification certifications={info.certifications ?? {}} locale={locale} label={t.info.ageRating} />
               {info.runtime && (
                 <span>
-                  {info.runtime} min <span className="text-muted/80">({hoursAndMinutes(info.runtime)})</span>
+                  {info.runtime} min <span className="text-muted">({hoursAndMinutes(info.runtime)})</span>
                 </span>
               )}
               {unreleased && item.release_date && <span>{t.movie.releasesOn(longDate(item.release_date, locale))}</span>}

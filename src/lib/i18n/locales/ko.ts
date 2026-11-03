@@ -31,6 +31,8 @@ export const ko: Dictionary = {
     soon: "곧 제공",
   },
   home: {
+    startHere: "평점부터 시작하세요",
+    startHereHint: "포스터에 마우스를 올리거나 길게 누르면 본 작품으로 표시하고, 평점을 주고, 워치리스트에 저장할 수 있습니다.",
     continue: "이어서 보기",
     explore: "둘러보기",
     emptyWatchlist: "워치리스트가 아직 비어 있어요.",
@@ -435,6 +437,19 @@ export const ko: Dictionary = {
     original: "원문 보기",
     error: "번역하지 못했어요",
   },
+  moderation: {
+    title: "모더레이션",
+    empty: "처리할 신고가 없습니다.",
+    types: { review: "리뷰", review_comment: "댓글", list: "리스트", list_comment: "리스트 댓글" },
+    reports: (n: number) => (n === 1 ? "신고 1건" : `신고 ${n}건`),
+    open: "열기",
+    gone: "이미 삭제된 콘텐츠입니다.",
+    remove: "콘텐츠 삭제",
+    dismiss: "기각",
+    confirmRemove: "이 콘텐츠를 모두에게서 삭제할까요? 되돌릴 수 없습니다.",
+    removed: "콘텐츠를 삭제했습니다",
+    dismissed: "신고를 기각했습니다",
+  },
   report: {
     more: "더보기",
     report: "신고",
@@ -473,7 +488,6 @@ export const ko: Dictionary = {
   onboarding: {
     title: "Orbi에 오신 것을 환영합니다",
     intro: "보고, 읽고, 플레이하고, 듣는 모든 것을 기록하고 친구들이 무엇을 즐기는지 볼 수 있는 곳입니다. 모든 것은 각자의 폴더에 들어갑니다:",
-    soon: "곧 출시",
     howTitle: "이용 방법",
     how: [
       "작품마다 봤음(읽음, 플레이함), 진행 중, 또는 나중에 볼 워치리스트로 표시하세요.",

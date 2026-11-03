@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { shareMeta } from "@/lib/share";
 import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -16,7 +17,9 @@ import { MoreFrom } from "@/components/more-from";
 
 export async function generateMetadata({ params }: PageProps<"/game/[id]">): Promise<Metadata> {
   const item = await getGameByRouteId((await params).id);
-  return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
+  if (!item) return {};
+  // Prévia do link: título (ano), sinopse e pôster
+  return shareMeta({ title: `${item.title}${item.year ? ` (${item.year})` : ""}`, description: item.overview, image: item.poster_url });
 }
 
 // Jogo (dados da loja da Steam): mesma página dos filmes, com desenvolvedora, plataformas e gêneros.

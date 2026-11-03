@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { shareMeta } from "@/lib/share";
 import { ItemSkeleton } from "@/components/skeletons";
 import type { Metadata } from "next";
 import { getAniListByRouteId } from "@/lib/catalog";
@@ -6,7 +7,9 @@ import { AniListPageContent } from "../../anime/[id]/anilist-page";
 
 export async function generateMetadata({ params }: PageProps<"/manga/[id]">): Promise<Metadata> {
   const item = await getAniListByRouteId("manga", (await params).id);
-  return { title: item ? `${item.title}${item.year ? ` (${item.year})` : ""}` : undefined };
+  if (!item) return {};
+  // Prévia do link: título (ano), sinopse e pôster
+  return shareMeta({ title: `${item.title}${item.year ? ` (${item.year})` : ""}`, description: item.overview, image: item.poster_url });
 }
 
 // Mangá (dados do AniList): mesma página do anime, com capítulos e volumes.

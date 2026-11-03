@@ -31,6 +31,8 @@ export const it: Dictionary = {
     soon: "In arrivo",
   },
   home: {
+    startHere: "Inizia a votare",
+    startHereHint: "Passa il mouse o tieni premuto un poster per segnarlo come visto, votarlo o salvarlo nella watchlist.",
     continue: "Riprendi da dove eri rimasto",
     explore: "Esplora",
     emptyWatchlist: "Ancora niente nella tua watchlist.",
@@ -435,6 +437,19 @@ export const it: Dictionary = {
     original: "Vedi originale",
     error: "Impossibile tradurre",
   },
+  moderation: {
+    title: "Moderazione",
+    empty: "Nessuna segnalazione aperta.",
+    types: { review: "Recensione", review_comment: "Commento", list: "Lista", list_comment: "Commento alla lista" },
+    reports: (n: number) => (n === 1 ? "1 segnalazione" : `${n} segnalazioni`),
+    open: "Apri",
+    gone: "Questo contenuto è già stato eliminato.",
+    remove: "Rimuovi contenuto",
+    dismiss: "Archivia",
+    confirmRemove: "Rimuovere questo contenuto per tutti? Non si può annullare.",
+    removed: "Contenuto rimosso",
+    dismissed: "Segnalazioni archiviate",
+  },
   report: {
     more: "Altre opzioni",
     report: "Segnala",
@@ -473,7 +488,6 @@ export const it: Dictionary = {
   onboarding: {
     title: "Benvenuto su Orbi",
     intro: "Un posto per registrare tutto ciò che guardi, leggi, giochi e ascolti, e vedere cosa piace ai tuoi amici. Ogni cosa ha la sua cartella:",
-    soon: "presto",
     howTitle: "Come funziona",
     how: [
       "Segna ogni opera come vista (letta, giocata), in corso o nella watchlist per dopo.",

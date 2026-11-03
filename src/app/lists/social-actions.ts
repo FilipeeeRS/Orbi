@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/session";
+import { overLimit } from "@/lib/rate-limit";
 import type { Profile } from "@/lib/types";
 
 export type ListComment = {
@@ -41,6 +42,8 @@ export async function addListComment(listId: string, body: string): Promise<{ co
   const viewer = await getViewer();
   const text = body.trim().slice(0, 2000);
   if (!viewer || !text) return { comment: null };
+  // No máximo 8 comentários por minuto
+  if (await overLimit("list_comments", "user_id", viewer.id, 8, 60)) return { comment: null };
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("list_comments")

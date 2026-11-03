@@ -20,7 +20,7 @@ export function Pagination({
         {label}
       </Link>
     ) : (
-      <span aria-hidden className="text-muted/40">
+      <span aria-hidden className="text-muted">
         {label}
       </span>
     );

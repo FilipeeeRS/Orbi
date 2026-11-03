@@ -38,6 +38,12 @@ jobs:
             echo "::error::Faltam os secrets do repositório:$faltando (Settings → Secrets and variables → Actions)"
             exit 1
           fi
+          # Valor colado com o nome junto ("NOME=valor"), com aspas ou com espaço sobrando
+          for nome in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY SUPABASE_SECRET_KEY TMDB_API_KEY; do
+            valor="${!nome}"
+            case "$valor" in *=*|*\"*|*\'*|*" "*) echo "::error::O secret $nome parece ter sido colado errado (com o nome, aspas ou espaços). Cole só o valor."; exit 1 ;; esac
+          done
+          case "$NEXT_PUBLIC_SUPABASE_URL" in https://*) ;; *) echo "::error::NEXT_PUBLIC_SUPABASE_URL tem que começar com https://"; exit 1 ;; esac
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -49,6 +55,20 @@ jobs:
         run: npx next typegen && npx tsc --noEmit && npm run lint
       - name: Compilar o site
         run: npm run build
+      # Sobe o site e abre a página inicial: se não abrir, mostra o erro do servidor (em vez de os testes
+      # esperarem 3 minutos e só dizerem "tempo esgotado").
+      - name: Conferir se o site abre
+        run: |
+          npm run start > servidor.log 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:3000/ && break; sleep 2; done
+          codigo=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/)
+          echo "Página inicial respondeu $codigo"
+          if [ "$codigo" != "200" ]; then
+            echo "::error::O site não abriu (código $codigo). Erro do servidor abaixo:"
+            tail -60 servidor.log
+            exit 1
+          fi
+          kill %1
       - name: Navegador dos testes
         run: npx playwright install --with-deps chromium
       - name: Testes de ponta a ponta

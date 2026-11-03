@@ -4,6 +4,7 @@ import { cacheLife } from "next/cache";
 import { getDict } from "@/lib/session";
 import { TMDB_LANGUAGES } from "@/lib/i18n/dictionaries";
 import { CONTACT_EMAIL } from "@/components/site-footer";
+import { overIpLimit } from "@/lib/rate-limit";
 
 type Translation = { text: string; from: string };
 
@@ -65,7 +66,8 @@ async function translate(text: string, target: string): Promise<Translation> {
 // Traduz para o idioma do site. sameLanguage = o texto já estava nesse idioma.
 export async function translateText(text: string): Promise<{ text: string; sameLanguage: boolean } | null> {
   const clean = text.trim().slice(0, 5000);
-  if (!clean) return null;
+  // No máximo 20 traduções por minuto por endereço (a cota diária do MyMemory é do site inteiro)
+  if (!clean || (await overIpLimit("translate", 20, 60))) return null;
   const { locale } = await getDict();
   // zh → zh-CN; os outros usam só o código do idioma
   const target = locale === "zh" ? TMDB_LANGUAGES.zh : locale;

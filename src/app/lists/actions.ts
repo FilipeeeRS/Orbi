@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getDict, getViewer } from "@/lib/session";
+import { overLimit } from "@/lib/rate-limit";
 import { adultMovieIds, ensureMovie } from "@/lib/catalog";
 import { getList, MAX_LIST_ITEMS } from "@/lib/lists";
 import { releaseYear, searchMovies, tmdbImage, tmdbLanguage } from "@/lib/tmdb";
@@ -62,6 +63,8 @@ export async function saveList(input: {
   const viewer = await getViewer();
   const title = input.title.trim().slice(0, 100);
   if (!viewer || !title) return { id: null };
+  // Listas novas: no máximo 10 por hora (editar não conta)
+  if (!input.id && (await overLimit("lists", "user_id", viewer.id, 10, 3600))) return { id: null };
   const supabase = await createClient();
 
   // Filmes do TMDB entram no catálogo (items) se ainda não estiverem lá.

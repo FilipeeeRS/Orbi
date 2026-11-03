@@ -31,6 +31,8 @@ export const zh: Dictionary = {
     soon: "即将推出",
   },
   home: {
+    startHere: "从评分开始",
+    startHereHint: "把鼠标移到海报上或长按海报，就能标记为已看、打分或加入待看清单。",
     continue: "从上次的地方继续",
     explore: "探索",
     emptyWatchlist: "待看清单还是空的。",
@@ -435,6 +437,19 @@ export const zh: Dictionary = {
     original: "查看原文",
     error: "无法翻译",
   },
+  moderation: {
+    title: "审核",
+    empty: "没有待处理的举报。",
+    types: { review: "评论", review_comment: "留言", list: "列表", list_comment: "列表留言" },
+    reports: (n: number) => (n === 1 ? "1 条举报" : `${n} 条举报`),
+    open: "打开",
+    gone: "该内容已被删除。",
+    remove: "移除内容",
+    dismiss: "忽略",
+    confirmRemove: "要为所有人移除该内容吗？此操作无法撤销。",
+    removed: "内容已移除",
+    dismissed: "举报已忽略",
+  },
   report: {
     more: "更多选项",
     report: "举报",
@@ -473,7 +488,6 @@ export const zh: Dictionary = {
   onboarding: {
     title: "欢迎来到 Orbi",
     intro: "在这里记录你看过、读过、玩过和听过的一切，看看朋友们都在喜欢什么。每样东西都有自己的文件夹：",
-    soon: "即将推出",
     howTitle: "如何使用",
     how: [
       "把每部作品标记为已看（已读、已玩）、进行中，或加入待看清单留着以后看。",

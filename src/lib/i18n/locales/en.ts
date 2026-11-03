@@ -31,6 +31,8 @@ export const en: Dictionary = {
     soon: "Coming soon",
   },
   home: {
+    startHere: "Start rating",
+    startHereHint: "Hover or long-press a poster to mark it as watched, rate it or save it to your watchlist.",
     continue: "Pick up where you left off",
     explore: "Explore",
     emptyWatchlist: "Nothing on your watchlist yet.",
@@ -435,6 +437,19 @@ export const en: Dictionary = {
     original: "See original",
     error: "Couldn't translate",
   },
+  moderation: {
+    title: "Moderation",
+    empty: "No open reports.",
+    types: { review: "Review", review_comment: "Comment", list: "List", list_comment: "List comment" },
+    reports: (n: number) => (n === 1 ? "1 report" : `${n} reports`),
+    open: "Open",
+    gone: "This content has already been deleted.",
+    remove: "Remove content",
+    dismiss: "Dismiss",
+    confirmRemove: "Remove this content for everyone? This can't be undone.",
+    removed: "Content removed",
+    dismissed: "Reports dismissed",
+  },
   report: {
     more: "More options",
     report: "Report",
@@ -473,7 +488,6 @@ export const en: Dictionary = {
   onboarding: {
     title: "Welcome to Orbi",
     intro: "A place to log everything you watch, read, play and listen to, and see what your friends are enjoying. Everything goes in its own folder:",
-    soon: "soon",
     howTitle: "How it works",
     how: [
       "Mark each title as watched (read, played), in progress or on your watchlist for later.",

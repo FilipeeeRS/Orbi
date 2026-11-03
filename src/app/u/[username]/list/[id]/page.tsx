@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { shareMeta } from "@/lib/share";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,7 +17,9 @@ import { EmptyState } from "@/components/page-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]/list/[id]">): Promise<Metadata> {
   const list = await getList((await params).id);
-  return { title: list?.title };
+  if (!list) return {};
+  // Prévia do link: nome, descrição e o pôster da primeira obra
+  return shareMeta({ title: list.title, description: list.description, image: list.items.find((i) => i.poster_url)?.poster_url });
 }
 
 export default function ListPage(props: PageProps<"/u/[username]/list/[id]">) {

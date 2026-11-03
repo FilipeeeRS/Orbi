@@ -31,6 +31,8 @@ export const ja: Dictionary = {
     soon: "近日公開",
   },
   home: {
+    startHere: "評価から始めよう",
+    startHereHint: "ポスターにカーソルを合わせるか長押しすると、観た記録、評価、ウォッチリストへの追加ができます。",
     continue: "続きから",
     explore: "探す",
     emptyWatchlist: "ウォッチリストはまだ空です。",
@@ -435,6 +437,19 @@ export const ja: Dictionary = {
     original: "原文を表示",
     error: "翻訳できませんでした",
   },
+  moderation: {
+    title: "モデレーション",
+    empty: "未対応の通報はありません。",
+    types: { review: "レビュー", review_comment: "コメント", list: "リスト", list_comment: "リストのコメント" },
+    reports: (n: number) => (n === 1 ? "通報 1件" : `通報 ${n}件`),
+    open: "開く",
+    gone: "このコンテンツはすでに削除されています。",
+    remove: "コンテンツを削除",
+    dismiss: "却下",
+    confirmRemove: "このコンテンツを全員に対して削除しますか？元に戻せません。",
+    removed: "コンテンツを削除しました",
+    dismissed: "通報を却下しました",
+  },
   report: {
     more: "その他のオプション",
     report: "報告",
@@ -473,7 +488,6 @@ export const ja: Dictionary = {
   onboarding: {
     title: "Orbiへようこそ",
     intro: "観たもの、読んだもの、遊んだもの、聴いたものをすべて記録して、友だちが何を楽しんでいるかも見られる場所です。それぞれ専用のフォルダに入ります：",
-    soon: "近日公開",
     howTitle: "使い方",
     how: [
       "作品ごとに、観た（読んだ・遊んだ）、進行中、あとで観るウォッチリストのどれかを付けます。",

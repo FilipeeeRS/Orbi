@@ -1,12 +1,22 @@
 "use client";
 
 import { useI18n } from "@/components/i18n";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // "▶ Trailer" abaixo do pôster: abre o vídeo do YouTube numa janela por cima da página.
 export function TrailerButton({ videoId, label }: { videoId: string; label: string }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const button = useRef<HTMLButtonElement>(null);
+  const close = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  // Teclado: ao abrir, o foco vai para o "Fechar"; ao fechar, volta para o botão do trailer.
+  useEffect(() => {
+    if (open) close.current?.focus();
+    else if (wasOpen.current) button.current?.focus();
+    wasOpen.current = open;
+  }, [open]);
 
   // Esc fecha; a página não rola por trás enquanto o vídeo está aberto.
   useEffect(() => {
@@ -24,6 +34,7 @@ export function TrailerButton({ videoId, label }: { videoId: string; label: stri
   return (
     <>
       <button
+        ref={button}
         type="button"
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 text-sm text-muted transition hover:text-fg"
@@ -43,6 +54,7 @@ export function TrailerButton({ videoId, label }: { videoId: string; label: stri
         >
           <div className="relative w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
             <button
+              ref={close}
               type="button"
               onClick={() => setOpen(false)}
               aria-label={t.report.close}

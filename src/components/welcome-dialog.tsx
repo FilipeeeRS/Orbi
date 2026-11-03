@@ -35,7 +35,6 @@ export function WelcomeDialog() {
               <li key={kind} className="flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium">
                 <FolderIcon kind={kind} className="size-4 shrink-0 text-accent" />
                 <span className="min-w-0 truncate">{t.folders[kind]}</span>
-                {kind === "music" && <span className="ms-auto text-[10px] text-muted uppercase">{t.onboarding.soon}</span>}
               </li>
             ))}
           </ul>

@@ -31,6 +31,8 @@ export const fr: Dictionary = {
     soon: "Bientôt",
   },
   home: {
+    startHere: "Commencez à noter",
+    startHereHint: "Survolez ou appuyez longuement sur une affiche pour la marquer comme vue, la noter ou l'ajouter à votre watchlist.",
     continue: "Reprends là où tu t'es arrêté",
     explore: "Explorer",
     emptyWatchlist: "Rien dans votre watchlist pour l'instant.",
@@ -435,6 +437,19 @@ export const fr: Dictionary = {
     original: "Voir l'original",
     error: "Traduction impossible",
   },
+  moderation: {
+    title: "Modération",
+    empty: "Aucun signalement en attente.",
+    types: { review: "Critique", review_comment: "Commentaire", list: "Liste", list_comment: "Commentaire de liste" },
+    reports: (n: number) => (n === 1 ? "1 signalement" : `${n} signalements`),
+    open: "Ouvrir",
+    gone: "Ce contenu a déjà été supprimé.",
+    remove: "Retirer le contenu",
+    dismiss: "Ignorer",
+    confirmRemove: "Retirer ce contenu pour tout le monde ? Impossible à annuler.",
+    removed: "Contenu retiré",
+    dismissed: "Signalements ignorés",
+  },
   report: {
     more: "Plus d'options",
     report: "Signaler",
@@ -473,7 +488,6 @@ export const fr: Dictionary = {
   onboarding: {
     title: "Bienvenue sur Orbi",
     intro: "Un endroit pour enregistrer tout ce que vous regardez, lisez, jouez et écoutez, et voir ce que vos amis aiment. Chaque chose a son dossier :",
-    soon: "bientôt",
     howTitle: "Comment ça marche",
     how: [
       "Marquez chaque œuvre comme vue (lue, jouée), en cours ou dans votre watchlist pour plus tard.",

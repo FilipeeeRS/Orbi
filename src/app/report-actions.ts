@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/session";
+import { overLimit } from "@/lib/rate-limit";
 
 export type ReportTarget = "review" | "review_comment" | "list" | "list_comment";
 export type ReportReason = "spam" | "offensive" | "harassment" | "spoiler" | "other";
@@ -17,6 +18,8 @@ export async function reportContent(
 ): Promise<{ ok: boolean; already?: boolean }> {
   const viewer = await getViewer();
   if (!viewer || !TARGETS.includes(targetType) || !REASONS.includes(reason)) return { ok: false };
+  // No máximo 10 denúncias por hora
+  if (await overLimit("reports", "reporter_id", viewer.id, 10, 3600)) return { ok: false };
   const supabase = await createClient();
   const { error } = await supabase.from("reports").insert({
     reporter_id: viewer.id,

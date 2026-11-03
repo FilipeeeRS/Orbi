@@ -4,7 +4,8 @@ import type { Attachment } from "./attachments";
 
 export type MediaKind = "movie" | "series" | "book" | "anime" | "manga" | "game" | "music";
 // Ordem das pastas em todo o site (menu, perfil, Home).
-export const MEDIA_KINDS: MediaKind[] = ["movie", "series", "book", "anime", "manga", "game", "music"];
+// Pastas que aparecem nas telas. Músicas fica de fora até ficar pronta (o tipo já existe).
+export const MEDIA_KINDS: MediaKind[] = ["movie", "series", "book", "anime", "manga", "game"];
 // "all" = pasta que junta todas as outras
 export type FolderKind = MediaKind | "all";
 // No catálogo, cada temporada de série também é um item (com nota e review próprias).

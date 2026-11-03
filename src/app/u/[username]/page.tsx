@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { shareMeta } from "@/lib/share";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,7 +34,13 @@ import { EmptyState } from "@/components/page-header";
 
 export async function generateMetadata({ params }: PageProps<"/u/[username]">): Promise<Metadata> {
   const profile = await getProfileByUsername((await params).username);
-  return { title: profile ? profile.display_name || profile.username : undefined };
+  if (!profile) return {};
+  // Perfil invisível não mostra bio nem foto na prévia do link
+  return shareMeta({
+    title: profile.display_name || profile.username,
+    description: profile.is_private ? null : profile.bio,
+    image: profile.is_private ? null : profile.avatar_url,
+  });
 }
 
 const FOLDERS = MEDIA_KINDS;

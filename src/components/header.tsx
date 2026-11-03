@@ -7,6 +7,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { countUnreadNotifications } from "@/lib/notifications";
 import { Avatar } from "./avatar";
 import { QuickLogButton } from "./quick-log";
+import { isAdmin } from "@/lib/moderation";
 
 // Avatar mora em ./avatar (componentes do navegador importam de lá; este arquivo busca notificações no servidor).
 export { Avatar };
@@ -48,6 +49,8 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
               [
                 { href: "/settings", label: t.nav.settings },
                 { href: "/import", label: t.nav.import },
+                // Só moderadores (ADMIN_IDS) veem a Moderação
+                ...(isAdmin(viewer) ? [{ href: "/moderation", label: t.moderation.title }] : []),
               ],
             ]}
             signOutLabel={t.nav.signOut}
