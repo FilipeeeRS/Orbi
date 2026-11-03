@@ -65,7 +65,7 @@ async function HomeContent({ searchParams }: PageProps<"/">) {
                 <path d={FEATURE_ICONS[i]} />
               </svg>
             </span>
-            <h2 className="font-display text-lg font-extrabold">{f.title}</h2>
+            <h3 className="font-display text-lg font-extrabold">{f.title}</h3>
             <p className="mt-1 text-sm text-muted">{f.body}</p>
           </div>
         ))}

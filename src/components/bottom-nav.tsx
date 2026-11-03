@@ -27,13 +27,13 @@ export function BottomNav({ username, unread }: { username: string | null; unrea
           <Icon d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm9 2-3.5-3.5" />
           {t.footer.search}
         </Link>
-        <button type="button" onClick={open} className={item(false)} aria-label={t.quickLog.button}>
+        <button type="button" onClick={open} className={item(false)} aria-label={t.quickLog.title}>
           <span className="-mt-1 grid size-9 place-items-center rounded-full bg-accent text-accent-fg shadow-lg">
             <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
               <path d="M12 5v14M5 12h14" />
             </svg>
           </span>
-          {t.quickLog.button}
+          {t.quickLog.title}
         </button>
         <Link href={username ? "/notifications" : "/login?next=/notifications"} className={item(pathname === "/notifications")}>
           <span className="relative">

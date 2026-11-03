@@ -217,7 +217,7 @@ const ko: LegalTexts = {
           ["orbi_locale", "선택한 언어. 1년."],
           ["orbi-device", "계정의 \"새 기기\" 알림을 위해 이 브라우저를 알려진 기기로 표시합니다. 1년."],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "본 알림, 읽음·안 읽음으로 표시한 알림, 삭제한 알림을 기억합니다. 1년."],
-          ["orbi-getting-started-hidden", "홈의 시작하기를 숨겼다는 것을 기억합니다. 1년."],
+          ["orbi-welcome-seen", "Orbi 환영 안내를 이미 봤다는 것을 기억합니다. 1년."],
         ],
       },
       {

@@ -219,7 +219,7 @@ const id: LegalTexts = {
           ["orbi_locale", "Bahasa yang dipilih. 1 tahun."],
           ["orbi-device", "Menandai browser ini sebagai sudah dikenal, untuk peringatan \"perangkat baru\" di akunmu. 1 tahun."],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "Mengingat notifikasi yang sudah kamu lihat, tandai dibaca atau belum dibaca, dan hapus. 1 tahun."],
-          ["orbi-getting-started-hidden", "Mengingat bahwa kamu menyembunyikan Langkah awal di Beranda. 1 tahun."],
+          ["orbi-welcome-seen", "Mengingat bahwa kamu sudah melihat sambutan Orbi. 1 tahun."],
         ],
       },
       {

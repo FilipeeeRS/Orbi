@@ -219,7 +219,7 @@ const bn: LegalTexts = {
           ["orbi_locale", "বেছে নেওয়া ভাষা। ১ বছর।"],
           ["orbi-device", "আপনার অ্যাকাউন্টে \"নতুন ডিভাইস\" সতর্কতার জন্য এই ব্রাউজারকে পরিচিত হিসেবে চিহ্নিত করে। ১ বছর।"],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "মনে রাখে কোন বিজ্ঞপ্তি আপনি দেখেছেন, পড়া বা না-পড়া হিসেবে চিহ্নিত করেছেন এবং মুছেছেন। ১ বছর।"],
-          ["orbi-getting-started-hidden", "মনে রাখে যে আপনি হোমে শুরুর ধাপগুলো লুকিয়েছেন। ১ বছর।"],
+          ["orbi-welcome-seen", "মনে রাখে যে আপনি Orbi-র স্বাগত বার্তা দেখেছেন। ১ বছর।"],
         ],
       },
       {

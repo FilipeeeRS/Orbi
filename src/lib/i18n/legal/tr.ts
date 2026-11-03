@@ -219,7 +219,7 @@ const tr: LegalTexts = {
           ["orbi_locale", "Seçtiğin dil. 1 yıl."],
           ["orbi-device", "Hesabındaki \"yeni cihaz\" uyarısı için bu tarayıcıyı tanınmış olarak işaretler. 1 yıl."],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "Hangi bildirimleri gördüğünü, okundu veya okunmadı olarak işaretlediğini ve sildiğini hatırlar. 1 yıl."],
-          ["orbi-getting-started-hidden", "Ana sayfadaki İlk adımlar bölümünü gizlediğini hatırlar. 1 yıl."],
+          ["orbi-welcome-seen", "Orbi karşılamasını zaten gördüğünü hatırlar. 1 yıl."],
         ],
       },
       {

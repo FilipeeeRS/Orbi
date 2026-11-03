@@ -217,7 +217,7 @@ const ja: LegalTexts = {
           ["orbi_locale", "選択した言語。1年。"],
           ["orbi-device", "アカウントの「新しい端末」の通知のため、このブラウザを既知の端末として記録します。1年。"],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "表示した通知、既読・未読にした通知、削除した通知を記憶します。1年。"],
-          ["orbi-getting-started-hidden", "ホームの「はじめに」を非表示にしたことを記憶します。1年。"],
+          ["orbi-welcome-seen", "Orbiのようこそ画面をすでに見たことを記憶します。1年。"],
         ],
       },
       {

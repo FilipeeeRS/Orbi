@@ -219,7 +219,7 @@ const fr: LegalTexts = {
           ["orbi_locale", "Langue choisie. 1 an."],
           ["orbi-device", "Marque ce navigateur comme connu, pour l'alerte « nouvel appareil » de votre compte. 1 an."],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "Mémorisent les notifications vues, marquées comme lues ou non lues et supprimées. 1 an."],
-          ["orbi-getting-started-hidden", "Mémorise que vous avez masqué Premiers pas sur l'Accueil. 1 an."],
+          ["orbi-welcome-seen", "Mémorise que vous avez déjà vu l'accueil d'Orbi. 1 an."],
         ],
       },
       {

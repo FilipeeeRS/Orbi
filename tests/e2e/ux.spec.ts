@@ -12,13 +12,13 @@ test.describe("Experiência", () => {
 
   test("barra de baixo: aparece no celular e some no computador @mobile", async ({ page }, testInfo) => {
     await open(page, "/home");
-    const bar = page.locator("nav").filter({ has: page.getByRole("button", { name: t.quickLog.button }) });
+    const bar = page.locator("nav").filter({ has: page.getByRole("button", { name: t.quickLog.title }) });
     if (testInfo.project.name === "mobile") {
       await expect(bar).toBeVisible();
       await expect(bar.getByRole("link", { name: t.nav.home })).toBeVisible();
       await expect(bar.getByRole("link", { name: t.footer.search })).toBeVisible();
       // Visitante: "+ Registrar" leva para o login
-      await bar.getByRole("button", { name: t.quickLog.button }).click();
+      await bar.getByRole("button", { name: t.quickLog.title }).click();
       await expect(page).toHaveURL(/\/login/);
     } else {
       await expect(bar).toBeHidden();

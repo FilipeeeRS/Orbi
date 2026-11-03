@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Section } from "@/components/section";
-import { GettingStarted } from "@/components/getting-started";
+import { Welcome } from "@/components/welcome";
 import { PersonCard } from "@/components/person-card";
 import { whoToFollow } from "@/lib/people";
 import { EmptyAction, EmptyState, TabNav } from "@/components/page-header";
@@ -56,7 +56,7 @@ export async function HomeDashboard({
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+        <h1 className="font-display text-2xl font-extrabold">
           {viewer ? t.home.welcome(viewer.display_name || viewer.username) : t.home.welcomeSub}
         </h1>
         {viewer && <p className="mt-1 text-muted">{t.home.welcomeSub}</p>}
@@ -108,17 +108,14 @@ function Streamed({ title, rows, children }: { title: string; rows?: boolean; ch
 }
 
 // Novidades: as últimas notificações (para quem está logado), a atividade dos amigos, a watchlist,
-// os filmes e séries mais aguardados, as listas e as reviews populares.
+// os mais aguardados de todas as pastas, as listas e as reviews populares.
 function NewsTab({ viewer, t, locale }: TabProps) {
   // O que vale para todo mundo: o que vem aí, listas e reviews populares
   const general = (
     <>
-      {/* O que ainda vai lançar: filmes e séries mais aguardados */}
-      <Streamed title={t.home.mostAnticipated(t.folders.movie)}>
-        <UpcomingRow kind="movie" title={t.home.mostAnticipated(t.folders.movie)} browse="/browse/movies" viewer={viewer} t={t} locale={locale} />
-      </Streamed>
-      <Streamed title={t.home.mostAnticipated(t.folders.series)}>
-        <UpcomingRow kind="series" title={t.home.mostAnticipated(t.folders.series)} browse="/browse/series" viewer={viewer} t={t} locale={locale} />
+      {/* O que ainda vai lançar, de todas as pastas juntas */}
+      <Streamed title={t.movies.sortOrder.anticipated}>
+        <UpcomingAllRow viewer={viewer} t={t} locale={locale} />
       </Streamed>
       <Streamed title={t.home.popularLists}>
         <PopularListsSection t={t} viewer={viewer} />
@@ -145,12 +142,12 @@ function NewsTab({ viewer, t, locale }: TabProps) {
       </div>
     );
 
-  // Logado: primeiro o que é seu (primeiros passos, o que está em andamento, amigos, avisos novos,
+  // Logado: boas-vindas no primeiro acesso; depois o que é seu (o que está em andamento, amigos, avisos novos,
   // watchlist, quem seguir), depois o geral. Seções que podem não existir não mostram esqueleto.
   return (
     <div className="space-y-12">
       <Suspense fallback={null}>
-        <GettingStarted viewer={viewer} t={t} />
+        <Welcome viewer={viewer} />
       </Suspense>
       <Suspense fallback={null}>
         <ContinueSection viewer={viewer} t={t} locale={locale} />
@@ -424,6 +421,24 @@ async function UpcomingRow({ kind, title, browse, viewer, t, locale }: RowProps 
         <ExternalPosters kind={kind as "movie" | "series" | "anime" | "manga" | "game"} list={list} viewer={viewer} layout="row" />
       ) : (
         <ItemRow items={[]} kind={kind} locale={locale} viewerFor={() => null} />
+      )}
+    </Section>
+  );
+}
+
+// Mais aguardados de tudo: um de cada pasta por vez (filme, série, jogo, anime, mangá...), até 6.
+async function UpcomingAllRow({ viewer, t, locale }: TabProps) {
+  const kinds: MediaKind[] = ["movie", "series", "game", "anime", "manga"];
+  const lists = await Promise.all(kinds.map((k) => upcoming(k, locale, !!viewer?.show_adult).catch(() => [])));
+  const mixed: ExternalPoster[] = [];
+  for (let i = 0; mixed.length < 6 && lists.some((l) => l[i]); i++)
+    lists.forEach((l, k) => l[i] && mixed.length < 6 && mixed.push({ ...l[i], kind: kinds[k] as ExternalPoster["kind"] }));
+  return (
+    <Section title={t.movies.sortOrder.anticipated}>
+      {mixed.length ? (
+        <ExternalPosters kind="movie" list={mixed} viewer={viewer} layout="row" />
+      ) : (
+        <ItemRow items={[]} kind="movie" locale={locale} viewerFor={() => null} />
       )}
     </Section>
   );

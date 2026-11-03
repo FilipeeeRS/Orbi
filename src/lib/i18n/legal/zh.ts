@@ -217,7 +217,7 @@ const zh: LegalTexts = {
           ["orbi_locale", "你选择的语言。1 年。"],
           ["orbi-device", "将此浏览器标记为已知设备，用于账号的“新设备”提醒。1 年。"],
           ["orbi-notifications-seen, orbi-notif-read, orbi-notif-unread, orbi-notif-deleted, orbi-notif-gone", "记住你看过、标记为已读或未读以及删除的通知。1 年。"],
-          ["orbi-getting-started-hidden", "记住你已在首页隐藏“新手指引”。1 年。"],
+          ["orbi-welcome-seen", "记住你已经看过 Orbi 的欢迎介绍。1 年。"],
         ],
       },
       {

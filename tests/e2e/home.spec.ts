@@ -27,18 +27,17 @@ test.describe("Home", () => {
     await expect(page.getByRole("link", { name: t.home.newsTab })).toHaveAttribute("aria-current", "page");
   });
 
-  test("Novidades: filmes e séries mais aguardados com 'Ver tudo'", async ({ page }) => {
+  test("Novidades: uma linha só de mais aguardados, misturando as pastas", async ({ page }) => {
     await open(page, "/home");
-    for (const [kind, browse] of [
-      ["movie", "/browse/movies"],
-      ["series", "/browse/series"],
-    ] as const) {
-      const heading = page.getByRole("heading", { name: t.home.mostAnticipated(t.folders[kind]) });
-      await expect(heading).toBeVisible();
-      const section = page.locator("section").filter({ has: heading });
-      await expect(section.locator(`a[href^="/${kind === "movie" ? "movie" : "series"}/"]`).first()).toBeVisible();
-      await expect(section.getByRole("link", { name: t.profile.all })).toHaveAttribute("href", `${browse}?sort=anticipated`);
-    }
+    const heading = page.getByRole("heading", { name: t.movies.sortOrder.anticipated, exact: true });
+    await expect(heading).toHaveCount(1);
+    const section = page.locator("section").filter({ has: heading });
+    // Cada pôster leva para a página da obra na pasta dela
+    const hrefs = await section.locator("a[href]").evaluateAll((els) => els.map((e) => e.getAttribute("href")!));
+    const folders = new Set(hrefs.map((h) => h.split("/")[1]));
+    expect(folders.size).toBeGreaterThan(1);
+    // As linhas antigas, uma por pasta, não existem mais
+    await expect(page.getByRole("heading", { name: t.home.mostAnticipated(t.folders.movie) })).toHaveCount(0);
   });
 
   test("Novidades: listas e reviews populares", async ({ page }) => {

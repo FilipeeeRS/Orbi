@@ -10,7 +10,7 @@ import type { Suggestion } from "@/lib/suggest";
 
 type Work = Exclude<Suggestion, { type: "person" }> & { type: Exclude<Suggestion["type"], "person"> };
 
-// "+ Registrar" de qualquer tela: busca a obra e grava nota, visto, like, data e review sem sair de onde está.
+// "+" de qualquer tela (Registrar): busca a obra e grava nota, visto, like, data e review sem sair de onde está.
 const QuickLogContext = createContext<{ open: () => void; signedIn: boolean }>({ open: () => {}, signedIn: false });
 
 export function useQuickLog() {
@@ -29,7 +29,7 @@ export function QuickLogProvider({ signedIn, children }: { signedIn: boolean; ch
   );
 }
 
-// Botão "+ Registrar" do topo (no celular fica na barra de baixo).
+// Botão "+" do topo (no celular fica na barra de baixo): só o ícone, com o nome para leitores de tela.
 export function QuickLogButton({ className = "" }: { className?: string }) {
   const { t } = useI18n();
   const { open } = useQuickLog();
@@ -37,12 +37,13 @@ export function QuickLogButton({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={open}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-sm font-semibold text-accent-fg hover:opacity-90 ${className}`}
+      aria-label={t.quickLog.title}
+      title={t.quickLog.title}
+      className={`grid size-8 shrink-0 place-items-center rounded-full bg-accent text-accent-fg hover:opacity-90 ${className}`}
     >
       <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
         <path d="M12 5v14M5 12h14" />
       </svg>
-      {t.quickLog.button}
     </button>
   );
 }
@@ -142,14 +143,30 @@ function QuickLogDialog({ onClose }: { onClose: () => void }) {
       {!work ? (
         // Passo 1: achar a obra
         <div className="space-y-3 p-5">
-          <input
-            autoFocus
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.quickLog.search}
-            className="w-full rounded-lg border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-accent"
-          />
+          {/* Mesma caixa de busca do topo: "Buscar qualquer coisa", com a lupa */}
+          <div className="relative">
+            <svg
+              viewBox="0 0 24 24"
+              className="pointer-events-none absolute start-3.5 top-1/2 size-4 -translate-y-1/2 text-muted"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-3.5-3.5" />
+            </svg>
+            <input
+              autoFocus
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t.nav.search}
+              aria-label={t.nav.search}
+              className="w-full rounded-full border border-border bg-bg py-2.5 ps-10 pe-4 text-sm outline-none placeholder:text-muted focus:border-accent"
+            />
+          </div>
           {query.trim().length >= 2 && results.q === query.trim() && list.length === 0 && (
             <p className="px-1 py-4 text-center text-sm text-muted">{t.quickLog.empty}</p>
           )}

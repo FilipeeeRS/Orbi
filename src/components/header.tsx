@@ -24,7 +24,7 @@ export async function Header({ viewer, t }: { viewer: Profile | null; t: Diction
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         <Logo slogan={t.slogan} />
         <SearchBox placeholder={t.nav.search} hideOnLanding={!viewer} />
-        {/* "+ Registrar" no topo só no computador (no celular fica na barra de baixo) */}
+        {/* "+" no topo só no computador (no celular fica na barra de baixo) */}
         {viewer && <QuickLogButton className="hidden sm:flex" />}
         {viewer ? (
           <UserMenu

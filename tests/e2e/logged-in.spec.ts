@@ -23,15 +23,15 @@ test.describe("Logado", () => {
     await expect(page.locator("main h1")).toContainText(t.home.welcome("").replace(/!$/, "").trim());
     await expect(page.getByRole("heading", { name: t.home.yourWatchlist })).toBeVisible();
     await expect(page.getByText(t.home.guestNews)).toHaveCount(0);
-    await expect(page.locator("header").getByRole("button", { name: t.quickLog.button })).toBeVisible();
+    await expect(page.locator("header").getByRole("button", { name: t.quickLog.title })).toBeVisible();
   });
 
   test("Registrar rápido: busca, nota, salva, aviso com 'Ver' e desfaz pela página da obra", async ({ page }) => {
     page.on("dialog", (d) => d.accept());
     await open(page, "/home");
-    await page.locator("header").getByRole("button", { name: t.quickLog.button }).click();
+    await page.locator("header").getByRole("button", { name: t.quickLog.title }).click();
     const dialog = page.getByRole("dialog", { name: t.quickLog.title });
-    await dialog.getByPlaceholder(t.quickLog.search).fill("The Matrix");
+    await dialog.getByPlaceholder(t.nav.search).fill("The Matrix");
     await dialog.locator("ul button").first().click();
     await dialog.getByRole("radio", { name: "4", exact: true }).click();
     await dialog.getByRole("button", { name: t.movie.save }).click();

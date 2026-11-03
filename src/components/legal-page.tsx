@@ -24,7 +24,8 @@ export async function LegalPage({ doc }: { doc: keyof LegalTexts }) {
     cookies: <Link href="/cookies" className={link}>{t.legal.cookies}</Link>,
     settings: <Link href="/settings" className={link}>{t.settings.title}</Link>,
   };
-  const text = "leading-relaxed text-fg/85";
+  // Mesmo texto e títulos do Sobre
+  const text = "font-serif text-lg leading-relaxed text-fg/85";
 
   return (
     <div className="space-y-6">
@@ -32,14 +33,14 @@ export async function LegalPage({ doc }: { doc: keyof LegalTexts }) {
       <div className="grid gap-12 py-4 md:grid-cols-[220px_minmax(0,1fr)] md:py-8">
         <AboutNav items={page.sections.map(({ id, title }) => ({ id, title }))} />
 
-        <article className="max-w-2xl space-y-10">
+        <article className="max-w-2xl space-y-14">
           <div className="space-y-3">
             <p className="text-sm text-muted">{t.legal.updated(updated)}</p>
-            <p className={`text-lg ${text}`}>{fill(page.intro, parts)}</p>
+            <p className={text}>{fill(page.intro, parts)}</p>
           </div>
           {page.sections.map((s) => (
-            <section key={s.id} id={s.id} className="scroll-mt-24 space-y-3">
-              <h2 className="text-xl font-bold tracking-tight">{s.title}</h2>
+            <section key={s.id} id={s.id} className="scroll-mt-24 space-y-4">
+              <h2 className="text-2xl font-bold tracking-tight">{s.title}</h2>
               {s.body.map((paragraph) => (
                 <p key={paragraph} className={text}>
                   {fill(paragraph, parts)}
@@ -64,7 +65,7 @@ export async function LegalPage({ doc }: { doc: keyof LegalTexts }) {
                           </code>
                         ))}
                       </dt>
-                      <dd className={`text-sm ${text}`}>{fill(purpose, parts)}</dd>
+                      <dd className="text-sm leading-relaxed text-fg/85">{fill(purpose, parts)}</dd>
                     </div>
                   ))}
                 </dl>
