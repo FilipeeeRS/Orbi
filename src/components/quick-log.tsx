@@ -39,7 +39,7 @@ export function QuickLogButton({ className = "" }: { className?: string }) {
       onClick={open}
       aria-label={t.quickLog.title}
       title={t.quickLog.title}
-      className={`grid size-8 shrink-0 place-items-center rounded-full bg-accent text-accent-fg hover:opacity-90 ${className}`}
+      className={`flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg hover:opacity-90 ${className}`}
     >
       <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
         <path d="M12 5v14M5 12h14" />
