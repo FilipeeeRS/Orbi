@@ -282,6 +282,18 @@ export const fr: Dictionary = {
     prompt: "Tapez quelque chose pour rechercher.",
   },
   settings: {
+    data: {
+      title: "Vos données",
+      exportTitle: "Télécharger mes données",
+      exportHint: "Un fichier avec tout ce que vous avez sur Orbi : compte, profil, entrées, notes, critiques, listes, commentaires, j'aime et les personnes que vous suivez.",
+      export: "Télécharger",
+      deleteTitle: "Supprimer le compte",
+      deleteHint: "Supprime définitivement votre profil, vos entrées, critiques, listes, commentaires, j'aime, abonnés et photos. Impossible à annuler.",
+      delete: "Supprimer le compte",
+      confirm: (u: string) => `Pour confirmer, saisissez votre nom d'utilisateur : ${u}`,
+      deleteForever: "Supprimer définitivement",
+      deleting: "Suppression…",
+    },
     website: "Site web",
     favorites: "Favoris",
     favoritesHint: "Fais glisser pour réordonner. Sans choix, le profil affiche tes derniers j'aime.",
@@ -504,7 +516,17 @@ export const fr: Dictionary = {
     placeholder: "Écris un commentaire…",
     send: "Envoyer",
   },
-  footer: { explore: "Explorer", account: "Votre compte", search: "Rechercher", language: "Langue", tmdb: "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.", about: "À propos", sourceCode: "Code source" },
+  legal: {
+    privacy: "Politique de confidentialité",
+    terms: "Conditions d'utilisation",
+    cookies: "Politique relative aux cookies",
+    contact: "Contact",
+    updated: (d: string) => `Dernière mise à jour : ${d}`,
+    // {terms} e {privacy} viram links
+    agree: "J'ai 13 ans ou plus et j'accepte les {terms} et la {privacy}.",
+    notice: "En continuant avec Google ou en créant un compte, vous confirmez avoir 13 ans ou plus et acceptez les {terms} et la {privacy}.",
+  },
+  footer: { explore: "Explorer", account: "Votre compte", search: "Rechercher", language: "Langue", tmdb: "Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.", about: "À propos", sourceCode: "Code source", sources: "Données et images des œuvres : {tmdb}, {anilist}, {openlibrary} et {steam}." },
   about: {
     cta: "Voir le dépôt sur GitHub",
     sections: {
@@ -518,7 +540,7 @@ export const fr: Dictionary = {
       how: {
         title: "Comment ça marche",
         body: [
-          "Chaque titre que tu ajoutes rejoint un dossier de ton profil : les Films aujourd'hui, puis bientôt les Séries, la Musique, les Jeux et les Livres. Chaque entrée peut avoir une note d'une demi-étoile à cinq étoiles, un j'aime, une critique et la date de visionnage.",
+          "Chaque titre enregistré va dans un dossier de votre profil : Films, Séries, Livres, Anime, Manga et Jeux (la Musique arrive bientôt). Chaque entrée peut avoir une note d'une demi à cinq étoiles, un j'aime, une critique et la date à laquelle vous l'avez vu, lu ou joué.",
           "Ton profil rassemble le tout : l'activité récente, un journal de ce que tu as vu et quand, la répartition de tes notes et les critiques que tu as écrites.",
         ],
       },
@@ -536,22 +558,22 @@ export const fr: Dictionary = {
         ],
       },
       data: {
-        title: "Données des films",
+        title: "D'où viennent les données",
         body: [
-          "Les informations sur les films, comme les titres, synopsis, affiches, distribution et équipe, proviennent de The Movie Database (TMDB). Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.",
-          "Les titres absents de TMDB peuvent être ajoutés manuellement et deviennent accessibles à tous dans le catalogue d'Orbi.",
+          "Les informations sur les œuvres, comme les titres, synopsis, affiches, couvertures, distribution et équipe, viennent de The Movie Database (TMDB) pour les films et séries, d'AniList pour les anime et manga, d'Open Library pour les livres et de Steam pour les jeux. Les images appartiennent à leurs ayants droit. Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB, et Orbi n'est affilié à aucun de ces services.",
+          "Les films absents de TMDB peuvent être ajoutés manuellement et deviennent disponibles pour tous dans le catalogue d'Orbi.",
         ],
       },
       news: {
         title: "À venir",
         body: [
-          "Orbi est en développement actif. Les séries, la musique, les jeux et les livres arrivent, tout comme les listes personnalisées que tu pourras créer et partager.",
+          "Orbi est en développement actif. Le prochain dossier est la Musique, et de nouvelles façons de découvrir des œuvres et d'en parler arrivent.",
         ],
       },
       source: {
         title: "Code source",
         body: [
-          "Orbi est open source. Le code est disponible sur GitHub, où tu peux suivre le développement, signaler un problème ou proposer une idée.",
+          "Le code d'Orbi est public sur GitHub, où vous pouvez suivre le développement, signaler un problème ou proposer une idée.",
         ],
       },
     },

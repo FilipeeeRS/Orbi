@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/components/i18n";
 import { setLocale, signInWithIdentifier } from "@/app/actions";
 import { LOCALE_NAMES, LOCALES_ALPHABETICAL } from "@/lib/i18n/dictionaries";
+import { fill } from "@/lib/i18n/fill";
 
 export function LoginForm() {
   const { t, locale } = useI18n();
@@ -27,6 +29,10 @@ export function LoginForm() {
   }, []);
 
   const supabase = createClient();
+  const legalLinks = {
+    terms: <Link href="/terms" target="_blank" className="underline underline-offset-2 hover:text-fg">{t.legal.terms}</Link>,
+    privacy: <Link href="/privacy" target="_blank" className="underline underline-offset-2 hover:text-fg">{t.legal.privacy}</Link>,
+  };
   const callbackUrl = (to = next) => `${window.location.origin}/auth/callback?next=${encodeURIComponent(to)}`;
 
   function switchMode(to: typeof mode) {
@@ -109,7 +115,8 @@ export function LoginForm() {
         // O gatilho do banco usa full_name e locale para montar o perfil.
         options: {
           emailRedirectTo: callbackUrl(),
-          data: { full_name: String(form.get("name")).trim(), locale: String(form.get("locale")) },
+          // accepted_terms: quando a pessoa aceitou os Termos e a Privacidade (fica nos dados da conta)
+          data: { full_name: String(form.get("name")).trim(), locale: String(form.get("locale")), accepted_terms: new Date().toISOString() },
         },
       });
       setPending(false);
@@ -199,6 +206,10 @@ export function LoginForm() {
                 ))}
               </select>
             </label>
+            <label className="flex cursor-pointer items-start gap-2 text-sm text-muted">
+              <input type="checkbox" name="agree" required className="mt-0.5 size-4 shrink-0 accent-[var(--accent)]" />
+              <span>{fill(t.legal.agree, legalLinks)}</span>
+            </label>
           </>
         )}
         {mode === "signin" && (
@@ -235,6 +246,7 @@ export function LoginForm() {
       >
         {mode === "signin" ? t.auth.toSignUp : t.auth.toSignIn}
       </button>
+      <p className="mt-4 border-t border-border pt-4 text-center text-xs text-muted">{fill(t.legal.notice, legalLinks)}</p>
     </div>
   );
 }

@@ -282,6 +282,18 @@ export const en: Dictionary = {
     prompt: "Type something to search.",
   },
   settings: {
+    data: {
+      title: "Your data",
+      exportTitle: "Download my data",
+      exportHint: "A file with everything you have on Orbi: account, profile, entries, ratings, reviews, lists, comments, likes and who you follow.",
+      export: "Download",
+      deleteTitle: "Delete account",
+      deleteHint: "Permanently deletes your profile, entries, reviews, lists, comments, likes, followers and photos. This can't be undone.",
+      delete: "Delete account",
+      confirm: (u: string) => `To confirm, type your username: ${u}`,
+      deleteForever: "Delete forever",
+      deleting: "Deleting…",
+    },
     website: "Website",
     favorites: "Favorites",
     favoritesHint: "Drag posters to reorder. If you don't pick any, your profile shows your latest likes.",
@@ -504,7 +516,17 @@ export const en: Dictionary = {
     placeholder: "Write a comment…",
     send: "Send",
   },
-  footer: { explore: "Explore", account: "Your account", search: "Search", language: "Language", tmdb: "This product uses the TMDB API but is not endorsed or certified by TMDB.", about: "About", sourceCode: "Source code" },
+  legal: {
+    privacy: "Privacy Policy",
+    terms: "Terms of Use",
+    cookies: "Cookie Policy",
+    contact: "Contact",
+    updated: (d: string) => `Last updated: ${d}`,
+    // {terms} e {privacy} viram links
+    agree: "I am 13 or older and accept the {terms} and the {privacy}.",
+    notice: "By continuing with Google or creating an account, you confirm you are 13 or older and accept the {terms} and the {privacy}.",
+  },
+  footer: { explore: "Explore", account: "Your account", search: "Search", language: "Language", tmdb: "This product uses the TMDB API but is not endorsed or certified by TMDB.", about: "About", sourceCode: "Source code", sources: "Title data and images: {tmdb}, {anilist}, {openlibrary} and {steam}." },
   about: {
     cta: "View the repository on GitHub",
     sections: {
@@ -518,7 +540,7 @@ export const en: Dictionary = {
       how: {
         title: "How it works",
         body: [
-          "Every title you log goes into a folder on your profile: Films today, with Series, Music, Games and Books to follow. Each entry can have a rating from half a star to five stars, a like, a review and the date you watched it.",
+          "Every title you log goes into a folder on your profile: Movies, Series, Books, Anime, Manga and Games (Music is on the way). Each entry can have a rating from half a star to five stars, a like, a review and the date you watched, read or played it.",
           "Your profile brings it all together: recent activity, a diary of what you watched and when, the distribution of your ratings and the reviews you have written.",
         ],
       },
@@ -536,22 +558,22 @@ export const en: Dictionary = {
         ],
       },
       data: {
-        title: "Film data",
+        title: "Where the data comes from",
         body: [
-          "Information about films, including titles, synopses, posters, cast and crew, comes from The Movie Database (TMDB). This product uses the TMDB API but is not endorsed or certified by TMDB.",
-          "Titles that are not on TMDB can be added manually and become available to everyone in the Orbi catalogue.",
+          "Title information such as names, synopses, posters, covers, cast and crew comes from The Movie Database (TMDB) for movies and series, AniList for anime and manga, Open Library for books and Steam for games. Images belong to their owners. This product uses the TMDB API but is not endorsed or certified by TMDB, and Orbi is not affiliated with any of these services.",
+          "Movies that aren't on TMDB can be added manually and become available to everyone in Orbi's catalog.",
         ],
       },
       news: {
         title: "What's next",
         body: [
-          "Orbi is under active development. Series, music, games and books are on the way, as are custom lists that you will be able to create and share.",
+          "Orbi is in active development. The next folder is Music, and new ways to discover titles and talk about them are on the way.",
         ],
       },
       source: {
         title: "Source code",
         body: [
-          "Orbi is open source. The code is available on GitHub, where you can follow its development, report a problem or suggest an idea.",
+          "Orbi's code is public on GitHub, where you can follow development, report a problem or suggest an idea.",
         ],
       },
     },

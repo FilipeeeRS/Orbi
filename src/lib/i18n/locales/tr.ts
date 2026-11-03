@@ -282,6 +282,18 @@ export const tr: Dictionary = {
     prompt: "Aramak için bir şey yaz.",
   },
   settings: {
+    data: {
+      title: "Verilerin",
+      exportTitle: "Verilerimi indir",
+      exportHint: "Orbi'deki her şeyini içeren bir dosya: hesap, profil, kayıtlar, puanlar, incelemeler, listeler, yorumlar, beğeniler ve takip ettiklerin.",
+      export: "İndir",
+      deleteTitle: "Hesabı sil",
+      deleteHint: "Profilini, kayıtlarını, incelemelerini, listelerini, yorumlarını, beğenilerini, takipçilerini ve fotoğraflarını kalıcı olarak siler. Geri alınamaz.",
+      delete: "Hesabı sil",
+      confirm: (u: string) => `Onaylamak için kullanıcı adını yaz: ${u}`,
+      deleteForever: "Kalıcı olarak sil",
+      deleting: "Siliniyor…",
+    },
     website: "Web sitesi",
     favorites: "Favoriler",
     favoritesHint: "Sıralamak için sürükle. Seçmezsen profilinde son beğenilerin görünür.",
@@ -504,7 +516,17 @@ export const tr: Dictionary = {
     placeholder: "Bir yorum yaz…",
     send: "Gönder",
   },
-  footer: { explore: "Keşfet", account: "Hesabın", search: "Ara", language: "Dil", tmdb: "Bu ürün TMDB API'sini kullanır ancak TMDB tarafından onaylanmamış veya sertifikalandırılmamıştır.", about: "Hakkında", sourceCode: "Kaynak kodu" },
+  legal: {
+    privacy: "Gizlilik Politikası",
+    terms: "Kullanım Koşulları",
+    cookies: "Çerez Politikası",
+    contact: "İletişim",
+    updated: (d: string) => `Son güncelleme: ${d}`,
+    // {terms} e {privacy} viram links
+    agree: "13 yaşında veya daha büyüğüm; {terms} ve {privacy} metinlerini kabul ediyorum.",
+    notice: "Google ile devam ederek veya hesap oluşturarak 13 yaşında veya daha büyük olduğunu onaylar, {terms} ve {privacy} metinlerini kabul edersin.",
+  },
+  footer: { explore: "Keşfet", account: "Hesabın", search: "Ara", language: "Dil", tmdb: "Bu ürün TMDB API'sini kullanır ancak TMDB tarafından onaylanmamış veya sertifikalandırılmamıştır.", about: "Hakkında", sourceCode: "Kaynak kodu", sources: "Eser verileri ve görselleri: {tmdb}, {anilist}, {openlibrary} ve {steam}." },
   about: {
     cta: "Depoyu GitHub'da görüntüle",
     sections: {
@@ -518,7 +540,7 @@ export const tr: Dictionary = {
       how: {
         title: "Nasıl çalışır",
         body: [
-          "Kaydettiğin her başlık profilindeki bir klasöre girer: şimdilik Filmler, yakında Diziler, Müzik, Oyunlar ve Kitaplar. Her kayıtta yarım yıldızdan beş yıldıza kadar bir puan, beğeni, inceleme ve izleme tarihi olabilir.",
+          "Kaydettiğin her eser profilindeki bir klasöre girer: Filmler, Diziler, Kitaplar, Anime, Manga ve Oyunlar (Müzik yolda). Her kayıtta yarımdan beş yıldıza kadar puan, beğeni, inceleme ve izlediğin, okuduğun ya da oynadığın tarih olabilir.",
           "Profilin hepsini bir araya getirir: son etkinlikler, neyi ne zaman izlediğini gösteren bir günlük, puanlarının dağılımı ve yazdığın incelemeler.",
         ],
       },
@@ -536,22 +558,22 @@ export const tr: Dictionary = {
         ],
       },
       data: {
-        title: "Film verileri",
+        title: "Veriler nereden geliyor",
         body: [
-          "Başlıklar, özetler, afişler, oyuncular ve ekip dahil filmlerle ilgili bilgiler The Movie Database'den (TMDB) gelir. Bu ürün TMDB API'sini kullanır ancak TMDB tarafından onaylanmamış veya sertifikalandırılmamıştır.",
-          "TMDB'de olmayan başlıklar elle eklenebilir ve Orbi kataloğunda herkesin kullanımına açılır.",
+          "Eserlerin adları, özetleri, afişleri, kapakları, oyuncuları ve ekipleri gibi bilgiler filmler ve diziler için The Movie Database'den (TMDB), anime ve manga için AniList'ten, kitaplar için Open Library'den ve oyunlar için Steam'den gelir. Görseller hak sahiplerine aittir. Bu ürün TMDB API'sini kullanır ancak TMDB tarafından onaylanmamış veya sertifikalandırılmamıştır; Orbi bu hizmetlerin hiçbiriyle bağlantılı değildir.",
+          "TMDB'de olmayan filmler elle eklenebilir ve Orbi kataloğunda herkesin kullanımına açılır.",
         ],
       },
       news: {
         title: "Sırada ne var",
         body: [
-          "Orbi aktif olarak geliştiriliyor. Diziler, müzik, oyunlar ve kitaplar yolda; oluşturup paylaşabileceğin özel listeler de öyle.",
+          "Orbi aktif olarak geliştiriliyor. Sıradaki klasör Müzik; eser keşfetmenin ve onlar hakkında konuşmanın yeni yolları da yolda.",
         ],
       },
       source: {
         title: "Kaynak kodu",
         body: [
-          "Orbi açık kaynaklıdır. Kod GitHub'da; geliştirmeyi takip edebilir, bir sorun bildirebilir ya da bir fikir önerebilirsin.",
+          "Orbi'nin kodu GitHub'da herkese açık; orada geliştirmeyi takip edebilir, bir sorun bildirebilir veya fikir önerebilirsin.",
         ],
       },
     },

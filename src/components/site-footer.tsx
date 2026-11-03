@@ -2,10 +2,14 @@ import Link from "next/link";
 import { LocaleSwitch } from "./locale-switch";
 import { ThemeToggle } from "./theme-toggle";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { fill } from "@/lib/i18n/fill";
 
-export const GITHUB_URL = "https://github.com/FilipeeeRS/Orbi-list-everything";
+export const GITHUB_URL = "https://github.com/FilipeeeRS/Orbi";
+// Canal para pedidos de privacidade, direitos autorais e contato em geral
+// (aparece no rodapé e nas páginas de Privacidade, Termos e Cookies).
+export const CONTACT_EMAIL = "contato@example.com";
 
-// Redes do Orbi (os perfis @orbi podem ainda não existir; os links já ficam prontos).
+// Redes do Orbi: só as que existem de verdade.
 const SOCIAL = [
   {
     name: "GitHub",
@@ -17,38 +21,14 @@ const SOCIAL = [
       />
     ),
   },
-  {
-    name: "Instagram",
-    href: "https://www.instagram.com/orbi",
-    icon: (
-      <g fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
-        <circle cx="12" cy="12" r="4.3" />
-        <circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none" />
-      </g>
-    ),
-  },
-  {
-    name: "YouTube",
-    href: "https://www.youtube.com/@orbi",
-    icon: (
-      <path
-        fill="currentColor"
-        fillRule="evenodd"
-        d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5a2.7 2.7 0 0 0-1.9 1.9C2 8.9 2 12 2 12s0 3.1.4 4.8a2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9c.4-1.7.4-4.8.4-4.8s0-3.1-.4-4.8ZM10 15.2V8.8l5.2 3.2-5.2 3.2Z"
-      />
-    ),
-  },
-  {
-    name: "X",
-    href: "https://x.com/orbi",
-    icon: (
-      <path
-        fill="currentColor"
-        d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.36 5.77L17.75 3Zm-1.08 16.2h1.7L7.4 4.73H5.58l11.09 14.47Z"
-      />
-    ),
-  },
+];
+
+// De onde vêm os dados e as imagens das obras (aparecem nos créditos).
+export const SOURCES = [
+  { key: "tmdb", name: "TMDB", href: "https://www.themoviedb.org" },
+  { key: "anilist", name: "AniList", href: "https://anilist.co" },
+  { key: "openlibrary", name: "Open Library", href: "https://openlibrary.org" },
+  { key: "steam", name: "Steam", href: "https://store.steampowered.com" },
 ];
 
 // Rodapé: colunas com as páginas do site e as redes; embaixo, créditos, idioma e tema.
@@ -83,6 +63,10 @@ export function SiteFooter({ t, username }: { t: Dictionary; username: string | 
       title: "Orbi",
       links: [
         { label: t.footer.about, href: "/about" },
+        { label: t.legal.privacy, href: "/privacy" },
+        { label: t.legal.terms, href: "/terms" },
+        { label: t.legal.cookies, href: "/cookies" },
+        { label: t.legal.contact, href: `mailto:${CONTACT_EMAIL}`, external: true },
         { label: t.footer.sourceCode, href: GITHUB_URL, external: true },
       ],
     },
@@ -137,9 +121,13 @@ export function SiteFooter({ t, username }: { t: Dictionary; username: string | 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted">
           <p className="max-w-xl">
             © {new Date().getFullYear()} Orbi.{" "}
-            <a href="https://www.themoviedb.org" target="_blank" rel="noreferrer" className="underline-offset-2 hover:text-fg hover:underline">
-              {t.footer.tmdb}
-            </a>
+            {/* Créditos das fontes dos dados e das imagens das obras */}
+            {fill(t.footer.sources, Object.fromEntries(SOURCES.map((s) => [s.key, (
+              <a key={s.key} href={s.href} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-fg">
+                {s.name}
+              </a>
+            )])))}{" "}
+            {t.footer.tmdb}
           </p>
           <div className="flex items-center gap-2">
             <LocaleSwitch />

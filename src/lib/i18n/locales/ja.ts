@@ -282,6 +282,18 @@ export const ja: Dictionary = {
     prompt: "キーワードを入力してください。",
   },
   settings: {
+    data: {
+      title: "あなたのデータ",
+      exportTitle: "データをダウンロード",
+      exportHint: "Orbiにあるあなたのすべてをまとめたファイル：アカウント、プロフィール、記録、評価、レビュー、リスト、コメント、いいね、フォロー中のユーザー。",
+      export: "ダウンロード",
+      deleteTitle: "アカウントを削除",
+      deleteHint: "プロフィール、記録、レビュー、リスト、コメント、いいね、フォロワー、写真を完全に削除します。元に戻せません。",
+      delete: "アカウントを削除",
+      confirm: (u: string) => `確認のため、ユーザー名を入力してください：${u}`,
+      deleteForever: "完全に削除",
+      deleting: "削除中…",
+    },
     website: "ウェブサイト",
     favorites: "お気に入り",
     favoritesHint: "ドラッグで並べ替え。未選択の場合は最近の「いいね」が表示されます。",
@@ -504,7 +516,17 @@ export const ja: Dictionary = {
     placeholder: "コメントを書く…",
     send: "送信",
   },
-  footer: { explore: "見つける", account: "アカウント", search: "検索", language: "言語", tmdb: "本製品は TMDB API を使用していますが、TMDB による承認・認定を受けたものではありません。", about: "Orbiについて", sourceCode: "ソースコード" },
+  legal: {
+    privacy: "プライバシーポリシー",
+    terms: "利用規約",
+    cookies: "Cookieポリシー",
+    contact: "お問い合わせ",
+    updated: (d: string) => `最終更新日：${d}`,
+    // {terms} e {privacy} viram links
+    agree: "13歳以上であり、{terms}と{privacy}に同意します。",
+    notice: "Googleで続行するかアカウントを作成すると、13歳以上であることを確認し、{terms}と{privacy}に同意したことになります。",
+  },
+  footer: { explore: "見つける", account: "アカウント", search: "検索", language: "言語", tmdb: "本製品は TMDB API を使用していますが、TMDB による承認・認定を受けたものではありません。", about: "Orbiについて", sourceCode: "ソースコード", sources: "作品のデータと画像：{tmdb}、{anilist}、{openlibrary}、{steam}。" },
   about: {
     cta: "GitHubでリポジトリを見る",
     sections: {
@@ -518,7 +540,7 @@ export const ja: Dictionary = {
       how: {
         title: "使い方",
         body: [
-          "記録した作品は、プロフィールのフォルダに入ります。現在は映画、今後はドラマ、音楽、ゲーム、本にも対応予定です。各記録には星0.5〜5の評価、いいね、レビュー、鑑賞日を付けられます。",
+          "記録した作品は、プロフィールのフォルダに入ります：映画、ドラマ、本、アニメ、マンガ、ゲーム（音楽も準備中）。各記録には星0.5〜5の評価、いいね、レビュー、観た・読んだ・遊んだ日付を付けられます。",
           "プロフィールにはそれらがまとめて表示されます。最近のアクティビティ、いつ何を観たかの日記、評価の分布、書いたレビューなどです。",
         ],
       },
@@ -536,22 +558,22 @@ export const ja: Dictionary = {
         ],
       },
       data: {
-        title: "映画のデータ",
+        title: "データの出典",
         body: [
-          "タイトル、あらすじ、ポスター、キャスト、スタッフなどの映画情報は、The Movie Database（TMDB）から提供されています。本製品はTMDB APIを使用していますが、TMDBによる承認・認定を受けたものではありません。",
-          "TMDBにない作品は手動で追加でき、Orbiのカタログで誰でも利用できるようになります。",
+          "タイトル、あらすじ、ポスター、表紙、キャスト、スタッフなどの作品情報は、映画とドラマはThe Movie Database（TMDB）、アニメとマンガはAniList、本はOpen Library、ゲームはSteamから提供されています。画像の権利は各権利者に帰属します。本製品はTMDB APIを使用していますが、TMDBによる承認・認定を受けたものではなく、Orbiはこれらのサービスのいずれとも提携していません。",
+          "TMDBにない映画は手動で追加でき、Orbiのカタログで誰でも利用できるようになります。",
         ],
       },
       news: {
         title: "今後の予定",
         body: [
-          "Orbiは現在も活発に開発中です。ドラマ、音楽、ゲーム、本への対応に加え、作成して共有できるカスタムリストも準備しています。",
+          "Orbiは現在も活発に開発中です。次のフォルダは音楽で、作品を見つけたり語り合ったりする新しい方法も準備しています。",
         ],
       },
       source: {
         title: "ソースコード",
         body: [
-          "Orbiはオープンソースです。コードはGitHubで公開されており、開発の様子を追ったり、問題を報告したり、アイデアを提案したりできます。",
+          "OrbiのコードはGitHubで公開されており、開発の様子を追ったり、問題を報告したり、アイデアを提案したりできます。",
         ],
       },
     },

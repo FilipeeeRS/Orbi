@@ -282,6 +282,18 @@ export const id: Dictionary = {
     prompt: "Ketik sesuatu untuk mencari.",
   },
   settings: {
+    data: {
+      title: "Datamu",
+      exportTitle: "Unduh dataku",
+      exportHint: "File berisi semua yang kamu punya di Orbi: akun, profil, catatan, rating, ulasan, daftar, komentar, suka, dan siapa yang kamu ikuti.",
+      export: "Unduh",
+      deleteTitle: "Hapus akun",
+      deleteHint: "Menghapus permanen profil, catatan, ulasan, daftar, komentar, suka, pengikut, dan fotomu. Tidak bisa dibatalkan.",
+      delete: "Hapus akun",
+      confirm: (u: string) => `Untuk konfirmasi, ketik nama penggunamu: ${u}`,
+      deleteForever: "Hapus permanen",
+      deleting: "Menghapus…",
+    },
     website: "Situs web",
     favorites: "Favorit",
     favoritesHint: "Seret untuk mengurutkan. Jika tidak memilih, profil menampilkan suka terbarumu.",
@@ -504,7 +516,17 @@ export const id: Dictionary = {
     placeholder: "Tulis komentar…",
     send: "Kirim",
   },
-  footer: { explore: "Jelajahi", account: "Akunmu", search: "Cari", language: "Bahasa", tmdb: "Produk ini menggunakan API TMDB tetapi tidak didukung atau disertifikasi oleh TMDB.", about: "Tentang", sourceCode: "Kode sumber" },
+  legal: {
+    privacy: "Kebijakan Privasi",
+    terms: "Ketentuan Penggunaan",
+    cookies: "Kebijakan Cookie",
+    contact: "Kontak",
+    updated: (d: string) => `Terakhir diperbarui: ${d}`,
+    // {terms} e {privacy} viram links
+    agree: "Saya berusia 13 tahun ke atas dan menyetujui {terms} serta {privacy}.",
+    notice: "Dengan melanjutkan dengan Google atau membuat akun, kamu menyatakan berusia 13 tahun ke atas dan menyetujui {terms} serta {privacy}.",
+  },
+  footer: { explore: "Jelajahi", account: "Akunmu", search: "Cari", language: "Bahasa", tmdb: "Produk ini menggunakan API TMDB tetapi tidak didukung atau disertifikasi oleh TMDB.", about: "Tentang", sourceCode: "Kode sumber", sources: "Data dan gambar karya: {tmdb}, {anilist}, {openlibrary}, dan {steam}." },
   about: {
     cta: "Lihat repositori di GitHub",
     sections: {
@@ -518,7 +540,7 @@ export const id: Dictionary = {
       how: {
         title: "Cara kerjanya",
         body: [
-          "Setiap judul yang kamu catat masuk ke folder di profilmu: Film untuk saat ini, lalu Serial, Musik, Gim, dan Buku menyusul. Setiap catatan bisa memiliki nilai dari setengah hingga lima bintang, suka, ulasan, dan tanggal kamu menontonnya.",
+          "Setiap judul yang kamu catat masuk ke folder di profilmu: Film, Serial, Buku, Anime, Manga, dan Game (Musik segera hadir). Setiap catatan bisa punya rating setengah sampai lima bintang, suka, ulasan, dan tanggal kamu menonton, membaca, atau memainkannya.",
           "Profilmu merangkum semuanya: aktivitas terbaru, buku harian tentang apa yang kamu tonton dan kapan, sebaran nilaimu, dan ulasan yang sudah kamu tulis.",
         ],
       },
@@ -536,22 +558,22 @@ export const id: Dictionary = {
         ],
       },
       data: {
-        title: "Data film",
+        title: "Asal data",
         body: [
-          "Informasi tentang film, termasuk judul, sinopsis, poster, pemeran, dan kru, berasal dari The Movie Database (TMDB). Produk ini menggunakan API TMDB tetapi tidak didukung atau disertifikasi oleh TMDB.",
-          "Judul yang tidak ada di TMDB bisa ditambahkan secara manual dan tersedia untuk semua orang di katalog Orbi.",
+          "Informasi karya seperti judul, sinopsis, poster, sampul, pemeran, dan kru berasal dari The Movie Database (TMDB) untuk film dan serial, AniList untuk anime dan manga, Open Library untuk buku, dan Steam untuk game. Gambar adalah milik pemegang haknya. Produk ini menggunakan API TMDB tetapi tidak didukung atau disertifikasi oleh TMDB, dan Orbi tidak berafiliasi dengan layanan-layanan tersebut.",
+          "Film yang tidak ada di TMDB bisa ditambahkan secara manual dan tersedia untuk semua orang di katalog Orbi.",
         ],
       },
       news: {
         title: "Yang akan datang",
         body: [
-          "Orbi sedang dikembangkan secara aktif. Serial, musik, gim, dan buku sedang disiapkan, begitu juga daftar kustom yang bisa kamu buat dan bagikan.",
+          "Orbi sedang aktif dikembangkan. Folder berikutnya adalah Musik, dan cara-cara baru untuk menemukan karya dan membicarakannya sedang disiapkan.",
         ],
       },
       source: {
         title: "Kode sumber",
         body: [
-          "Orbi bersifat sumber terbuka. Kodenya tersedia di GitHub, tempat kamu bisa mengikuti pengembangannya, melaporkan masalah, atau mengusulkan ide.",
+          "Kode Orbi terbuka untuk umum di GitHub, tempat kamu bisa mengikuti pengembangan, melaporkan masalah, atau mengusulkan ide.",
         ],
       },
     },

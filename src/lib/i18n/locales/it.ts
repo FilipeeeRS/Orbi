@@ -282,6 +282,18 @@ export const it: Dictionary = {
     prompt: "Scrivi qualcosa per cercare.",
   },
   settings: {
+    data: {
+      title: "I tuoi dati",
+      exportTitle: "Scarica i miei dati",
+      exportHint: "Un file con tutto ciò che hai su Orbi: account, profilo, registrazioni, voti, recensioni, liste, commenti, mi piace e chi segui.",
+      export: "Scarica",
+      deleteTitle: "Elimina account",
+      deleteHint: "Elimina per sempre profilo, registrazioni, recensioni, liste, commenti, mi piace, follower e foto. Non si può annullare.",
+      delete: "Elimina account",
+      confirm: (u: string) => `Per confermare, scrivi il tuo nome utente: ${u}`,
+      deleteForever: "Elimina per sempre",
+      deleting: "Eliminazione…",
+    },
     website: "Sito web",
     favorites: "Preferiti",
     favoritesHint: "Trascina per riordinare. Senza scelta, il profilo mostra i tuoi ultimi mi piace.",
@@ -504,7 +516,17 @@ export const it: Dictionary = {
     placeholder: "Scrivi un commento…",
     send: "Invia",
   },
-  footer: { explore: "Esplora", account: "Il tuo account", search: "Cerca", language: "Lingua", tmdb: "Questo prodotto usa l'API di TMDB ma non è approvato né certificato da TMDB.", about: "Info", sourceCode: "Codice sorgente" },
+  legal: {
+    privacy: "Informativa sulla privacy",
+    terms: "Termini di utilizzo",
+    cookies: "Informativa sui cookie",
+    contact: "Contatti",
+    updated: (d: string) => `Ultimo aggiornamento: ${d}`,
+    // {terms} e {privacy} viram links
+    agree: "Ho almeno 13 anni e accetto i {terms} e l'{privacy}.",
+    notice: "Continuando con Google o creando un account, confermi di avere almeno 13 anni e accetti i {terms} e l'{privacy}.",
+  },
+  footer: { explore: "Esplora", account: "Il tuo account", search: "Cerca", language: "Lingua", tmdb: "Questo prodotto usa l'API di TMDB ma non è approvato né certificato da TMDB.", about: "Info", sourceCode: "Codice sorgente", sources: "Dati e immagini delle opere: {tmdb}, {anilist}, {openlibrary} e {steam}." },
   about: {
     cta: "Vedi il repository su GitHub",
     sections: {
@@ -518,7 +540,7 @@ export const it: Dictionary = {
       how: {
         title: "Come funziona",
         body: [
-          "Ogni titolo che registri finisce in una cartella del tuo profilo: oggi i Film e, presto, Serie, Musica, Giochi e Libri. Ogni voce può avere un voto da mezza a cinque stelle, un mi piace, una recensione e la data in cui l'hai visto.",
+          "Ogni titolo che registri finisce in una cartella del tuo profilo: Film, Serie, Libri, Anime, Manga e Giochi (la Musica è in arrivo). Ogni registrazione può avere un voto da mezza a cinque stelle, un mi piace, una recensione e la data in cui l'hai visto, letto o giocato.",
           "Il tuo profilo riunisce tutto: l'attività recente, un diario di cosa hai visto e quando, la distribuzione dei tuoi voti e le recensioni che hai scritto.",
         ],
       },
@@ -536,22 +558,22 @@ export const it: Dictionary = {
         ],
       },
       data: {
-        title: "Dati dei film",
+        title: "Da dove vengono i dati",
         body: [
-          "Le informazioni sui film, come titoli, trame, locandine, cast e troupe, provengono da The Movie Database (TMDB). Questo prodotto usa l'API di TMDB ma non è approvato né certificato da TMDB.",
-          "I titoli che non sono su TMDB possono essere aggiunti manualmente e diventano disponibili a tutti nel catalogo di Orbi.",
+          "Le informazioni sulle opere, come titoli, trame, poster, copertine, cast e troupe, vengono da The Movie Database (TMDB) per film e serie, da AniList per anime e manga, da Open Library per i libri e da Steam per i giochi. Le immagini appartengono ai rispettivi titolari. Questo prodotto usa l'API di TMDB ma non è approvato né certificato da TMDB, e Orbi non è affiliato a nessuno di questi servizi.",
+          "I film che non sono su TMDB possono essere aggiunti manualmente e diventano disponibili per tutti nel catalogo di Orbi.",
         ],
       },
       news: {
         title: "Prossimamente",
         body: [
-          "Orbi è in fase di sviluppo attivo. Serie, musica, giochi e libri sono in arrivo, così come liste personalizzate che potrai creare e condividere.",
+          "Orbi è in sviluppo attivo. La prossima cartella è la Musica, e stanno arrivando nuovi modi per scoprire opere e parlarne.",
         ],
       },
       source: {
         title: "Codice sorgente",
         body: [
-          "Orbi è open source. Il codice è disponibile su GitHub, dove puoi seguire lo sviluppo, segnalare un problema o proporre un'idea.",
+          "Il codice di Orbi è pubblico su GitHub, dove puoi seguire lo sviluppo, segnalare un problema o proporre un'idea.",
         ],
       },
     },

@@ -282,6 +282,18 @@ export const ko: Dictionary = {
     prompt: "검색어를 입력하세요.",
   },
   settings: {
+    data: {
+      title: "내 데이터",
+      exportTitle: "내 데이터 다운로드",
+      exportHint: "Orbi에 있는 모든 것을 담은 파일: 계정, 프로필, 기록, 평점, 리뷰, 리스트, 댓글, 좋아요, 팔로우 중인 사람.",
+      export: "다운로드",
+      deleteTitle: "계정 삭제",
+      deleteHint: "프로필, 기록, 리뷰, 리스트, 댓글, 좋아요, 팔로워, 사진을 영구히 삭제합니다. 되돌릴 수 없습니다.",
+      delete: "계정 삭제",
+      confirm: (u: string) => `확인을 위해 사용자 이름을 입력하세요: ${u}`,
+      deleteForever: "영구 삭제",
+      deleting: "삭제 중…",
+    },
     website: "웹사이트",
     favorites: "즐겨찾기",
     favoritesHint: "드래그해서 순서를 바꿔요. 고르지 않으면 최근 좋아요한 영화가 보여요.",
@@ -504,7 +516,17 @@ export const ko: Dictionary = {
     placeholder: "댓글을 입력하세요…",
     send: "보내기",
   },
-  footer: { explore: "둘러보기", account: "내 계정", search: "검색", language: "언어", tmdb: "이 제품은 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았습니다.", about: "소개", sourceCode: "소스 코드" },
+  legal: {
+    privacy: "개인정보 처리방침",
+    terms: "이용약관",
+    cookies: "쿠키 정책",
+    contact: "문의",
+    updated: (d: string) => `최종 업데이트: ${d}`,
+    // {terms} e {privacy} viram links
+    agree: "만 13세 이상이며 {terms} 및 {privacy}에 동의합니다.",
+    notice: "Google로 계속하거나 계정을 만들면 만 13세 이상임을 확인하고 {terms} 및 {privacy}에 동의하는 것으로 간주됩니다.",
+  },
+  footer: { explore: "둘러보기", account: "내 계정", search: "검색", language: "언어", tmdb: "이 제품은 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았습니다.", about: "소개", sourceCode: "소스 코드", sources: "작품 데이터와 이미지: {tmdb}, {anilist}, {openlibrary}, {steam}." },
   about: {
     cta: "GitHub에서 저장소 보기",
     sections: {
@@ -518,7 +540,7 @@ export const ko: Dictionary = {
       how: {
         title: "이용 방법",
         body: [
-          "기록한 작품은 프로필의 폴더에 들어가요. 지금은 영화, 곧 시리즈·음악·게임·책도 추가될 예정이에요. 각 기록에는 별 반 개부터 다섯 개까지의 별점, 좋아요, 리뷰, 감상 날짜를 남길 수 있어요.",
+          "기록한 모든 작품은 프로필의 폴더에 들어갑니다: 영화, 시리즈, 책, 애니메이션, 만화, 게임(음악은 준비 중). 각 기록에는 별 반 개부터 다섯 개까지의 평점, 좋아요, 리뷰, 그리고 보거나 읽거나 플레이한 날짜를 남길 수 있습니다.",
           "프로필에는 이 모든 것이 모여요. 최근 활동, 언제 무엇을 봤는지 보여 주는 다이어리, 별점 분포, 내가 쓴 리뷰까지요.",
         ],
       },
@@ -536,22 +558,22 @@ export const ko: Dictionary = {
         ],
       },
       data: {
-        title: "영화 데이터",
+        title: "데이터 출처",
         body: [
-          "제목, 줄거리, 포스터, 출연진과 제작진 등 영화 정보는 The Movie Database(TMDB)에서 제공돼요. 이 제품은 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지는 않았어요.",
-          "TMDB에 없는 작품은 직접 추가할 수 있고, 추가된 작품은 Orbi 카탈로그에서 누구나 이용할 수 있어요.",
+          "제목, 줄거리, 포스터, 표지, 출연진과 제작진 같은 작품 정보는 영화와 시리즈는 The Movie Database(TMDB), 애니메이션과 만화는 AniList, 책은 Open Library, 게임은 Steam에서 가져옵니다. 이미지는 각 권리자에게 귀속됩니다. 이 제품은 TMDB API를 사용하지만 TMDB의 보증이나 인증을 받지 않았으며, Orbi는 이들 서비스와 제휴 관계가 없습니다.",
+          "TMDB에 없는 영화는 직접 추가할 수 있으며, 추가하면 Orbi 카탈로그에서 모두가 이용할 수 있습니다.",
         ],
       },
       news: {
         title: "앞으로의 계획",
         body: [
-          "Orbi는 활발히 개발 중이에요. 시리즈, 음악, 게임, 책이 곧 추가되고, 직접 만들고 공유할 수 있는 나만의 리스트도 준비하고 있어요.",
+          "Orbi는 활발히 개발 중입니다. 다음 폴더는 음악이며, 작품을 발견하고 이야기하는 새로운 방법도 준비하고 있습니다.",
         ],
       },
       source: {
         title: "소스 코드",
         body: [
-          "Orbi는 오픈 소스예요. 코드는 GitHub에 공개되어 있어서 개발 과정을 지켜보거나, 문제를 알리거나, 아이디어를 제안할 수 있어요.",
+          "Orbi의 코드는 GitHub에 공개되어 있어 개발 과정을 지켜보고, 문제를 신고하거나, 아이디어를 제안할 수 있습니다.",
         ],
       },
     },

@@ -282,6 +282,18 @@ export const zh: Dictionary = {
     prompt: "输入内容开始搜索。",
   },
   settings: {
+    data: {
+      title: "你的数据",
+      exportTitle: "下载我的数据",
+      exportHint: "一个包含你在 Orbi 上所有内容的文件：账号、个人主页、记录、评分、影评、列表、评论、点赞和你关注的人。",
+      export: "下载",
+      deleteTitle: "删除账号",
+      deleteHint: "永久删除你的个人主页、记录、影评、列表、评论、点赞、关注者和照片。此操作无法撤销。",
+      delete: "删除账号",
+      confirm: (u: string) => `请输入你的用户名以确认：${u}`,
+      deleteForever: "永久删除",
+      deleting: "正在删除…",
+    },
     website: "网站",
     favorites: "最爱",
     favoritesHint: "拖动以调整顺序。未选择时，主页会显示你最近喜欢的电影。",
@@ -504,7 +516,17 @@ export const zh: Dictionary = {
     placeholder: "写下评论…",
     send: "发送",
   },
-  footer: { explore: "探索", account: "你的账户", search: "搜索", language: "语言", tmdb: "本产品使用 TMDB API，但未经 TMDB 认可或认证。", about: "关于", sourceCode: "源代码" },
+  legal: {
+    privacy: "隐私政策",
+    terms: "使用条款",
+    cookies: "Cookie 政策",
+    contact: "联系我们",
+    updated: (d: string) => `最后更新：${d}`,
+    // {terms} e {privacy} viram links
+    agree: "我已年满 13 岁，并同意{terms}和{privacy}。",
+    notice: "继续使用 Google 登录或创建账号，即表示你确认已年满 13 岁，并同意{terms}和{privacy}。",
+  },
+  footer: { explore: "探索", account: "你的账户", search: "搜索", language: "语言", tmdb: "本产品使用 TMDB API，但未经 TMDB 认可或认证。", about: "关于", sourceCode: "源代码", sources: "作品数据和图片来自：{tmdb}、{anilist}、{openlibrary} 和 {steam}。" },
   about: {
     cta: "在 GitHub 上查看代码仓库",
     sections: {
@@ -518,7 +540,7 @@ export const zh: Dictionary = {
       how: {
         title: "如何使用",
         body: [
-          "你记录的每个作品都会进入个人主页的某个文件夹：目前是电影，之后还会有剧集、音乐、游戏和书籍。每条记录可以包含半星到五星的评分、喜欢、评论以及观看日期。",
+          "你记录的每部作品都会放进个人主页的一个文件夹：电影、剧集、书籍、动画、漫画和游戏（音乐即将推出）。每条记录都可以有半星到五星的评分、点赞、评论，以及你观看、阅读或游玩的日期。",
           "你的个人主页会把这些汇集在一起：最近动态、记录你何时看了什么的日记、评分分布，以及你写过的评论。",
         ],
       },
@@ -536,22 +558,22 @@ export const zh: Dictionary = {
         ],
       },
       data: {
-        title: "电影数据",
+        title: "数据来源",
         body: [
-          "电影的标题、简介、海报、演职人员等信息来自 The Movie Database（TMDB）。本产品使用 TMDB API，但未获得 TMDB 的认可或认证。",
-          "TMDB 中没有的作品可以手动添加，添加后所有人都能在 Orbi 目录中使用。",
+          "作品的标题、简介、海报、封面、演员和制作团队等信息，电影和剧集来自 The Movie Database（TMDB），动画和漫画来自 AniList，书籍来自 Open Library，游戏来自 Steam。图片归各自的权利人所有。本产品使用 TMDB API，但未经 TMDB 认可或认证，Orbi 与上述任何服务均无关联。",
+          "TMDB 上没有的电影可以手动添加，添加后所有人都能在 Orbi 的目录中使用。",
         ],
       },
       news: {
         title: "接下来",
         body: [
-          "Orbi 正在积极开发中。剧集、音乐、游戏和书籍即将推出，你可以创建并分享的自定义清单也在路上。",
+          "Orbi 正在积极开发中。下一个文件夹是音乐，发现作品和讨论作品的新方式也在路上。",
         ],
       },
       source: {
         title: "源代码",
         body: [
-          "Orbi 是开源项目。代码在 GitHub 上公开，你可以在那里关注开发进展、报告问题或提出想法。",
+          "Orbi 的代码公开在 GitHub 上，你可以在那里关注开发进度、报告问题或提出建议。",
         ],
       },
     },

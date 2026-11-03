@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { setAvatar, setAvatarRing, setCover, setSticker, setLocale, updateProfile, type FavoriteItem, type ProfileFormState } from "@/app/actions";
 import { FavoritesEditor } from "./favorites-editor";
+import { deleteAccount } from "./account-actions";
 import { Avatar } from "@/components/avatar";
 import { useI18n } from "@/components/i18n";
 import { ThemeSelect } from "@/components/theme-toggle";
@@ -138,6 +139,7 @@ export function SettingsForm({ profile, favorites }: { profile: Profile; favorit
           </div>
         </form>
         <PasswordForm />
+        <AccountData username={profile.username} />
       </div>
 
       <div className="space-y-6">
@@ -196,6 +198,90 @@ function PasswordForm() {
         >
           {status === "sent" ? t.settings.passwordResend : t.settings.passwordSend}
         </button>
+      </div>
+    </div>
+  );
+}
+
+// Seus dados: baixar uma cópia de tudo e excluir a conta (pede o @ para confirmar).
+function AccountData({ username }: { username: string }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [error, setError] = useState(false);
+  const [pending, start] = useTransition();
+  const matches = typed.trim().replace(/^@/, "").toLowerCase() === username.toLowerCase();
+
+  return (
+    <div className="space-y-5 rounded-2xl border border-border bg-surface p-6 text-sm">
+      <p className="font-semibold">{t.settings.data.title}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium">{t.settings.data.exportTitle}</p>
+          <p className="text-muted">{t.settings.data.exportHint}</p>
+        </div>
+        <a
+          href="/settings/export"
+          download
+          className="shrink-0 rounded-lg border border-border px-5 py-2 text-sm font-semibold hover:border-fg"
+        >
+          {t.settings.data.export}
+        </a>
+      </div>
+      <div className="space-y-3 border-t border-border pt-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-danger">{t.settings.data.deleteTitle}</p>
+            <p className="text-muted">{t.settings.data.deleteHint}</p>
+          </div>
+          {!open && (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="shrink-0 rounded-lg border border-danger px-5 py-2 text-sm font-semibold text-danger hover:bg-danger hover:text-white"
+            >
+              {t.settings.data.delete}
+            </button>
+          )}
+        </div>
+        {open && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!matches) return;
+              setError(false);
+              start(async () => {
+                const result = await deleteAccount(typed);
+                if (!result.ok) setError(true);
+              });
+            }}
+            className="space-y-3"
+          >
+            <label className="block">
+              <span className="mb-1 block text-muted">{t.settings.data.confirm(username)}</span>
+              <input
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                className={input}
+              />
+            </label>
+            {error && <p className="text-xs text-danger">{t.common.error}</p>}
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setOpen(false)} className="rounded-lg px-4 py-2 text-sm text-muted hover:text-fg">
+                {t.comments.cancel}
+              </button>
+              <button
+                disabled={!matches || pending}
+                className="rounded-lg bg-danger px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+              >
+                {pending ? t.settings.data.deleting : t.settings.data.deleteForever}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

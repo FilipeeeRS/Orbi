@@ -89,6 +89,9 @@ export const PUBLIC_ROUTES: { name: string; path: string }[] = [
   { name: "anime", path: "/anime/21" },
   { name: "manga", path: "/manga/30013" },
   { name: "sobre", path: "/about" },
+  { name: "privacidade", path: "/privacy" },
+  { name: "termos", path: "/terms" },
+  { name: "cookies", path: "/cookies" },
   { name: "login", path: "/login" },
 ];
 
